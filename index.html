@@ -270,7 +270,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
     <div class="tot k2"><div class="l">KM tot finish</div><div class="v" id="kmleft">—</div></div>
   </div>
   <div class="sponsor-strip"><span>Mede mogelijk gemaakt door</span> <b id="sponLine">Rogelli · Shimano · Atleta</b></div>
-  <div class="hd-actions">
+  <div class="hd-actions" id="hdActions">
     <button class="hbtn loc" onclick="getLoc()">📍 Deel mijn locatie</button>
     <a class="hbtn sos" href="tel:" id="hdSos">📞 Noodnummer</a>
   </div>
@@ -300,14 +300,14 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
   </a>
   <div class="foot-spon">Partners</div>
   <div class="foot-logos" id="footLogos"></div>
-  <div class="foot-meta" id="footMeta">Routedata: GPX (dummy) · Weer: Open-Meteo · The Ride Dolomites 2026</div>
+  <div class="foot-meta" id="footMeta">Routedata: GPX (dummy) · Weer: Open-Meteo</div>
 </footer>
 </div>
 
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.2";
+var APP_VERSION="0.5";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -700,8 +700,11 @@ function renderAll(){
   document.getElementById("sponLine").textContent=RIDE.sponsors.slice(0,3).map(function(s){return s.name;}).join(" · ");
   document.getElementById("footLogos").innerHTML=RIDE.sponsors.map(function(s){return '<span>'+s.name+'</span>';}).join("");
   document.getElementById("hdSos").href="tel:"+RIDE.event.emergency;
+  var liveActions=eventPhase()==="live";
+  document.getElementById("hdActions").style.display=liveActions?"flex":"none";
+  document.getElementById("locout").style.display=liveActions?"":"none";
   document.getElementById("hdVer").textContent=APP_STATUS+" · v"+APP_VERSION;
-  document.getElementById("footMeta").textContent+=" · "+APP_STATUS+" · v"+APP_VERSION;
+  document.getElementById("footMeta").textContent="Routedata: GPX (dummy) · Weer: Open-Meteo · "+APP_STATUS+" · v"+APP_VERSION;
   renderRoute();renderKlass();renderEvent();renderPrep();
 }
 renderAll();
