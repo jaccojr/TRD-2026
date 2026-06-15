@@ -159,13 +159,14 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .map-wrap.open{max-height:330px;}
 .map-c{height:300px;background:var(--paper);}
 .wx{display:flex;flex-direction:column;}
-.wxrow{display:flex;align-items:center;gap:12px;padding:10px 15px;border-top:1px solid var(--line);}
-.wxrow .wl{min-width:92px;}
+.wxrow{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:12px;padding:10px 15px;border-top:1px solid var(--line);}
+.wxrow .wl{min-width:0;overflow:hidden;}
 .wxrow .wt{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
 .wxrow .wn{font-size:12px;font-weight:600;}
-.wxrow .we{font-family:var(--mono);font-size:9.5px;color:var(--muted);}
+.wxrow .we{font-family:var(--mono);font-size:9.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .wxrow .wi{font-size:23px;}
-.wxrow .wd2{flex:1;display:flex;flex-direction:column;}
+.wxrow .wd2{min-width:0;}
+.wxrow .wd-inner{display:flex;align-items:center;gap:11px;}
 .wxrow .wtemp{font-family:var(--mono);font-weight:700;font-size:16px;}
 .wxrow .wc{font-size:10.5px;color:var(--muted);}
 .wxrow .wpills{display:flex;gap:6px;margin-top:3px;}
@@ -307,7 +308,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.6";
+var APP_VERSION="0.7";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -584,7 +585,7 @@ function paintWx(data){
     s.wxPoints.forEach(function(p,pi){
       var el=document.getElementById("wx-"+s.num+"-"+pi);if(!el)return;
       var wx=data&&data[s.num+"-"+pi]?data[s.num+"-"+pi]:synthWx(p);
-      el.innerHTML='<div style="display:flex;align-items:center;gap:11px"><div class="wi">'+(WX_ICON[wx.code]||"🌡️")+'</div>'+
+      el.innerHTML='<div class="wd-inner"><div class="wi">'+(WX_ICON[wx.code]||"🌡️")+'</div>'+
         '<div><div class="wtemp">'+wx.temp+'°</div><div class="wc">'+(WX_DESC[wx.code]||"")+'</div>'+
         '<div class="wpills"><span class="wpill">💨 '+wx.wind+' '+windDir(wx.windDeg)+'</span><span class="wpill">🌧 '+wx.rain+'%</span></div></div></div>';
     });
