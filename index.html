@@ -307,7 +307,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.10";
+var APP_VERSION="0.11";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -440,13 +440,13 @@ function segBlock(s){
     '<div class="ss">km '+sg.kmStart+' → '+sg.kmEnd+' · '+sg.length+'</div>';
   h+='<div class="sbtns">';
   h+='<a class="sbtn strava" href="'+sg.strava+'" target="_blank">'+STRAVA_SVG+' Strava segment</a>';
-  if(eventPhase()==="live"){
-    h+='<a class="sbtn klass" href="javascript:void(0)" onclick="goToKlassement()">🏆 Klassement</a>';
+  if(stageState(s)!=="future"){ // this stage's segment is today's or has already been ridden — a ranking exists
+    h+='<a class="sbtn klass" href="javascript:void(0)" onclick="goToKlassement(\''+s.num+'\')">🏆 Klassement</a>';
   }
   h+='</div></div>';
   return h;
 }
-function goToKlassement(){curMode="dag";showTab("klassement");renderKlass();}
+function goToKlassement(stageNum){curMode="dag";showTab("klassement");renderKlass();}
 function stageCard(s,expanded){
   var state=stageState(s);
   var isToday=state==="today";
