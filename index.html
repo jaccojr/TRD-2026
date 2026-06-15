@@ -35,8 +35,6 @@ a{color:inherit;}
 /* ---------- Header ---------- */
 header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
  backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);}
-.hd-grid{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
- background-size:22px 22px;opacity:.35;pointer-events:none;-webkit-mask-image:linear-gradient(180deg,#000,transparent);}
 .hd-top{display:flex;align-items:center;gap:11px;padding:13px 18px 9px;position:relative;}
 .mark{width:38px;height:38px;border-radius:10px;background:var(--rose);display:flex;align-items:center;justify-content:center;
  flex-shrink:0;box-shadow:0 3px 10px rgba(230,49,122,.32);}
@@ -44,6 +42,9 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .hd-title .k{font-family:var(--mono);font-size:9px;letter-spacing:.32em;text-transform:uppercase;color:var(--rose-deep);font-weight:500;}
 .hd-title .t{font-family:var(--disp);font-weight:800;font-size:17px;letter-spacing:-.02em;line-height:1.05;}
 .hd-title .t b{color:var(--rose-deep);font-weight:800;}
+.hd-ver{flex-shrink:0;align-self:flex-start;font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;
+ color:var(--rose-deep);background:var(--rose-soft);border:1px solid var(--rose-line);border-radius:6px;padding:3px 6px;
+ white-space:nowrap;line-height:1.3;}
 .totals{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:1px;background:var(--line);
  border-top:1px solid var(--line);position:relative;}
 .tot{background:#fff;padding:9px 14px;}
@@ -55,6 +56,14 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .sponsor-strip{display:flex;align-items:center;gap:8px;padding:6px 18px;border-top:1px solid var(--line);
  font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.05em;position:relative;overflow:hidden;white-space:nowrap;}
 .sponsor-strip b{color:var(--ink2);font-weight:700;}
+.hd-actions{display:flex;gap:9px;padding:9px 14px;border-top:1px solid var(--line);position:relative;}
+.hd-actions .hbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;border-radius:9px;
+ font-family:var(--disp);font-weight:700;font-size:12px;text-decoration:none;cursor:pointer;border:1.5px solid;appearance:none;background:#fff;}
+.hbtn.loc{border-color:var(--green);color:var(--green);}
+.hbtn.loc:active{background:#eefaf3;}
+.hbtn.sos{border-color:var(--red);color:var(--red);}
+.hbtn.sos:active{background:#fcecee;}
+.hd-locout{font-family:var(--mono);font-size:10.5px;color:var(--blue);padding:0 14px 8px;margin-top:-2px;min-height:0;border-top:none;}
 .sim{display:flex;align-items:center;gap:8px;padding:5px 18px;border-top:1px dashed var(--rose-line);background:var(--rose-soft);position:relative;}
 .sim .lab{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--rose-deep);}
 .sim .day{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--ink);flex:1;text-align:center;}
@@ -64,7 +73,7 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .sim .reset{width:auto;padding:0 8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;}
 
 /* ---------- Tabs ---------- */
-.tabs{position:sticky;top:0;z-index:40;display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-bottom:1px solid var(--line2);}
+.tabs{position:sticky;top:0;z-index:40;display:grid;grid-template-columns:repeat(var(--ntabs,4),1fr);background:#fff;border-bottom:1px solid var(--line2);}
 .tab{appearance:none;border:none;background:none;padding:12px 4px 10px;cursor:pointer;position:relative;
  font-family:var(--disp);font-weight:700;font-size:12.5px;color:var(--muted);letter-spacing:.01em;}
 .tab .ic{display:block;font-size:15px;margin-bottom:2px;font-weight:400;}
@@ -103,6 +112,7 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .chip.loop{background:#eef1f4;color:#4a5563;}
 .chip.free{background:var(--rose-soft);color:var(--rose-deep);}
 .chip.cat{background:var(--ink);color:#fff;}
+.chip.prev{background:#eef1f4;color:#5a6473;border:1px dashed #c7ced6;}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line);}
 .m{padding:9px 8px 8px 12px;border-right:1px solid var(--line);}
 .m:last-child{border-right:none;}
@@ -138,14 +148,12 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .seg .ss{font-family:var(--mono);font-size:10px;color:var(--rose-deep);margin-top:5px;}
 .seg a{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-family:var(--mono);font-size:10px;font-weight:700;color:#fff;
  background:#FC4C02;padding:6px 11px;border-radius:7px;text-decoration:none;letter-spacing:.04em;}
-.wp{display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line2);}
-.wp:last-child{border-bottom:none;}
+.wp{display:flex;align-items:baseline;gap:10px;padding:6px 0;}
 .wp .km{font-family:var(--mono);font-size:10px;color:var(--muted);min-width:46px;}
 .wp .nm{font-size:12.5px;font-weight:600;flex:1;}
 .wp .nm small{display:block;font-weight:400;font-size:10.5px;color:var(--muted);font-family:var(--mono);margin-top:1px;}
 .wp .ic{font-size:13px;}
-.wlist .witem{display:flex;gap:9px;align-items:flex-start;padding:7px 0;font-size:12px;color:var(--ink2);border-bottom:1px dashed var(--line2);}
-.wlist .witem:last-child{border-bottom:none;}
+.wlist .witem{display:flex;gap:9px;align-items:flex-start;padding:6px 0;font-size:12px;color:var(--ink2);}
 .wlist .wd{color:var(--amber);flex-shrink:0;}
 .map-wrap{max-height:0;overflow:hidden;transition:max-height .35s ease;}
 .map-wrap.open{max-height:330px;}
@@ -198,8 +206,7 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .ev-h .ttl{font-family:var(--disp);font-weight:800;font-size:15px;flex:1;}
 .ev-h .dt{font-family:var(--mono);font-size:10px;color:var(--muted);}
 .ev-b{padding:6px 15px 13px;}
-.row{display:flex;gap:11px;padding:8px 0;border-bottom:1px dashed var(--line2);align-items:flex-start;}
-.row:last-child{border-bottom:none;}
+.row{display:flex;gap:11px;padding:7px 0;align-items:flex-start;}
 .row .ri{font-size:15px;width:20px;flex-shrink:0;text-align:center;}
 .row .rk{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:74px;padding-top:2px;}
 .row .rv{flex:1;font-size:12.5px;}
@@ -218,11 +225,6 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .plogo .pt{font-family:var(--mono);font-size:8.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:2px;}
 
 /* ---------- Prep ---------- */
-.emergency{display:flex;gap:11px;margin-bottom:16px;}
-.ebtn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:13px;border-radius:11px;font-family:var(--disp);font-weight:700;font-size:13px;text-decoration:none;cursor:pointer;border:1.5px solid;}
-.ebtn.loc{border-color:var(--green);color:var(--green);background:#fff;}
-.ebtn.sos{border-color:var(--red);color:var(--red);background:#fff;}
-.locout{font-family:var(--mono);font-size:11px;color:var(--blue);margin:-8px 4px 16px;min-height:0;}
 .pack-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .pack-prog{font-family:var(--mono);font-size:11px;color:var(--muted);}
 .pack-reset{font-family:var(--mono);font-size:10px;color:var(--rose-deep);background:none;border:none;cursor:pointer;letter-spacing:.05em;}
@@ -240,6 +242,9 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .info-card li::before{content:"•";color:var(--rose);}
 
 footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center;}
+.spotify-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:#1DB954;border-radius:11px;
+ padding:13px 20px;text-decoration:none;color:#fff;font-family:var(--disp);font-weight:700;font-size:13px;margin-bottom:18px;}
+.spotify-btn:active{opacity:.9;}
 .foot-spon{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
 .foot-logos{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:14px;}
 .foot-logos span{font-family:var(--disp);font-weight:800;font-size:13px;color:var(--ink2);}
@@ -252,22 +257,25 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 
 <header class="app">
   <div class="hd-top">
-    <div class="hd-grid"></div>
     <div class="mark"><span>TR</span></div>
     <div class="hd-title">
       <div class="k">The Ride · Dolomieten</div>
       <div class="t">DOLOMITES <b>2026</b></div>
     </div>
+    <div class="hd-ver" id="hdVer"></div>
   </div>
   <div class="totals">
-    <div class="hd-grid"></div>
     <div class="tot"><div class="l">Afstand</div><div class="v">724<span class="u"> km</span></div></div>
     <div class="tot"><div class="l">Hoogtemeters</div><div class="v">16.890<span class="u"> m</span></div></div>
     <div class="tot k2"><div class="l">KM tot finish</div><div class="v" id="kmleft">—</div></div>
   </div>
   <div class="sponsor-strip"><span>Mede mogelijk gemaakt door</span> <b id="sponLine">Rogelli · Shimano · Atleta</b></div>
+  <div class="hd-actions">
+    <button class="hbtn loc" onclick="getLoc()">📍 Deel mijn locatie</button>
+    <a class="hbtn sos" href="tel:" id="hdSos">📞 Noodnummer</a>
+  </div>
+  <div class="hd-locout" id="locout"></div>
   <div class="sim">
-    <div class="hd-grid"></div>
     <span class="lab">Demo&nbsp;dag</span>
     <button onclick="stepSim(-1)" aria-label="vorige dag">‹</button>
     <span class="day mono" id="simDay">vandaag</span>
@@ -276,27 +284,32 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
   </div>
 </header>
 
-<nav class="tabs">
-  <button class="tab active" data-v="route" onclick="showTab('route')"><span class="ic">⛰</span>Route</button>
-  <button class="tab" data-v="klassement" onclick="showTab('klassement')"><span class="ic">🏆</span>Klassement</button>
-  <button class="tab" data-v="event" onclick="showTab('event')"><span class="ic">🏕</span>Event</button>
-  <button class="tab" data-v="prep" onclick="showTab('prep')"><span class="ic">🎒</span>Prep</button>
-</nav>
+<nav class="tabs" id="tabs"></nav>
 
 <section class="view active" id="v-route"></section>
-<section class="view" id="v-klassement"></section>
 <section class="view" id="v-event"></section>
 <section class="view" id="v-prep"></section>
+<section class="view" id="v-klassement"></section>
 
 <footer>
+  <a class="spotify-btn" href="https://open.spotify.com/playlist/06I3CJeX295bVcJTp512P9" target="_blank">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+    </svg>
+    The Ride Dolomites · Playlist
+  </a>
   <div class="foot-spon">Partners</div>
   <div class="foot-logos" id="footLogos"></div>
-  <div class="foot-meta">Routedata: GPX (dummy) · Weer: Open-Meteo · The Ride Dolomites 2026 · v0.1 dummy</div>
+  <div class="foot-meta" id="footMeta">Routedata: GPX (dummy) · Weer: Open-Meteo · The Ride Dolomites 2026</div>
 </footer>
 </div>
 
 <script src="data.js"></script>
 <script>
+/* ============ version ============ */
+var APP_VERSION="0.2";
+var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
+
 /* ============ helpers ============ */
 var WX_ICON={0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌧️",61:"🌧️",63:"🌧️",65:"🌧️",71:"🌨️",80:"🌦️",81:"🌧️",95:"⛈️"};
 var WX_DESC={0:"Helder",1:"Licht bewolkt",2:"Half bewolkt",3:"Bewolkt",45:"Mist",51:"Motregen",53:"Motregen",61:"Regen",63:"Regen",65:"Zware regen",80:"Buien",81:"Buien",95:"Onweer"};
@@ -348,8 +361,41 @@ function kmLeft(){
   return Math.max(0,total-done);
 }
 
+/* ============ event phase ============ */
+// 'preview' : before the Proloog — tabs Prep · Event · Route, Klassement hidden, opens on Prep
+// 'live'    : Proloog day .. last stage (and after) — tabs Route · Event · Klassement, Prep hidden, opens on Route
+function eventPhase(){
+  var t=nowD().getTime();
+  var first=isoToDate(RIDE.stages[0].iso).getTime();
+  return t<first?"preview":"live";
+}
+var TAB_DEF={
+  route:{ic:"⛰",label:"Route"},
+  event:{ic:"🏕",label:"Camping"},
+  prep:{ic:"🎒",label:"Prep"},
+  klassement:{ic:"🏆",label:"Klassement"}
+};
+var TAB_ORDER={
+  preview:["prep","event","route"],
+  live:["route","event","klassement"]
+};
+
 /* ============ tabs ============ */
+var curTab=null;
+function renderNav(){
+  var phase=eventPhase();var order=TAB_ORDER[phase];
+  var nav=document.getElementById("tabs");
+  nav.style.setProperty("--ntabs",order.length);
+  // keep current tab if still valid for this phase, else open on the phase default (first in order)
+  if(!curTab||order.indexOf(curTab)<0)curTab=order[0];
+  nav.innerHTML=order.map(function(v){
+    var d=TAB_DEF[v];
+    return '<button class="tab'+(v===curTab?" active":"")+'" data-v="'+v+'" onclick="showTab(\''+v+'\')"><span class="ic">'+d.ic+'</span>'+d.label+'</button>';
+  }).join("");
+  document.querySelectorAll(".view").forEach(function(el){el.classList.toggle("active",el.id==="v-"+curTab);});
+}
 function showTab(v){
+  curTab=v;
   document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("active",t.dataset.v===v);});
   document.querySelectorAll(".view").forEach(function(el){el.classList.toggle("active",el.id==="v-"+v);});
   window.scrollTo({top:0,behavior:"smooth"});
@@ -387,6 +433,7 @@ function stageCard(s,expanded){
   var routeChips='<span class="stars">'+stars(s.stars)+'</span><span>'+s.startName+(s.loop?' ↺':' → '+s.endName)+'</span>';
   if(s.loop)routeChips+='<span class="chip loop">Rondrit</span>';
   if(!s.supported)routeChips+='<span class="chip free">Vrije rit · geen verzorging</span>';
+  if(eventPhase()==="preview")routeChips+='<span class="chip prev">Voorlopige route</span>';
   var h='<div class="card'+(isToday?' today':'')+'" id="card-'+s.num+'">';
   h+='<div class="s-top"><div class="badge'+(s.loop?' rt':'')+(isToday?' todaybg':'')+'"><div class="bl">'+(s.num===0?"Proloog":"Etappe")+'</div><div class="bn">'+(s.num===0?"P":s.num)+'</div><div class="bd">'+s.date.split(" ")[1]+'</div></div>';
   h+='<div class="s-info"><div class="s-name">'+s.it+'</div><div class="s-nl">'+s.nl+'</div><div class="s-route">'+routeChips+'</div></div></div>';
@@ -408,7 +455,9 @@ function stageCard(s,expanded){
   h+='<button class="exp-btn" onclick="toggleMap('+s.num+')" id="mapbtn-'+s.num+'"><span>🗺 Bekijk route op kaart</span><span class="cv">▼</span></button>';
   h+='<div class="map-wrap" id="mapw-'+s.num+'"><div class="map-c" id="map-'+s.num+'"></div></div>';
   // weather
-  if(state==="done"){
+  if(eventPhase()==="preview"){
+    h+='<div class="wx-done">🌤 Weersvoorspelling beschikbaar bij aanvang van het event</div>';
+  }else if(state==="done"){
     h+='<div class="wx-done">✓ Etappe afgerond — weersdata verborgen</div>';
   }else{
     h+='<div class="wx">';
@@ -459,10 +508,6 @@ function buildProfile(s){
   var prof=s.profile,dist=s.dist;var es=prof.map(function(p){return p.e;});
   var mn=Math.min.apply(null,es),mx=Math.max.apply(null,es),rg=mx-mn||1;
   function X(i){return prof[i].d/dist*W;}function Y(i){return H-PB-((prof[i].e-mn)/rg)*(H-PT-PB);}
-  // micro-grid
-  ctx.strokeStyle="#f0ece7";ctx.lineWidth=1;
-  for(var gx=0;gx<=4;gx++){var xx=gx/4*W;ctx.beginPath();ctx.moveTo(xx,0);ctx.lineTo(xx,H);ctx.stroke();}
-  for(var gy=0;gy<=2;gy++){var yy=PT+gy/2*(H-PT-PB);ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(W,yy);ctx.stroke();}
   // area
   var grad=ctx.createLinearGradient(0,0,0,H);grad.addColorStop(0,"rgba(230,49,122,.22)");grad.addColorStop(1,"rgba(230,49,122,.02)");
   ctx.beginPath();ctx.moveTo(X(0),Y(0));for(var i=1;i<prof.length;i++)ctx.lineTo(X(i),Y(i));
@@ -524,6 +569,7 @@ function synthWx(p){
   return {temp:t,code:code,wind:8+((Math.round(p.lon*5))%14),windDeg:((Math.round(p.lat*40))%360),rain:rain};
 }
 function loadWeather(){
+  if(eventPhase()==="preview")return;
   fetch("weather.json?t="+Date.now()).then(function(r){return r.ok?r.json():null;}).then(function(d){
     var data=d&&d.data?d.data:null;paintWx(data);
   }).catch(function(){paintWx(null);});
@@ -545,6 +591,7 @@ function paintWx(data){
 var curCat=RIDE.cats[0][0],curMode="dag";
 function renderKlass(){
   var v=document.getElementById("v-klassement");
+  if(eventPhase()!=="live")return; // tab is hidden in preview; guard for safety
   var h='<div class="note">Elke dag telt één <b>competitief segment</b>. Iedere deelnemer in de Strava-club is automatisch ingeschreven. Hieronder een <b>voorbeeldklassement</b> — de live standen komen van <b>challenges.the-ride.cc</b>.</div>';
   h+='<div class="seg-toggle"><button id="m-dag" class="'+(curMode==="dag"?"on":"")+'" onclick="setMode(\'dag\')">Dagklassement</button><button id="m-alg" class="'+(curMode==="algemeen"?"on":"")+'" onclick="setMode(\'algemeen\')">Algemeen</button></div>';
   h+='<div class="cats">';
@@ -613,8 +660,7 @@ function savePack(o){try{localStorage.setItem(PKEY,JSON.stringify(o));}catch(e){
 function renderPrep(){
   var v=document.getElementById("v-prep");var st=loadPack();
   var total=0,done=0;RIDE.pack.forEach(function(c){c[1].forEach(function(it){total++;if(st[c[0]+"|"+it])done++;});});
-  var h='<div class="emergency"><button class="ebtn loc" onclick="getLoc()">📍 Deel mijn locatie</button><a class="ebtn sos" href="tel:'+RIDE.event.emergency+'">📞 Noodnummer</a></div><div class="locout" id="locout"></div>';
-  h+='<div class="section-eyebrow">Paklijst</div>';
+  var h='<div class="section-eyebrow">Paklijst</div>';
   h+='<div class="pack-head"><span class="pack-prog" id="packProg">'+done+' / '+total+' ingepakt</span><button class="pack-reset" onclick="resetPack()">Alles wissen</button></div>';
   RIDE.pack.forEach(function(c){
     h+='<div class="pcat"><h4>'+c[0]+'</h4>';
@@ -648,10 +694,14 @@ function getLoc(){
 
 /* ============ boot ============ */
 function renderAll(){
+  renderNav();
   updateSimLabel();
   document.getElementById("kmleft").innerHTML=kmLeft().toLocaleString("nl")+'<span class="u"> km</span>';
   document.getElementById("sponLine").textContent=RIDE.sponsors.slice(0,3).map(function(s){return s.name;}).join(" · ");
   document.getElementById("footLogos").innerHTML=RIDE.sponsors.map(function(s){return '<span>'+s.name+'</span>';}).join("");
+  document.getElementById("hdSos").href="tel:"+RIDE.event.emergency;
+  document.getElementById("hdVer").textContent=APP_STATUS+" · v"+APP_VERSION;
+  document.getElementById("footMeta").textContent+=" · "+APP_STATUS+" · v"+APP_VERSION;
   renderRoute();renderKlass();renderEvent();renderPrep();
 }
 renderAll();
