@@ -307,7 +307,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.5";
+var APP_VERSION="0.6";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -319,7 +319,11 @@ function isoToDate(iso){var p=iso.split("-");return new Date(+p[0],+p[1]-1,+p[2]
 var maxGain=Math.max.apply(null,RIDE.stages.map(function(s){return s.gain;}));
 
 /* ============ demo-day simulation ============ */
-var SIM=null;
+var SIM=(function(){
+  var d=isoToDate(RIDE.stages[0].iso); // Proloog date
+  d.setDate(d.getDate()-1);            // day before Proloog — one step from the live transition
+  return d;
+})();
 function nowD(){var d=SIM?new Date(SIM):new Date();d.setHours(0,0,0,0);return d;}
 function nowHour(){return SIM?8:new Date().getHours();}
 var allDates=RIDE.stages.map(function(s){return s.iso;});
