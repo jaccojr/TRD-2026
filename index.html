@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Ride Dolomites 2026</title>
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Dolomites">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+ --bg:#ffffff;--paper:#faf7f4;--card:#ffffff;--ink:#1a1512;--ink2:#574e47;--muted:#9a918a;
+ --line:#eee8e1;--line2:#e2dad1;
+ --rose:#e6317a;--rose-deep:#bf1360;--rose-soft:#fdebf3;--rose-line:#f4bdd6;
+ --green:#1f9d6b;--amber:#cf8412;--red:#d6455a;--blue:#3f7cc0;--summit:#7a6f64;
+ --disp:'Archivo',sans-serif;--body:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{background:var(--bg);}
+body{font-family:var(--body);color:var(--ink);min-height:100vh;overflow-x:hidden;line-height:1.45;
+ padding-bottom:env(safe-area-inset-bottom);-webkit-font-smoothing:antialiased;}
+.wrap{max-width:540px;margin:0 auto;}
+a{color:inherit;}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+
+/* ---------- Header ---------- */
+header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
+ backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);}
+.hd-grid{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+ background-size:22px 22px;opacity:.35;pointer-events:none;-webkit-mask-image:linear-gradient(180deg,#000,transparent);}
+.hd-top{display:flex;align-items:center;gap:11px;padding:13px 18px 9px;position:relative;}
+.mark{width:38px;height:38px;border-radius:10px;background:var(--rose);display:flex;align-items:center;justify-content:center;
+ flex-shrink:0;box-shadow:0 3px 10px rgba(230,49,122,.32);}
+.mark span{font-family:var(--disp);font-weight:900;color:#fff;font-size:16px;letter-spacing:-.04em;line-height:1;}
+.hd-title .k{font-family:var(--mono);font-size:9px;letter-spacing:.32em;text-transform:uppercase;color:var(--rose-deep);font-weight:500;}
+.hd-title .t{font-family:var(--disp);font-weight:800;font-size:17px;letter-spacing:-.02em;line-height:1.05;}
+.hd-title .t b{color:var(--rose-deep);font-weight:800;}
+.totals{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:1px;background:var(--line);
+ border-top:1px solid var(--line);position:relative;}
+.tot{background:#fff;padding:9px 14px;}
+.tot .l{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+.tot .v{font-family:var(--mono);font-weight:700;font-size:18px;letter-spacing:-.02em;margin-top:1px;}
+.tot.k2{background:var(--rose-soft);}
+.tot.k2 .v{color:var(--rose-deep);}
+.tot .u{font-size:10px;color:var(--muted);font-weight:500;}
+.sponsor-strip{display:flex;align-items:center;gap:8px;padding:6px 18px;border-top:1px solid var(--line);
+ font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.05em;position:relative;overflow:hidden;white-space:nowrap;}
+.sponsor-strip b{color:var(--ink2);font-weight:700;}
+.sim{display:flex;align-items:center;gap:8px;padding:5px 18px;border-top:1px dashed var(--rose-line);background:var(--rose-soft);position:relative;}
+.sim .lab{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--rose-deep);}
+.sim .day{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--ink);flex:1;text-align:center;}
+.sim button{border:1px solid var(--rose-line);background:#fff;color:var(--rose-deep);border-radius:7px;width:26px;height:22px;
+ font-size:13px;cursor:pointer;line-height:1;}
+.sim button:active{background:var(--rose-soft);}
+.sim .reset{width:auto;padding:0 8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;}
+
+/* ---------- Tabs ---------- */
+.tabs{position:sticky;top:0;z-index:40;display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-bottom:1px solid var(--line2);}
+.tab{appearance:none;border:none;background:none;padding:12px 4px 10px;cursor:pointer;position:relative;
+ font-family:var(--disp);font-weight:700;font-size:12.5px;color:var(--muted);letter-spacing:.01em;}
+.tab .ic{display:block;font-size:15px;margin-bottom:2px;font-weight:400;}
+.tab.active{color:var(--ink);}
+.tab.active::after{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:-1px;width:42%;height:2.5px;background:var(--rose);border-radius:2px;}
+
+/* ---------- Views ---------- */
+.view{display:none;padding:16px 14px 34px;animation:fade .25s ease;}
+.view.active{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+.section-eyebrow{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--rose-deep);
+ margin:2px 4px 11px;display:flex;align-items:center;gap:8px;}
+.section-eyebrow::after{content:"";flex:1;height:1px;background:var(--line2);}
+
+/* ---------- Stage / day cards ---------- */
+.card{background:var(--card);border:1px solid var(--line2);border-radius:15px;overflow:hidden;margin-bottom:14px;
+ box-shadow:0 1px 2px rgba(26,21,18,.03);}
+.card.today{border-color:var(--rose-line);box-shadow:0 4px 18px rgba(230,49,122,.10);}
+.s-top{display:flex;align-items:stretch;border-bottom:1px solid var(--line);}
+.badge{width:62px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ padding:13px 6px;background:var(--paper);border-right:1px solid var(--line);text-align:center;}
+.badge.rt{background:var(--ink);}
+.today .badge,.badge.todaybg{background:var(--rose);}
+.badge .bl{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+.badge.rt .bl,.today .badge .bl{color:rgba(255,255,255,.8);}
+.badge .bn{font-family:var(--disp);font-weight:900;font-size:23px;line-height:1;color:var(--ink);}
+.badge.rt .bn,.today .badge .bn{color:#fff;}
+.badge .bd{font-family:var(--mono);font-size:8.5px;margin-top:3px;color:var(--ink2);}
+.badge.rt .bd,.today .badge .bd{color:rgba(255,255,255,.85);}
+.s-info{flex:1;padding:11px 14px;min-width:0;}
+.s-name{font-family:var(--disp);font-weight:800;font-size:16.5px;letter-spacing:-.01em;line-height:1.1;}
+.s-nl{font-size:11px;color:var(--muted);margin-top:1px;}
+.s-route{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:6px;font-size:11px;color:var(--ink2);}
+.stars{color:var(--rose);font-size:11px;letter-spacing:1px;}
+.chip{font-family:var(--mono);font-size:8.5px;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;border-radius:5px;font-weight:500;}
+.chip.loop{background:#eef1f4;color:#4a5563;}
+.chip.free{background:var(--rose-soft);color:var(--rose-deep);}
+.chip.cat{background:var(--ink);color:#fff;}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line);}
+.m{padding:9px 8px 8px 12px;border-right:1px solid var(--line);}
+.m:last-child{border-right:none;}
+.m .l{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.m .v{font-family:var(--mono);font-weight:700;font-size:14px;margin-top:2px;}
+.m .u{font-size:9px;color:var(--muted);font-weight:500;}
+.loadbar{padding:8px 14px 9px;border-bottom:1px solid var(--line);}
+.loadbar .ll{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.track{height:4px;background:#f0ece7;border-radius:3px;overflow:hidden;}
+.fill{height:100%;background:linear-gradient(90deg,var(--rose),#f5a0c4);border-radius:3px;}
+.prof-wrap{padding:11px 12px 10px;border-bottom:1px solid var(--line);}
+.prof-c{position:relative;height:98px;cursor:crosshair;}
+.prof-c canvas{width:100%;height:98px;display:block;}
+.cursor{position:absolute;top:0;bottom:0;width:1px;background:var(--rose);opacity:0;pointer-events:none;}
+.cursor.on{opacity:.7;}
+.tip{position:absolute;top:2px;background:var(--ink);color:#fff;font-family:var(--mono);font-size:9.5px;padding:3px 7px;border-radius:6px;
+ pointer-events:none;opacity:0;transition:opacity .1s;white-space:nowrap;}
+.tip.on{opacity:1;}
+.exp-btn{width:100%;appearance:none;border:none;background:#fff;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;
+ cursor:pointer;font-family:var(--disp);font-weight:700;font-size:12.5px;color:var(--ink);border-bottom:1px solid var(--line);}
+.exp-btn:last-of-type{border-bottom:none;}
+.exp-btn .cv{transition:transform .2s;color:var(--muted);font-size:11px;}
+.exp-btn.open .cv{transform:rotate(180deg);}
+.exp-btn.warn{color:var(--amber);}
+.panel{max-height:0;overflow:hidden;transition:max-height .3s ease;background:var(--paper);}
+.panel.open{max-height:2400px;}
+.panel-in{padding:13px 15px;}
+.summary{font-size:12.5px;color:var(--ink2);line-height:1.55;padding-bottom:11px;margin-bottom:11px;border-bottom:1px solid var(--line);}
+.seg{background:var(--rose-soft);border:1px solid var(--rose-line);border-radius:10px;padding:10px 12px;margin-bottom:12px;}
+.seg .sh{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.seg .st{font-family:var(--disp);font-weight:800;font-size:13px;color:var(--rose-deep);}
+.seg .sd{font-size:11px;color:var(--ink2);margin-top:3px;}
+.seg .ss{font-family:var(--mono);font-size:10px;color:var(--rose-deep);margin-top:5px;}
+.seg a{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-family:var(--mono);font-size:10px;font-weight:700;color:#fff;
+ background:#FC4C02;padding:6px 11px;border-radius:7px;text-decoration:none;letter-spacing:.04em;}
+.wp{display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line2);}
+.wp:last-child{border-bottom:none;}
+.wp .km{font-family:var(--mono);font-size:10px;color:var(--muted);min-width:46px;}
+.wp .nm{font-size:12.5px;font-weight:600;flex:1;}
+.wp .nm small{display:block;font-weight:400;font-size:10.5px;color:var(--muted);font-family:var(--mono);margin-top:1px;}
+.wp .ic{font-size:13px;}
+.wlist .witem{display:flex;gap:9px;align-items:flex-start;padding:7px 0;font-size:12px;color:var(--ink2);border-bottom:1px dashed var(--line2);}
+.wlist .witem:last-child{border-bottom:none;}
+.wlist .wd{color:var(--amber);flex-shrink:0;}
+.map-wrap{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.map-wrap.open{max-height:330px;}
+.map-c{height:300px;background:var(--paper);}
+.wx{display:flex;flex-direction:column;}
+.wxrow{display:flex;align-items:center;gap:12px;padding:10px 15px;border-top:1px solid var(--line);}
+.wxrow .wl{min-width:92px;}
+.wxrow .wt{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.wxrow .wn{font-size:12px;font-weight:600;}
+.wxrow .we{font-family:var(--mono);font-size:9.5px;color:var(--muted);}
+.wxrow .wi{font-size:23px;}
+.wxrow .wd2{flex:1;display:flex;flex-direction:column;}
+.wxrow .wtemp{font-family:var(--mono);font-weight:700;font-size:16px;}
+.wxrow .wc{font-size:10.5px;color:var(--muted);}
+.wxrow .wpills{display:flex;gap:6px;margin-top:3px;}
+.wpill{font-family:var(--mono);font-size:9px;color:var(--ink2);background:#f3efea;padding:2px 6px;border-radius:5px;}
+.wx-done{padding:11px 15px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.06em;}
+.toggle-all{width:100%;border:1px dashed var(--line2);background:#fff;border-radius:12px;padding:13px;cursor:pointer;
+ font-family:var(--disp);font-weight:700;font-size:13px;color:var(--rose-deep);margin-top:2px;}
+.toggle-all:active{background:var(--rose-soft);}
+
+/* ---------- Klassement ---------- */
+.note{background:var(--paper);border:1px solid var(--line2);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--ink2);margin-bottom:14px;line-height:1.5;}
+.note b{color:var(--ink);}
+.seg-toggle{display:flex;background:var(--paper);border:1px solid var(--line2);border-radius:10px;padding:3px;margin-bottom:11px;}
+.seg-toggle button{flex:1;border:none;background:none;padding:9px;border-radius:8px;font-family:var(--disp);font-weight:700;font-size:12.5px;color:var(--muted);cursor:pointer;}
+.seg-toggle button.on{background:#fff;color:var(--rose-deep);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.cats{display:flex;gap:7px;overflow-x:auto;padding-bottom:9px;margin-bottom:6px;scrollbar-width:none;}
+.cats::-webkit-scrollbar{display:none;}
+.catchip{flex-shrink:0;border:1px solid var(--line2);background:#fff;border-radius:20px;padding:7px 13px;font-size:11.5px;font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap;}
+.catchip.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+.lb{border:1px solid var(--line2);border-radius:12px;overflow:hidden;}
+.lbrow{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line);}
+.lbrow:last-child{border-bottom:none;}
+.lbrow.p1{background:var(--rose-soft);}
+.lbrow .pos{font-family:var(--disp);font-weight:900;font-size:15px;width:24px;color:var(--muted);}
+.lbrow.p1 .pos,.lbrow.p2 .pos,.lbrow.p3 .pos{color:var(--rose-deep);}
+.lbrow .rn{flex:1;font-weight:600;font-size:13.5px;}
+.lbrow .gap{font-family:var(--mono);font-size:12px;color:var(--ink2);}
+.lbrow .gap.lead{color:var(--rose-deep);font-weight:700;}
+.ext-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;background:var(--ink);color:#fff;
+ border:none;border-radius:11px;padding:14px;font-family:var(--disp);font-weight:700;font-size:13px;text-decoration:none;cursor:pointer;}
+
+/* ---------- Event ---------- */
+.ev{background:#fff;border:1px solid var(--line2);border-radius:14px;margin-bottom:13px;overflow:hidden;}
+.ev.now{border-color:var(--rose-line);box-shadow:0 4px 16px rgba(230,49,122,.10);}
+.ev-h{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--line);}
+.ev-h .dot{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;border-radius:5px;background:var(--paper);color:var(--ink2);}
+.ev.now .dot{background:var(--rose);color:#fff;}
+.ev-h .ttl{font-family:var(--disp);font-weight:800;font-size:15px;flex:1;}
+.ev-h .dt{font-family:var(--mono);font-size:10px;color:var(--muted);}
+.ev-b{padding:6px 15px 13px;}
+.row{display:flex;gap:11px;padding:8px 0;border-bottom:1px dashed var(--line2);align-items:flex-start;}
+.row:last-child{border-bottom:none;}
+.row .ri{font-size:15px;width:20px;flex-shrink:0;text-align:center;}
+.row .rk{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:74px;padding-top:2px;}
+.row .rv{flex:1;font-size:12.5px;}
+.row .rv b{font-weight:700;}
+.row .rv .od{display:inline-block;font-family:var(--mono);font-size:9px;color:var(--rose-deep);background:var(--rose-soft);padding:1px 6px;border-radius:5px;margin-left:6px;letter-spacing:.05em;}
+.meals{display:flex;gap:7px;flex-wrap:wrap;}
+.meal{font-family:var(--mono);font-size:10px;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:4px 8px;}
+.meal b{color:var(--rose-deep);}
+.notice{display:flex;gap:8px;font-size:12px;color:var(--ink2);padding:4px 0;}
+.notice::before{content:"›";color:var(--rose);font-weight:700;}
+.partners{background:var(--paper);border:1px solid var(--line2);border-radius:14px;padding:15px;margin-top:6px;}
+.partners h3{font-family:var(--disp);font-size:13px;font-weight:800;margin-bottom:11px;}
+.plogos{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.plogo{background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px;text-align:center;}
+.plogo .pn{font-family:var(--disp);font-weight:800;font-size:13px;}
+.plogo .pt{font-family:var(--mono);font-size:8.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:2px;}
+
+/* ---------- Prep ---------- */
+.emergency{display:flex;gap:11px;margin-bottom:16px;}
+.ebtn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:13px;border-radius:11px;font-family:var(--disp);font-weight:700;font-size:13px;text-decoration:none;cursor:pointer;border:1.5px solid;}
+.ebtn.loc{border-color:var(--green);color:var(--green);background:#fff;}
+.ebtn.sos{border-color:var(--red);color:var(--red);background:#fff;}
+.locout{font-family:var(--mono);font-size:11px;color:var(--blue);margin:-8px 4px 16px;min-height:0;}
+.pack-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.pack-prog{font-family:var(--mono);font-size:11px;color:var(--muted);}
+.pack-reset{font-family:var(--mono);font-size:10px;color:var(--rose-deep);background:none;border:none;cursor:pointer;letter-spacing:.05em;}
+.pcat{margin-bottom:13px;}
+.pcat h4{font-family:var(--disp);font-weight:800;font-size:12px;letter-spacing:.04em;color:var(--ink);margin-bottom:6px;text-transform:uppercase;}
+.pitem{display:flex;align-items:center;gap:11px;padding:9px 11px;background:#fff;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;cursor:pointer;}
+.pitem .box{width:20px;height:20px;border-radius:6px;border:2px solid var(--line2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;}
+.pitem.done .box{background:var(--rose);border-color:var(--rose);}
+.pitem .lbl{font-size:13px;}
+.pitem.done .lbl{color:var(--muted);text-decoration:line-through;}
+.info-card{background:var(--paper);border:1px solid var(--line2);border-radius:13px;padding:15px;margin-top:8px;}
+.info-card h3{font-family:var(--disp);font-size:13px;font-weight:800;margin-bottom:9px;}
+.info-card ul{list-style:none;}
+.info-card li{font-size:12.5px;color:var(--ink2);padding:5px 0;display:flex;gap:8px;}
+.info-card li::before{content:"•";color:var(--rose);}
+
+footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center;}
+.foot-spon{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+.foot-logos{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:14px;}
+.foot-logos span{font-family:var(--disp);font-weight:800;font-size:13px;color:var(--ink2);}
+.foot-meta{font-family:var(--mono);font-size:9.5px;color:var(--muted);letter-spacing:.04em;}
+.leaflet-container{font-family:var(--body);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="app">
+  <div class="hd-top">
+    <div class="hd-grid"></div>
+    <div class="mark"><span>TR</span></div>
+    <div class="hd-title">
+      <div class="k">The Ride · Dolomieten</div>
+      <div class="t">DOLOMITES <b>2026</b></div>
+    </div>
+  </div>
+  <div class="totals">
+    <div class="hd-grid"></div>
+    <div class="tot"><div class="l">Afstand</div><div class="v">724<span class="u"> km</span></div></div>
+    <div class="tot"><div class="l">Hoogtemeters</div><div class="v">16.890<span class="u"> m</span></div></div>
+    <div class="tot k2"><div class="l">KM tot finish</div><div class="v" id="kmleft">—</div></div>
+  </div>
+  <div class="sponsor-strip"><span>Mede mogelijk gemaakt door</span> <b id="sponLine">Rogelli · Shimano · Atleta</b></div>
+  <div class="sim">
+    <div class="hd-grid"></div>
+    <span class="lab">Demo&nbsp;dag</span>
+    <button onclick="stepSim(-1)" aria-label="vorige dag">‹</button>
+    <span class="day mono" id="simDay">vandaag</span>
+    <button onclick="stepSim(1)" aria-label="volgende dag">›</button>
+    <button class="reset" onclick="resetSim()">nu</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-v="route" onclick="showTab('route')"><span class="ic">⛰</span>Route</button>
+  <button class="tab" data-v="klassement" onclick="showTab('klassement')"><span class="ic">🏆</span>Klassement</button>
+  <button class="tab" data-v="event" onclick="showTab('event')"><span class="ic">🏕</span>Event</button>
+  <button class="tab" data-v="prep" onclick="showTab('prep')"><span class="ic">🎒</span>Prep</button>
+</nav>
+
+<section class="view active" id="v-route"></section>
+<section class="view" id="v-klassement"></section>
+<section class="view" id="v-event"></section>
+<section class="view" id="v-prep"></section>
+
+<footer>
+  <div class="foot-spon">Partners</div>
+  <div class="foot-logos" id="footLogos"></div>
+  <div class="foot-meta">Routedata: GPX (dummy) · Weer: Open-Meteo · The Ride Dolomites 2026 · v0.1 dummy</div>
+</footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+/* ============ helpers ============ */
+var WX_ICON={0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌧️",61:"🌧️",63:"🌧️",65:"🌧️",71:"🌨️",80:"🌦️",81:"🌧️",95:"⛈️"};
+var WX_DESC={0:"Helder",1:"Licht bewolkt",2:"Half bewolkt",3:"Bewolkt",45:"Mist",51:"Motregen",53:"Motregen",61:"Regen",63:"Regen",65:"Zware regen",80:"Buien",81:"Buien",95:"Onweer"};
+function windDir(d){return["N","NO","O","ZO","Z","ZW","W","NW"][Math.round(d/45)%8];}
+function stars(n){return "★".repeat(n)+"☆".repeat(5-n);}
+function isoToDate(iso){var p=iso.split("-");return new Date(+p[0],+p[1]-1,+p[2]);}
+var maxGain=Math.max.apply(null,RIDE.stages.map(function(s){return s.gain;}));
+
+/* ============ demo-day simulation ============ */
+var SIM=null;
+function nowD(){var d=SIM?new Date(SIM):new Date();d.setHours(0,0,0,0);return d;}
+function nowHour(){return SIM?8:new Date().getHours();}
+var allDates=RIDE.stages.map(function(s){return s.iso;});
+function stepSim(dir){
+  var cur=SIM?new Date(SIM):new Date();cur.setHours(0,0,0,0);
+  cur.setDate(cur.getDate()+dir);SIM=cur;renderAll();
+}
+function resetSim(){SIM=null;renderAll();}
+function updateSimLabel(){
+  var d=nowD();var lab=SIM?d.toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"}):"nu · "+d.toLocaleDateString("nl-NL",{day:"numeric",month:"short"});
+  document.getElementById("simDay").textContent=lab;
+}
+
+/* ============ active-day logic ============ */
+function activeIndex(){
+  var t=nowD().getTime();
+  for(var i=0;i<RIDE.stages.length;i++){
+    if(isoToDate(RIDE.stages[i].iso).getTime()===t)return i;
+  }
+  for(var j=0;j<RIDE.stages.length;j++){
+    if(isoToDate(RIDE.stages[j].iso).getTime()>t)return j;
+  }
+  return RIDE.stages.length-1; // after event
+}
+function stageState(s){ // 'done' | 'today' | 'future'
+  var t=nowD().getTime();var st=isoToDate(s.iso).getTime();
+  if(st<t)return "done";
+  if(st===t)return nowHour()>=18?"done":"today";
+  return "future";
+}
+function kmLeft(){
+  var done=0,t=nowD().getTime();
+  RIDE.stages.forEach(function(s){
+    var st=isoToDate(s.iso).getTime();
+    if(st<t||(st===t&&nowHour()>=18))done+=s.dist;
+  });
+  var total=RIDE.stages.reduce(function(a,s){return a+s.dist;},0);
+  if(nowD().getTime()<isoToDate(RIDE.stages[0].iso).getTime())return total;
+  return Math.max(0,total-done);
+}
+
+/* ============ tabs ============ */
+function showTab(v){
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("active",t.dataset.v===v);});
+  document.querySelectorAll(".view").forEach(function(el){el.classList.toggle("active",el.id==="v-"+v);});
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ============ ROUTE ============ */
+function wpRows(s){
+  var cols=s.waypoints.filter(function(w){return w.type==="col";});
+  var vps=s.waypoints.filter(function(w){return w.type==="vp";});
+  var h="";
+  if(cols.length){
+    cols.sort(function(a,b){return a.km-b.km;});
+    cols.forEach(function(c){
+      h+='<div class="wp"><span class="ic">⛰</span><div class="nm">'+c.name+'<small>'+c.desc+' · '+c.ele+' m</small></div><span class="km">km '+c.km+'</span></div>';
+    });
+  }
+  if(vps.length){
+    vps.forEach(function(v){
+      h+='<div class="wp"><span class="ic">🥨</span><div class="nm">'+v.name+'</div><span class="km">km '+v.km+'</span></div>';
+    });
+  }
+  return h;
+}
+function segBlock(s){
+  if(!s.segment)return "";
+  var sg=s.segment;
+  return '<div class="seg"><div class="sh"><div><div class="st">⚡ '+sg.name+'</div><div class="sd">'+sg.desc+'</div></div><span class="chip cat">CAT '+sg.cat+'</span></div>'+
+    '<div class="ss">km '+sg.kmStart+' → '+sg.kmEnd+' · '+sg.length+'</div>'+
+    '<a href="https://challenges.the-ride.cc/" target="_blank">⚡ Bekijk klassement</a></div>';
+}
+function stageCard(s,expanded){
+  var state=stageState(s);
+  var isToday=state==="today";
+  var loadPct=Math.round(s.gain/maxGain*100);
+  var routeChips='<span class="stars">'+stars(s.stars)+'</span><span>'+s.startName+(s.loop?' ↺':' → '+s.endName)+'</span>';
+  if(s.loop)routeChips+='<span class="chip loop">Rondrit</span>';
+  if(!s.supported)routeChips+='<span class="chip free">Vrije rit · geen verzorging</span>';
+  var h='<div class="card'+(isToday?' today':'')+'" id="card-'+s.num+'">';
+  h+='<div class="s-top"><div class="badge'+(s.loop?' rt':'')+(isToday?' todaybg':'')+'"><div class="bl">'+(s.num===0?"Proloog":"Etappe")+'</div><div class="bn">'+(s.num===0?"P":s.num)+'</div><div class="bd">'+s.date.split(" ")[1]+'</div></div>';
+  h+='<div class="s-info"><div class="s-name">'+s.it+'</div><div class="s-nl">'+s.nl+'</div><div class="s-route">'+routeChips+'</div></div></div>';
+  h+='<div class="metrics">'+
+     '<div class="m"><div class="l">Afstand</div><div class="v">'+s.dist+'<span class="u"> km</span></div></div>'+
+     '<div class="m"><div class="l">Klimmen</div><div class="v">+'+s.gain.toLocaleString("nl")+'<span class="u"> m</span></div></div>'+
+     '<div class="m"><div class="l">Max</div><div class="v">'+s.maxElev.toLocaleString("nl")+'<span class="u"> m</span></div></div>'+
+     '<div class="m"><div class="l">Daling</div><div class="v">−'+s.loss.toLocaleString("nl")+'<span class="u"> m</span></div></div></div>';
+  h+='<div class="loadbar"><div class="ll"><span>Klim-last t.o.v. zwaarste dag</span><span>'+loadPct+'%</span></div><div class="track"><div class="fill" style="width:'+loadPct+'%"></div></div></div>';
+  h+='<div class="prof-wrap"><div class="prof-c" id="pw-'+s.num+'"><canvas id="pc-'+s.num+'"></canvas><div class="cursor" id="cur-'+s.num+'"></div><div class="tip" id="tip-'+s.num+'"></div></div></div>';
+  h+='<button class="exp-btn" onclick="togglePanel('+s.num+',\'d\')"><span>Route, cols & segment</span><span class="cv">▼</span></button>';
+  h+='<div class="panel" id="panel-d-'+s.num+'"><div class="panel-in">'+segBlock(s)+'<div>'+wpRows(s)+'</div></div></div>';
+  if(s.warnings&&s.warnings.length){
+    h+='<button class="exp-btn warn" onclick="togglePanel('+s.num+',\'w\')"><span>⚠ Let op ('+s.warnings.length+')</span><span class="cv">▼</span></button>';
+    h+='<div class="panel" id="panel-w-'+s.num+'"><div class="panel-in wlist">';
+    s.warnings.forEach(function(w){h+='<div class="witem"><span class="wd">▲</span>'+w+'</div>';});
+    h+='</div></div>';
+  }
+  h+='<button class="exp-btn" onclick="toggleMap('+s.num+')" id="mapbtn-'+s.num+'"><span>🗺 Bekijk route op kaart</span><span class="cv">▼</span></button>';
+  h+='<div class="map-wrap" id="mapw-'+s.num+'"><div class="map-c" id="map-'+s.num+'"></div></div>';
+  // weather
+  if(state==="done"){
+    h+='<div class="wx-done">✓ Etappe afgerond — weersdata verborgen</div>';
+  }else{
+    h+='<div class="wx">';
+    s.wxPoints.forEach(function(p,pi){
+      var nm=pi===0?s.startName:pi===1?s.midName.replace("Regio ",""):(s.loop?s.startName:s.endName);
+      h+='<div class="wxrow"><div class="wl"><div class="wt">'+p.time+'</div><div class="wn">'+p.label+'</div><div class="we">'+p.ele+' m · '+nm+'</div></div><div class="wd2" id="wx-'+s.num+'-'+pi+'"><div class="wc">…</div></div></div>';
+    });
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+function renderRoute(){
+  var ai=activeIndex();var v=document.getElementById("v-route");
+  var focus=[ai,ai+1].filter(function(i){return i<RIDE.stages.length;});
+  var html='<div class="section-eyebrow">Vandaag &amp; morgen</div>';
+  focus.forEach(function(i){html+=stageCard(RIDE.stages[i],true);});
+  var rest=RIDE.stages.map(function(_,i){return i;}).filter(function(i){return focus.indexOf(i)<0;});
+  if(rest.length){
+    html+='<button class="toggle-all" id="toggleAll" onclick="toggleAllStages()">Toon alle etappes ('+rest.length+')</button>';
+    html+='<div id="restStages" style="display:none">';
+    rest.forEach(function(i){html+=stageCard(RIDE.stages[i],false);});
+    html+='</div>';
+  }
+  v.innerHTML=html;
+  requestAnimationFrame(function(){
+    RIDE.stages.forEach(function(s){if(document.getElementById("pc-"+s.num)){buildProfile(s);hover(s);}});
+  });
+  loadWeather();
+}
+function toggleAllStages(){
+  var r=document.getElementById("restStages");var b=document.getElementById("toggleAll");
+  if(r.style.display==="none"){r.style.display="block";b.textContent="Verberg etappes";
+    requestAnimationFrame(function(){RIDE.stages.forEach(function(s){if(document.getElementById("pc-"+s.num)){buildProfile(s);hover(s);}});loadWeather();});
+  }else{r.style.display="none";b.textContent="Toon alle etappes ("+(RIDE.stages.length-2)+")";}
+}
+function togglePanel(num,k){
+  document.getElementById("panel-"+k+"-"+num).classList.toggle("open");
+  event.currentTarget.classList.toggle("open");
+}
+
+/* profile canvas */
+function buildProfile(s){
+  var wrap=document.getElementById("pw-"+s.num);var cv=document.getElementById("pc-"+s.num);
+  if(!wrap||!cv)return;var W=wrap.clientWidth||320,H=98,PT=20,PB=4;
+  cv.width=W*devicePixelRatio;cv.height=H*devicePixelRatio;cv.style.width=W+"px";cv.style.height=H+"px";
+  var ctx=cv.getContext("2d");ctx.scale(devicePixelRatio,devicePixelRatio);
+  var prof=s.profile,dist=s.dist;var es=prof.map(function(p){return p.e;});
+  var mn=Math.min.apply(null,es),mx=Math.max.apply(null,es),rg=mx-mn||1;
+  function X(i){return prof[i].d/dist*W;}function Y(i){return H-PB-((prof[i].e-mn)/rg)*(H-PT-PB);}
+  // micro-grid
+  ctx.strokeStyle="#f0ece7";ctx.lineWidth=1;
+  for(var gx=0;gx<=4;gx++){var xx=gx/4*W;ctx.beginPath();ctx.moveTo(xx,0);ctx.lineTo(xx,H);ctx.stroke();}
+  for(var gy=0;gy<=2;gy++){var yy=PT+gy/2*(H-PT-PB);ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(W,yy);ctx.stroke();}
+  // area
+  var grad=ctx.createLinearGradient(0,0,0,H);grad.addColorStop(0,"rgba(230,49,122,.22)");grad.addColorStop(1,"rgba(230,49,122,.02)");
+  ctx.beginPath();ctx.moveTo(X(0),Y(0));for(var i=1;i<prof.length;i++)ctx.lineTo(X(i),Y(i));
+  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  ctx.beginPath();ctx.moveTo(X(0),Y(0));for(var j=1;j<prof.length;j++)ctx.lineTo(X(j),Y(j));
+  ctx.strokeStyle="#e6317a";ctx.lineWidth=1.6;ctx.stroke();
+  // col markers
+  s.waypoints.filter(function(w){return w.type==="col";}).forEach(function(c){
+    var px=c.km/dist*W;ctx.beginPath();ctx.arc(px,PT-6,2.4,0,7);ctx.fillStyle="#bf1360";ctx.fill();
+  });
+  ctx.font="9px 'JetBrains Mono',monospace";ctx.fillStyle="#9a918a";ctx.textAlign="left";
+  ctx.fillText(mx+" m",4,13);ctx.fillText(mn+" m",4,H-2);
+  cv._p=prof;cv._d=dist;cv._W=W;cv._done=true;
+}
+function hover(s){
+  var cv=document.getElementById("pc-"+s.num),tip=document.getElementById("tip-"+s.num),cur=document.getElementById("cur-"+s.num);
+  if(!cv||cv._hov)return;cv._hov=true;
+  function go(cx){
+    var r=cv.getBoundingClientRect(),x=cx-r.left,W=cv._W;if(!W)return;
+    var frac=Math.max(0,Math.min(1,x/W)),td=frac*cv._d,best=0,bd=1e9;
+    for(var i=0;i<cv._p.length;i++){var df=Math.abs(cv._p[i].d-td);if(df<bd){bd=df;best=i;}}
+    var p=cv._p[best],px=p.d/cv._d*W;cur.style.left=px+"px";cur.classList.add("on");
+    tip.textContent=p.d.toFixed(1)+" km · "+p.e+" m";var tl=px-tip.offsetWidth/2;
+    tl=Math.max(2,Math.min(W-tip.offsetWidth-2,tl));tip.style.left=tl+"px";tip.classList.add("on");
+  }
+  function out(){tip.classList.remove("on");cur.classList.remove("on");}
+  cv.addEventListener("mousemove",function(e){go(e.clientX);});
+  cv.addEventListener("mouseleave",out);
+  cv.addEventListener("touchmove",function(e){e.preventDefault();go(e.touches[0].clientX);},{passive:false});
+  cv.addEventListener("touchend",out);
+}
+var maps={};
+function toggleMap(num){
+  var w=document.getElementById("mapw-"+num),b=document.getElementById("mapbtn-"+num);
+  var open=w.classList.toggle("open");b.classList.toggle("open");
+  if(!open)return;
+  if(maps[num]){maps[num].invalidateSize();return;}
+  var s=RIDE.stages.find(function(x){return x.num===num;});
+  var m=L.map("map-"+num,{zoomControl:true,attributionControl:false});
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:17}).addTo(m);
+  var line=L.polyline(s.mapCoords,{color:"#e6317a",weight:3.5,opacity:.95}).addTo(m);
+  m.fitBounds(line.getBounds(),{padding:[18,18]});
+  L.circleMarker(s.mapCoords[0],{radius:6,color:"#1f9d6b",fillColor:"#1f9d6b",fillOpacity:1,weight:2}).addTo(m).bindPopup("Start: "+s.startName);
+  L.circleMarker(s.mapCoords[s.mapCoords.length-1],{radius:6,color:"#e6317a",fillColor:"#e6317a",fillOpacity:1,weight:2}).addTo(m).bindPopup((s.loop?"Finish ↺ ":"Finish: ")+s.endName);
+  s.waypoints.filter(function(w2){return w2.type==="col";}).forEach(function(c){
+    L.circleMarker([c.lat,c.lon],{radius:4.5,color:"#bf1360",fillColor:"#fff",fillOpacity:1,weight:2}).addTo(m).bindPopup(c.name+" ("+c.ele+" m)");
+  });
+  s.waypoints.filter(function(w2){return w2.type==="vp";}).forEach(function(v){
+    L.circleMarker([v.lat,v.lon],{radius:4.5,color:"#cf8412",fillColor:"#fff",fillOpacity:1,weight:2}).addTo(m).bindPopup(v.name);
+  });
+  maps[num]=m;setTimeout(function(){m.invalidateSize();},250);
+}
+
+/* weather: try weather.json, else synthesize */
+function synthWx(p){
+  var base=18-(p.ele/1000)*6.5;var h=parseInt(p.time);var t=Math.round(base+(h-8)*0.7);
+  var codes=[0,1,2,2,3,61];var code=codes[(Math.round(p.lat*7+p.lon*3+h))%codes.length];
+  var rain=code>=61?60:code>=2?25:5;
+  return {temp:t,code:code,wind:8+((Math.round(p.lon*5))%14),windDeg:((Math.round(p.lat*40))%360),rain:rain};
+}
+function loadWeather(){
+  fetch("weather.json?t="+Date.now()).then(function(r){return r.ok?r.json():null;}).then(function(d){
+    var data=d&&d.data?d.data:null;paintWx(data);
+  }).catch(function(){paintWx(null);});
+}
+function paintWx(data){
+  RIDE.stages.forEach(function(s){
+    if(stageState(s)==="done")return;
+    s.wxPoints.forEach(function(p,pi){
+      var el=document.getElementById("wx-"+s.num+"-"+pi);if(!el)return;
+      var wx=data&&data[s.num+"-"+pi]?data[s.num+"-"+pi]:synthWx(p);
+      el.innerHTML='<div style="display:flex;align-items:center;gap:11px"><div class="wi">'+(WX_ICON[wx.code]||"🌡️")+'</div>'+
+        '<div><div class="wtemp">'+wx.temp+'°</div><div class="wc">'+(WX_DESC[wx.code]||"")+'</div>'+
+        '<div class="wpills"><span class="wpill">💨 '+wx.wind+' '+windDir(wx.windDeg)+'</span><span class="wpill">🌧 '+wx.rain+'%</span></div></div></div>';
+    });
+  });
+}
+
+/* ============ KLASSEMENT ============ */
+var curCat=RIDE.cats[0][0],curMode="dag";
+function renderKlass(){
+  var v=document.getElementById("v-klassement");
+  var h='<div class="note">Elke dag telt één <b>competitief segment</b>. Iedere deelnemer in de Strava-club is automatisch ingeschreven. Hieronder een <b>voorbeeldklassement</b> — de live standen komen van <b>challenges.the-ride.cc</b>.</div>';
+  h+='<div class="seg-toggle"><button id="m-dag" class="'+(curMode==="dag"?"on":"")+'" onclick="setMode(\'dag\')">Dagklassement</button><button id="m-alg" class="'+(curMode==="algemeen"?"on":"")+'" onclick="setMode(\'algemeen\')">Algemeen</button></div>';
+  h+='<div class="cats">';
+  RIDE.cats.forEach(function(c){h+='<button class="catchip'+(c[0]===curCat?" on":"")+'" onclick="setCat(\''+c[0]+'\')">'+c[1]+'</button>';});
+  h+='</div>';
+  var rows=RIDE.standings[curCat][curMode];
+  h+='<div class="lb">';
+  rows.forEach(function(r){
+    h+='<div class="lbrow p'+r.pos+'"><div class="pos">'+r.pos+'</div><div class="rn">'+r.name+'</div><div class="gap'+(r.pos===1?" lead":"")+'">'+r.gap+'</div></div>';
+  });
+  h+='</div>';
+  h+='<a class="ext-btn" href="https://challenges.the-ride.cc/" target="_blank">⚡ Open live klassement</a>';
+  v.innerHTML=h;
+}
+function setCat(c){curCat=c;renderKlass();}
+function setMode(m){curMode=m;renderKlass();}
+
+/* ============ EVENT ============ */
+function campById(id){return RIDE.event.camps.find(function(c){return c.id===id;});}
+function eventCard(d,isNow){
+  var camp=campById(d.camp);
+  var h='<div class="ev'+(isNow?" now":"")+'"><div class="ev-h"><span class="dot">'+(isNow?"Nu":d.title.split(" ")[0])+'</span><div class="ttl">'+d.title+'</div><div class="dt">'+isoToDate(d.iso).toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"})+'</div></div><div class="ev-b">';
+  if(camp){
+    h+='<div class="row"><span class="ri">🏕</span><span class="rk">Camping</span><span class="rv"><b>'+camp.name+'</b> · '+camp.town+(d.camp2?' <span class="od">2e nacht</span>':'')+(camp.tbc?' <span class="od">tbc</span>':'')+'</span></div>';
+  }
+  var meals=d.meals||{};var mh="";
+  if(meals.ontbijt)mh+='<span class="meal"><b>Ontbijt</b> '+meals.ontbijt+'</span>';
+  if(meals.lunch)mh+='<span class="meal"><b>Lunch</b> '+meals.lunch+'</span>';
+  if(meals.diner)mh+='<span class="meal"><b>Diner</b> '+meals.diner+'</span>';
+  if(mh)h+='<div class="row"><span class="ri">🍝</span><span class="rk">Keuken</span><span class="rv"><div class="meals">'+mh+'</div></span></div>';
+  if(d.startNext)h+='<div class="row"><span class="ri">🚴</span><span class="rk">Start morgen</span><span class="rv"><b>'+d.startNext+'</b> · '+d.startNextLabel+(d.startOverride?'<span class="od">afwijkend</span>':'')+'</span></div>';
+  if(d.notices&&d.notices.length){
+    var nh="";d.notices.forEach(function(n){nh+='<div class="notice">'+n+'</div>';});
+    h+='<div class="row"><span class="ri">📣</span><span class="rk">Info</span><span class="rv">'+nh+'</span></div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+function renderEvent(){
+  var v=document.getElementById("v-event");var t=nowD().getTime();
+  var days=RIDE.event.days;
+  // find "now" index = first day iso >= today
+  var nowIdx=days.length-1;
+  for(var i=0;i<days.length;i++){if(isoToDate(days[i].iso).getTime()>=t){nowIdx=i;break;}}
+  var future=days.map(function(_,i){return i;}).filter(function(i){return i>=nowIdx;});
+  var past=days.map(function(_,i){return i;}).filter(function(i){return i<nowIdx;});
+  var h='<div class="section-eyebrow">Nu &amp; hierna</div>';
+  future.forEach(function(i){h+=eventCard(days[i],i===nowIdx);});
+  if(past.length){
+    h+='<button class="toggle-all" id="evToggle" onclick="evToggle()">Toon afgelopen dagen ('+past.length+')</button>';
+    h+='<div id="evPast" style="display:none">';past.forEach(function(i){h+=eventCard(days[i],false);});h+='</div>';
+  }
+  // partners
+  h+='<div class="partners"><h3>Partners</h3><div class="plogos">';
+  RIDE.sponsors.forEach(function(sp){h+='<div class="plogo"><div class="pn">'+sp.name+'</div><div class="pt">'+sp.tag+'</div></div>';});
+  h+='</div></div>';
+  v.innerHTML=h;
+}
+function evToggle(){var p=document.getElementById("evPast"),b=document.getElementById("evToggle");
+  if(p.style.display==="none"){p.style.display="block";b.textContent="Verberg afgelopen dagen";}else{p.style.display="none";b.textContent="Toon afgelopen dagen";}}
+
+/* ============ PREP ============ */
+var PKEY="ride_dolomites_pack_v1";
+function loadPack(){try{return JSON.parse(localStorage.getItem(PKEY))||{};}catch(e){return {};}}
+function savePack(o){try{localStorage.setItem(PKEY,JSON.stringify(o));}catch(e){}}
+function renderPrep(){
+  var v=document.getElementById("v-prep");var st=loadPack();
+  var total=0,done=0;RIDE.pack.forEach(function(c){c[1].forEach(function(it){total++;if(st[c[0]+"|"+it])done++;});});
+  var h='<div class="emergency"><button class="ebtn loc" onclick="getLoc()">📍 Deel mijn locatie</button><a class="ebtn sos" href="tel:'+RIDE.event.emergency+'">📞 Noodnummer</a></div><div class="locout" id="locout"></div>';
+  h+='<div class="section-eyebrow">Paklijst</div>';
+  h+='<div class="pack-head"><span class="pack-prog" id="packProg">'+done+' / '+total+' ingepakt</span><button class="pack-reset" onclick="resetPack()">Alles wissen</button></div>';
+  RIDE.pack.forEach(function(c){
+    h+='<div class="pcat"><h4>'+c[0]+'</h4>';
+    c[1].forEach(function(it){var key=c[0]+"|"+it;var d=!!st[key];
+      h+='<div class="pitem'+(d?" done":"")+'" onclick="togglePack(this,\''+key.replace(/'/g,"\\'")+'\')"><div class="box">'+(d?"✓":"")+'</div><div class="lbl">'+it+'</div></div>';
+    });
+    h+='</div>';
+  });
+  h+='<div class="info-card"><h3>Goed om te weten</h3><ul>'+
+     '<li>Noodnummer is <b>'+RIDE.event.emergency+'</b> — niet 112. Bij levensgevaar: 112 (Italië).</li>'+
+     '<li>Inbegrepen: 6 overnachtingen, bagagevervoer, dagelijks ontbijt/lunch/diner, 2 verzorgingsposten per etappe, mecaniciens, medische begeleiding.</li>'+
+     '<li>Zelf regelen: vervoer naar de Dolomieten, eigen reservemateriaal, verzekering.</li>'+
+     '<li>Hooggebergte (tot 2.244 m): neem warme kleding mee voor de afdalingen.</li>'+
+     '</ul></div>';
+  v.innerHTML=h;
+}
+function togglePack(el,key){var st=loadPack();st[key]=!st[key];if(!st[key])delete st[key];savePack(st);
+  el.classList.toggle("done");el.querySelector(".box").textContent=el.classList.contains("done")?"✓":"";
+  var total=0,done=0;RIDE.pack.forEach(function(c){c[1].forEach(function(it){total++;if(st[c[0]+"|"+it])done++;});});
+  document.getElementById("packProg").textContent=done+" / "+total+" ingepakt";
+}
+function resetPack(){if(confirm("Hele paklijst wissen?")){savePack({});renderPrep();}}
+function getLoc(){
+  var o=document.getElementById("locout");o.textContent="Locatie ophalen…";
+  if(!navigator.geolocation){o.textContent="Geen GPS beschikbaar.";return;}
+  navigator.geolocation.getCurrentPosition(function(p){
+    var la=p.coords.latitude.toFixed(5),lo=p.coords.longitude.toFixed(5);
+    o.innerHTML='<a href="https://maps.google.com/?q='+la+','+lo+'" target="_blank">'+la+', '+lo+' ↗ open in Maps</a>';
+  },function(){o.textContent="Locatie niet beschikbaar (geef toestemming).";});
+}
+
+/* ============ boot ============ */
+function renderAll(){
+  updateSimLabel();
+  document.getElementById("kmleft").innerHTML=kmLeft().toLocaleString("nl")+'<span class="u"> km</span>';
+  document.getElementById("sponLine").textContent=RIDE.sponsors.slice(0,3).map(function(s){return s.name;}).join(" · ");
+  document.getElementById("footLogos").innerHTML=RIDE.sponsors.map(function(s){return '<span>'+s.name+'</span>';}).join("");
+  renderRoute();renderKlass();renderEvent();renderPrep();
+}
+renderAll();
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
+</script>
+</body>
+</html>
