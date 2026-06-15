@@ -25,4 +25,4 @@ Mobile-first PWA companion for The Ride Dolomites 2026. Static site, no build st
 Everything lives in `data.js`. Stage figures (`dist`/`gain`/`loss`) are the Komoot/official override values shown everywhere. Replace `profile`/`mapCoords` when real GPX lands. Evening updates (meal times, next start, notices) are in `event.days`.
 
 ## Demo
-Use the "Demo dag" stepper in the header to preview any day (today/tomorrow focus, weather suppression, KM-to-finish). "nu" returns to the real date.
+Use the "Demo dag" stepper in the header to preview any day (today/tomorrow focus, weather suppression, KM-to-finish). "nu" returns to the real date..
