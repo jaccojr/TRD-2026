@@ -149,9 +149,9 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .seg .st{font-family:var(--disp);font-weight:800;font-size:13px;color:var(--rose-deep);display:flex;align-items:center;gap:6px;}
 .seg .sd{font-size:11px;color:var(--ink2);margin-top:3px;}
 .seg .ss{font-family:var(--mono);font-size:10px;color:var(--rose-deep);margin-top:5px;}
-.seg .sbtns{display:flex;gap:8px;margin-top:9px;}
-.seg .sbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--mono);font-size:10px;font-weight:700;
+.seg .sbtn{display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--mono);font-size:10px;font-weight:700;
  text-decoration:none;letter-spacing:.04em;padding:8px 10px;border-radius:7px;}
+.seg .sbtn.full{width:100%;margin-top:9px;}
 .seg .sbtn.strava{color:#fff;background:#FC4C02;}
 .seg .sbtn.klass{color:var(--ink);background:#fff;border:1px solid var(--rose-line);}
 .seg .sbtn .ic-svg{width:14px;height:14px;flex-shrink:0;fill:currentColor;}
@@ -345,7 +345,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.38";
+var APP_VERSION="0.39";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -490,15 +490,10 @@ function segBlock(s){
   var sg=s.segment;
   var h='<div class="seg"><div class="sh"><div><div class="st">⚡ Strava Challenge</div><div class="sd">'+sg.desc+'</div></div><span class="chip cat">CAT '+sg.cat+'</span></div>'+
     '<div class="ss">km '+sg.kmStart+' → '+sg.kmEnd+' · '+sg.length+'</div>';
-  h+='<div class="sbtns">';
-  h+='<a class="sbtn strava" href="'+sg.strava+'" target="_blank">'+STRAVA_SVG+' Strava segment</a>';
-  if(stageState(s)!=="future"){ // this stage's segment is today's or has already been ridden — a ranking exists
-    h+='<a class="sbtn klass" href="javascript:void(0)" onclick="goToKlassement(\''+s.num+'\')">'+icon("trophy")+' Klassement</a>';
-  }
-  h+='</div></div>';
+  h+='<a class="sbtn strava full" href="'+sg.strava+'" target="_blank">'+STRAVA_SVG+' Strava segment</a>';
+  h+='</div>';
   return h;
 }
-function goToKlassement(stageNum){curMode="dag";showTab("klassement");renderKlass();}
 function stageCard(s,expanded){
   var state=stageState(s);
   var isToday=state==="today";
