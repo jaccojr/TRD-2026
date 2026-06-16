@@ -101,7 +101,8 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .badge .bd{font-family:var(--mono);font-size:8.5px;margin-top:3px;color:var(--ink2);}
 .today .badge .bd{color:rgba(46,52,64,.8);}
 .s-info{flex:1;padding:11px 14px;min-width:0;}
-.s-name{font-family:var(--disp);font-weight:800;font-size:16.5px;letter-spacing:-.01em;line-height:1.1;}
+.s-name{font-family:var(--disp);font-weight:800;font-size:16.5px;letter-spacing:-.01em;line-height:1.1;
+ transform:skewX(-12.4deg);display:inline-block;}
 .s-nl{font-size:11px;color:var(--muted);margin-top:1px;}
 .s-route{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:6px;font-size:11px;color:var(--ink2);}
 .stars{color:var(--rose);font-size:11px;letter-spacing:1px;}
@@ -209,7 +210,8 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .ev.now{border-color:var(--rose-line);box-shadow:0 4px 16px rgba(245,155,176,.18);}
 .ev-h{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--line);}
 .ev.now .ev-h{background:var(--rose);border-bottom-color:var(--rose-line);}
-.ev-h .ttl{font-family:var(--disp);font-weight:800;font-size:15px;flex:1;color:#2e3440;}
+.ev-h .ttl{font-family:var(--disp);font-weight:800;font-size:15px;flex:1;color:#2e3440;
+ transform:skewX(-12.4deg);display:inline-block;}
 .campmap{margin-top:8px;border-radius:10px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;}
 .campmap img{display:block;width:100%;height:auto;}
 .map-zoom{position:fixed;inset:0;background:rgba(26,21,18,.94);z-index:999;display:none;flex-direction:column;}
@@ -343,7 +345,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.35";
+var APP_VERSION="0.36";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
