@@ -18,9 +18,9 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{
- --bg:#ffffff;--paper:#faf7f4;--card:#ffffff;--ink:#1a1512;--ink2:#574e47;--muted:#9a918a;
+ --bg:#ffffff;--paper:#faf7f4;--card:#ffffff;--ink:#2e3440;--ink2:#574e47;--muted:#9a918a;
  --line:#eee8e1;--line2:#e2dad1;
- --rose:#F59BB0;--rose-deep:#CE1A44;--rose-soft:#FAF2F4;--rose-line:#F4D7DE;
+ --rose:#F59BB0;--rose-deep:#E51F4D;--rose-soft:#FAF2F4;--rose-line:#F4D7DE;
  --green:#1f9d6b;--amber:#cf8412;--red:#d6455a;--blue:#3f7cc0;--summit:#7a6f64;
  --disp:'Archivo',sans-serif;--body:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
 }
@@ -91,14 +91,13 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .s-top{display:flex;align-items:stretch;border-bottom:1px solid var(--line);}
 .badge{width:62px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
  padding:13px 6px;background:var(--paper);border-right:1px solid var(--line);text-align:center;}
-.badge.rt{background:var(--ink);}
-.today .badge,.badge.todaybg{background:var(--rose-deep);}
+.today .badge,.badge.todaybg{background:var(--rose);}
 .badge .bl{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
-.badge.rt .bl,.today .badge .bl{color:rgba(255,255,255,.8);}
-.badge .bn{font-family:var(--disp);font-weight:900;font-size:23px;line-height:1;color:var(--ink);}
-.badge.rt .bn,.today .badge .bn{color:#fff;}
+.today .badge .bl{color:rgba(46,52,64,.65);}
+.badge .bn{font-family:var(--disp);font-weight:700;font-size:21px;line-height:1;color:#2e3440;
+ transform:skewX(-12.4deg);display:inline-block;}
 .badge .bd{font-family:var(--mono);font-size:8.5px;margin-top:3px;color:var(--ink2);}
-.badge.rt .bd,.today .badge .bd{color:rgba(255,255,255,.85);}
+.today .badge .bd{color:rgba(46,52,64,.8);}
 .s-info{flex:1;padding:11px 14px;min-width:0;}
 .s-name{font-family:var(--disp);font-weight:800;font-size:16.5px;letter-spacing:-.01em;line-height:1.1;}
 .s-nl{font-size:11px;color:var(--muted);margin-top:1px;}
@@ -309,7 +308,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.20";
+var APP_VERSION="0.21";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -545,10 +544,10 @@ function buildProfile(s){
   ctx.beginPath();ctx.moveTo(X(0),Y(0));for(var i=1;i<prof.length;i++)ctx.lineTo(X(i),Y(i));
   ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
   ctx.beginPath();ctx.moveTo(X(0),Y(0));for(var j=1;j<prof.length;j++)ctx.lineTo(X(j),Y(j));
-  ctx.strokeStyle="#CE1A44";ctx.lineWidth=1.6;ctx.stroke();
+  ctx.strokeStyle="#E51F4D";ctx.lineWidth=1.6;ctx.stroke();
   // col markers
   s.waypoints.filter(function(w){return w.type==="col";}).forEach(function(c){
-    var px=c.km/dist*W;ctx.beginPath();ctx.arc(px,PT-6,2.4,0,7);ctx.fillStyle="#CE1A44";ctx.fill();
+    var px=c.km/dist*W;ctx.beginPath();ctx.arc(px,PT-6,2.4,0,7);ctx.fillStyle="#E51F4D";ctx.fill();
   });
   ctx.font="9px 'JetBrains Mono',monospace";ctx.fillStyle="#9a918a";ctx.textAlign="left";
   ctx.fillText(mx+" m",4,13);ctx.fillText(mn+" m",4,H-2);
@@ -580,12 +579,12 @@ function toggleMap(num){
   var s=RIDE.stages.find(function(x){return x.num===num;});
   var m=L.map("map-"+num,{zoomControl:true,attributionControl:false});
   L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:17}).addTo(m);
-  var line=L.polyline(s.mapCoords,{color:"#CE1A44",weight:3.5,opacity:.95}).addTo(m);
+  var line=L.polyline(s.mapCoords,{color:"#E51F4D",weight:3.5,opacity:.95}).addTo(m);
   m.fitBounds(line.getBounds(),{padding:[18,18]});
   L.circleMarker(s.mapCoords[0],{radius:6,color:"#1f9d6b",fillColor:"#1f9d6b",fillOpacity:1,weight:2}).addTo(m).bindPopup("Start: "+s.startName);
-  L.circleMarker(s.mapCoords[s.mapCoords.length-1],{radius:6,color:"#CE1A44",fillColor:"#CE1A44",fillOpacity:1,weight:2}).addTo(m).bindPopup((s.loop?"Finish ↺ ":"Finish: ")+s.endName);
+  L.circleMarker(s.mapCoords[s.mapCoords.length-1],{radius:6,color:"#E51F4D",fillColor:"#E51F4D",fillOpacity:1,weight:2}).addTo(m).bindPopup((s.loop?"Finish ↺ ":"Finish: ")+s.endName);
   s.waypoints.filter(function(w2){return w2.type==="col";}).forEach(function(c){
-    L.circleMarker([c.lat,c.lon],{radius:4.5,color:"#CE1A44",fillColor:"#fff",fillOpacity:1,weight:2}).addTo(m).bindPopup(c.name+" ("+c.ele+" m)");
+    L.circleMarker([c.lat,c.lon],{radius:4.5,color:"#E51F4D",fillColor:"#fff",fillOpacity:1,weight:2}).addTo(m).bindPopup(c.name+" ("+c.ele+" m)");
   });
   s.waypoints.filter(function(w2){return w2.type==="vp";}).forEach(function(v){
     L.circleMarker([v.lat,v.lon],{radius:4.5,color:"#cf8412",fillColor:"#fff",fillOpacity:1,weight:2}).addTo(m).bindPopup(v.name);
