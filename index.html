@@ -137,6 +137,8 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .exp-btn .cv{transition:transform .2s;color:var(--muted);font-size:11px;}
 .exp-btn.open .cv{transform:rotate(180deg);}
 .exp-btn.warn{color:var(--amber);}
+.exp-btn.dummy{cursor:default;opacity:.6;}
+.exp-btn.dummy .ic-svg{fill:var(--muted);}
 .panel{max-height:0;overflow:hidden;transition:max-height .3s ease;background:var(--paper);}
 .panel.open{max-height:2400px;}
 .panel-in{padding:13px 15px;}
@@ -236,7 +238,7 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .notice{display:flex;gap:8px;font-size:12px;color:var(--ink2);padding:4px 0;}
 .notice::before{content:"›";color:var(--rose);font-weight:700;}
 .maplink{display:inline-block;margin-left:6px;font-family:var(--mono);font-size:10.5px;color:var(--rose-deep);font-weight:700;text-decoration:none;white-space:nowrap;}
-.partners{background:var(--paper);border:1px solid var(--line2);border-radius:14px;padding:15px;margin-top:6px;}
+.partners{background:var(--rose-soft);border:1px solid var(--rose-line);border-radius:14px;padding:15px;margin-top:6px;}
 .partners h3{font-family:var(--disp);font-size:13px;font-weight:800;margin-bottom:11px;}
 .plogos{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
 .plogo{background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px;text-align:center;}
@@ -341,7 +343,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.34";
+var APP_VERSION="0.35";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -727,7 +729,7 @@ function campCard(camp,isCurrent,slot){
     h+='<button class="exp-btn" onclick="toggleCampMap(\''+camp.id+'\')">'+icon("map")+'<span class="lbl">Plattegrond camping</span><span class="cv">▼</span></button>';
     h+='<div class="campmap" id="campmap-'+camp.id+'" style="display:none"><img src="'+camp.map+'" alt="Plattegrond '+camp.name+'" loading="lazy" onclick="openMapZoom(\''+camp.map+'\',\''+camp.name.replace(/'/g,"\\'")+'\')"></div>';
   }else{
-    h+='<div class="row"><span class="rk">Plattegrond</span><span class="rv"><span class="od">nog te volgen</span></span></div>';
+    h+='<button class="exp-btn dummy" disabled>'+icon("map")+'<span class="lbl">Plattegrond camping</span><span class="od">nog te volgen</span></button>';
   }
 
   h+='</div></div>';
