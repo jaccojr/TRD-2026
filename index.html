@@ -345,7 +345,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.37";
+var APP_VERSION="0.38";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -717,14 +717,20 @@ function campCard(camp,isCurrent,slot){
      ' <a class="maplink" href="https://www.google.com/maps/search/?api=1&query='+camp.lat+','+camp.lon+'" target="_blank">Open in Maps</a></span></div>';
 
   if(isCurrent){
+    var rows=[];
     if(slot.ontbijt){var o=splitMorgen(slot.ontbijt);
-      h+='<div class="row"><span class="rk">Ontbijt</span><span class="rv"><b>'+o.text+'</b>'+(o.morgen?' <span class="od">morgen</span>':'')+'</span></div>';}
+      rows.push({k:"Ontbijt",v:o.text,morgen:o.morgen});}
     if(slot.start){var st=splitMorgen(slot.start);
-      h+='<div class="row"><span class="rk">Start</span><span class="rv"><b>'+st.text+'</b>'+(st.morgen?' <span class="od">morgen</span>':'')+'</span></div>';}
+      rows.push({k:"Start",v:st.text,morgen:st.morgen});}
     if(slot.diner){var d=splitMorgen(slot.diner);
-      h+='<div class="row"><span class="rk">Diner</span><span class="rv"><b>'+d.text+'</b>'+(d.morgen?' <span class="od">morgen</span>':'')+'</span></div>';
-      h+='<div class="row"><span class="rk">Menu</span><span class="rv">onbekend</span></div>';
-    }
+      rows.push({k:"Diner",v:d.text,morgen:d.morgen});}
+    // Chronological order: in the evening (pm slot), diner happens first (tonight),
+    // followed by tomorrow's breakfast/start preview — not the default ontbijt/start/diner order.
+    if(slot.pm)rows.sort(function(a,b){return(a.k==="Diner"?-1:0)-(b.k==="Diner"?-1:0);});
+    rows.forEach(function(r){
+      h+='<div class="row"><span class="rk">'+r.k+'</span><span class="rv"><b>'+r.v+'</b>'+(r.morgen?' <span class="od">morgen</span>':'')+'</span></div>';
+    });
+    if(slot.diner)h+='<div class="row"><span class="rk">Menu</span><span class="rv">onbekend</span></div>';
   }
 
   if(camp.map){
