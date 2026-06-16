@@ -220,6 +220,9 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .meal b{color:var(--rose-deep);}
 .notice{display:flex;gap:8px;font-size:12px;color:var(--ink2);padding:4px 0;}
 .notice::before{content:"›";color:var(--rose);font-weight:700;}
+.maplink{display:inline-block;margin-left:6px;font-family:var(--mono);font-size:10.5px;color:var(--rose-deep);font-weight:700;text-decoration:none;white-space:nowrap;}
+.campmap{margin-top:10px;border-radius:10px;overflow:hidden;border:1px solid var(--line);}
+.campmap img{display:block;width:100%;height:auto;}
 .partners{background:var(--paper);border:1px solid var(--line2);border-radius:14px;padding:15px;margin-top:6px;}
 .partners h3{font-family:var(--disp);font-size:13px;font-weight:800;margin-bottom:11px;}
 .plogos{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
@@ -315,7 +318,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.24";
+var APP_VERSION="0.25";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -649,47 +652,91 @@ function setMode(m){curMode=m;renderKlass();}
 
 /* ============ EVENT ============ */
 function campById(id){return RIDE.event.camps.find(function(c){return c.id===id;});}
-function eventCard(d,isNow){
-  var camp=campById(d.camp);
-  var h='<div class="ev'+(isNow?" now":"")+'"><div class="ev-h"><span class="dot">'+(isNow?"Nu":d.title.split(" ")[0])+'</span><div class="ttl">'+d.title+'</div><div class="dt">'+isoToDate(d.iso).toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"})+'</div></div><div class="ev-b">';
-  if(camp){
-    h+='<div class="row"><span class="ri">'+icon("tent")+'</span><span class="rk">Camping</span><span class="rv"><b>'+camp.name+'</b> · '+camp.town+(d.camp2?' <span class="od">2e nacht</span>':'')+(camp.tbc?' <span class="od">tbc</span>':'')+'</span></div>';
+
+/* ---- campsite-active-window logic ----
+   Camp order with switchover at 16:00 on the day a stage finishes there:
+   levico -> (14/9 16:00) -> nevegal -> (16/9 16:00) -> bellamonte -> (18/9 16:00) -> levico
+   Before the Proloog, levico is "current" in an upcoming sense (shows the future start date/time).
+   After 18/9 16:00, levico is current again but start+breakfast are hidden (tour over after slotdiner). */
+var CAMP_SWITCHES=[
+  {iso:"2026-09-14",camp:"nevegal"},
+  {iso:"2026-09-16",camp:"bellamonte"},
+  {iso:"2026-09-18",camp:"levico"}
+];
+function currentCampId(){
+  var t=nowD().getTime();
+  var id="levico";
+  for(var i=0;i<CAMP_SWITCHES.length;i++){
+    var sw=CAMP_SWITCHES[i];var swTime=isoToDate(sw.iso).getTime();
+    // Demo stepper moves by whole days (hour is irrelevant there); real clock respects the 16:00 cutoff on switch day.
+    var passed=SIM?(t>=swTime):(t>swTime||(t===swTime&&nowHour()>=16));
+    if(passed)id=sw.camp;
   }
-  var meals=d.meals||{};var mh="";
-  if(meals.ontbijt)mh+='<span class="meal"><b>Ontbijt</b> '+meals.ontbijt+'</span>';
-  if(meals.lunch)mh+='<span class="meal"><b>Lunch</b> '+meals.lunch+'</span>';
-  if(meals.diner)mh+='<span class="meal"><b>Diner</b> '+meals.diner+'</span>';
-  if(mh)h+='<div class="row"><span class="ri">🍝</span><span class="rk">Keuken</span><span class="rv"><div class="meals">'+mh+'</div></span></div>';
-  if(d.startNext)h+='<div class="row"><span class="ri">🚴</span><span class="rk">Start morgen</span><span class="rv"><b>'+d.startNext+'</b> · '+d.startNextLabel+(d.startOverride?'<span class="od">afwijkend</span>':'')+'</span></div>';
-  if(d.notices&&d.notices.length){
-    var nh="";d.notices.forEach(function(n){nh+='<div class="notice">'+n+'</div>';});
+  return id;
+}
+function isFinalLevicoStay(){
+  // true once we've cycled back to levico after the last switch (18/9 16:00) — tour ends that evening
+  var t=nowD().getTime();
+  var last=isoToDate("2026-09-18").getTime();
+  var passed=SIM?(t>=last):(t>last||(t===last&&nowHour()>=16));
+  return currentCampId()==="levico"&&passed;
+}
+function dayByIso(iso){return RIDE.event.days.find(function(d){return d.iso===iso;});}
+function todayIso(){var d=nowD();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+
+function campCard(camp,isCurrent){
+  var std=RIDE.event.standardTimes;
+  var today=dayByIso(todayIso());
+  var beforeStart=nowD().getTime()<isoToDate(RIDE.stages[0].iso).getTime();
+  var h='<div class="ev'+(isCurrent?" now":"")+'">';
+  h+='<div class="ev-h">'+(isCurrent?'<span class="dot">Nu</span>':'')+'<div class="ttl">'+camp.name+'</div></div>';
+  h+='<div class="ev-b">';
+  h+='<div class="row"><span class="ri">'+icon("tent")+'</span><span class="rk">Camping</span><span class="rv"><b>'+camp.name+'</b> · '+camp.town+(camp.tbc?' <span class="od">tbc</span>':'')+'</span></div>';
+  h+='<div class="row"><span class="ri">📍</span><span class="rk">Adres</span><span class="rv">'+camp.address+
+     ' <a class="maplink" href="https://www.google.com/maps/search/?api=1&query='+camp.lat+','+camp.lon+'" target="_blank">Open in Maps</a></span></div>';
+
+  if(isCurrent&&beforeStart){
+    // Levico before the Proloog: show the future start date+time instead of today's schedule
+    var first=RIDE.stages[0];
+    h+='<div class="row"><span class="ri">🚴</span><span class="rk">Start</span><span class="rv"><b>'+isoToDate(first.iso).toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"})+', '+(today&&today.startNext?today.startNext:std.start)+'</b> · Proloog</span></div>';
+  }else if(isCurrent&&isFinalLevicoStay()){
+    // final evening: only dinner, no start/breakfast (tour ends after the slotdiner)
+    var diner=(today&&today.meals&&today.meals.diner)?today.meals.diner:std.diner;
+    h+='<div class="row"><span class="ri">🍝</span><span class="rk">Diner</span><span class="rv"><b>'+diner+'</b></span></div>';
+  }else if(isCurrent){
+    var ontbijt=(today&&today.meals&&today.meals.ontbijt)?today.meals.ontbijt:std.ontbijt;
+    var diner=(today&&today.meals&&today.meals.diner)?today.meals.diner:std.diner;
+    var startT=(today&&today.startNext)?today.startNext:std.start;
+    var startLbl=today&&today.startNextLabel?today.startNextLabel:"";
+    h+='<div class="row"><span class="ri">🍳</span><span class="rk">Ontbijt</span><span class="rv"><b>'+ontbijt+'</b></span></div>';
+    h+='<div class="row"><span class="ri">🚴</span><span class="rk">Start</span><span class="rv"><b>'+startT+'</b>'+(startLbl?' · '+startLbl:'')+(today&&today.startOverride?'<span class="od">afwijkend</span>':'')+'</span></div>';
+    h+='<div class="row"><span class="ri">🍝</span><span class="rk">Diner</span><span class="rv"><b>'+diner+'</b></span></div>';
+  }
+
+  if(camp.map)h+='<div class="campmap"><img src="'+camp.map+'" alt="Plattegrond '+camp.name+'" loading="lazy"></div>';
+  else h+='<div class="row"><span class="ri">🗺</span><span class="rk">Plattegrond</span><span class="rv"><span class="od">nog te volgen</span></span></div>';
+
+  if(isCurrent&&today&&today.notices&&today.notices.length){
+    var nh="";today.notices.forEach(function(n){nh+='<div class="notice">'+n+'</div>';});
     h+='<div class="row"><span class="ri">📣</span><span class="rk">Info</span><span class="rv">'+nh+'</span></div>';
   }
+
   h+='</div></div>';
   return h;
 }
+
 function renderEvent(){
-  var v=document.getElementById("v-event");var t=nowD().getTime();
-  var days=RIDE.event.days;
-  // find "now" index = first day iso >= today
-  var nowIdx=days.length-1;
-  for(var i=0;i<days.length;i++){if(isoToDate(days[i].iso).getTime()>=t){nowIdx=i;break;}}
-  var future=days.map(function(_,i){return i;}).filter(function(i){return i>=nowIdx;});
-  var past=days.map(function(_,i){return i;}).filter(function(i){return i<nowIdx;});
-  var h='<div class="section-eyebrow">Nu &amp; hierna</div>';
-  future.forEach(function(i){h+=eventCard(days[i],i===nowIdx);});
-  if(past.length){
-    h+='<button class="toggle-all" id="evToggle" onclick="evToggle()">Toon afgelopen dagen ('+past.length+')</button>';
-    h+='<div id="evPast" style="display:none">';past.forEach(function(i){h+=eventCard(days[i],false);});h+='</div>';
-  }
-  // partners
+  var v=document.getElementById("v-event");
+  var curId=currentCampId();
+  var order=["levico","nevegal","bellamonte"];
+  var sorted=order.slice().sort(function(a,b){return (a===curId?-1:0)-(b===curId?-1:0);});
+  var h='<div class="section-eyebrow">Camping</div>';
+  sorted.forEach(function(id){var camp=campById(id);if(camp)h+=campCard(camp,id===curId);});
   h+='<div class="partners"><h3>Partners</h3><div class="plogos">';
   RIDE.sponsors.forEach(function(sp){h+='<div class="plogo"><div class="pn">'+sp.name+'</div><div class="pt">'+sp.tag+'</div></div>';});
   h+='</div></div>';
   v.innerHTML=h;
 }
-function evToggle(){var p=document.getElementById("evPast"),b=document.getElementById("evToggle");
-  if(p.style.display==="none"){p.style.display="block";b.textContent="Verberg afgelopen dagen";}else{p.style.display="none";b.textContent="Toon afgelopen dagen";}}
 
 /* ============ PREP ============ */
 var PKEY="ride_dolomites_pack_v1";
