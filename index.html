@@ -203,9 +203,20 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .ev{background:#fff;border:1px solid var(--line2);border-radius:14px;margin-bottom:13px;overflow:hidden;}
 .ev.now{border-color:var(--rose-line);box-shadow:0 4px 16px rgba(245,155,176,.18);}
 .ev-h{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--line);}
-.ev-h .dot{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;border-radius:5px;background:var(--paper);color:var(--ink2);}
-.ev.now .dot{background:var(--rose-deep);color:#fff;}
-.ev-h .ttl{font-family:var(--disp);font-weight:800;font-size:15px;flex:1;}
+.ev.now .ev-h{background:var(--rose);border-bottom-color:var(--rose-line);}
+.ev-h .ttl{font-family:var(--disp);font-weight:800;font-size:15px;flex:1;color:#2e3440;}
+.campmap{margin-top:8px;border-radius:10px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;}
+.campmap img{display:block;width:100%;height:auto;}
+.map-zoom{position:fixed;inset:0;background:rgba(26,21,18,.94);z-index:999;display:none;flex-direction:column;}
+.map-zoom.open{display:flex;}
+.map-zoom-close{position:absolute;top:14px;right:14px;z-index:2;width:36px;height:36px;border-radius:50%;border:none;
+ background:rgba(255,255,255,.15);color:#fff;font-size:16px;cursor:pointer;}
+.map-zoom-title{color:#fff;text-align:center;font-family:var(--disp);font-weight:700;font-size:13px;padding:14px 50px 6px;}
+.map-zoom-viewport{flex:1;overflow:hidden;position:relative;touch-action:none;cursor:grab;}
+.map-zoom-viewport:active{cursor:grabbing;}
+.map-zoom-viewport img{position:absolute;top:50%;left:50%;max-width:none;transform-origin:center center;
+ transform:translate(-50%,-50%) scale(1);will-change:transform;user-select:none;-webkit-user-drag:none;}
+.map-zoom-hint{color:rgba(255,255,255,.55);text-align:center;font-family:var(--mono);font-size:9.5px;padding:10px 14px 16px;}
 .ev-h .dt{font-family:var(--mono);font-size:10px;color:var(--muted);}
 .ev-b{padding:6px 15px 13px;}
 .row{display:flex;gap:11px;padding:7px 0;align-items:flex-start;}
@@ -221,8 +232,6 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .notice{display:flex;gap:8px;font-size:12px;color:var(--ink2);padding:4px 0;}
 .notice::before{content:"›";color:var(--rose);font-weight:700;}
 .maplink{display:inline-block;margin-left:6px;font-family:var(--mono);font-size:10.5px;color:var(--rose-deep);font-weight:700;text-decoration:none;white-space:nowrap;}
-.campmap{margin-top:10px;border-radius:10px;overflow:hidden;border:1px solid var(--line);}
-.campmap img{display:block;width:100%;height:auto;}
 .partners{background:var(--paper);border:1px solid var(--line2);border-radius:14px;padding:15px;margin-top:6px;}
 .partners h3{font-family:var(--disp);font-size:13px;font-weight:800;margin-bottom:11px;}
 .plogos{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
@@ -315,10 +324,19 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 </footer>
 </div>
 
+<div class="map-zoom" id="mapZoom" onclick="if(event.target.id==='mapZoom')closeMapZoom()">
+  <button class="map-zoom-close" onclick="closeMapZoom()" aria-label="Sluiten">✕</button>
+  <div class="map-zoom-title" id="mapZoomTitle"></div>
+  <div class="map-zoom-viewport" id="mapZoomViewport">
+    <img id="mapZoomImg" src="" alt="">
+  </div>
+  <div class="map-zoom-hint">Knijp of scroll om in/uit te zoomen · sleep om te verplaatsen</div>
+</div>
+
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.25";
+var APP_VERSION="0.27";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -688,42 +706,112 @@ function campCard(camp,isCurrent){
   var std=RIDE.event.standardTimes;
   var today=dayByIso(todayIso());
   var beforeStart=nowD().getTime()<isoToDate(RIDE.stages[0].iso).getTime();
+  var dateStr=isoToDate(todayIso()).toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"});
   var h='<div class="ev'+(isCurrent?" now":"")+'">';
-  h+='<div class="ev-h">'+(isCurrent?'<span class="dot">Nu</span>':'')+'<div class="ttl">'+camp.name+'</div></div>';
+  h+='<div class="ev-h">'+(isCurrent?'<span class="ev-h-bar"></span>':'')+'<div class="ttl">'+camp.name+'</div></div>';
   h+='<div class="ev-b">';
   h+='<div class="row"><span class="ri">'+icon("tent")+'</span><span class="rk">Camping</span><span class="rv"><b>'+camp.name+'</b> · '+camp.town+(camp.tbc?' <span class="od">tbc</span>':'')+'</span></div>';
   h+='<div class="row"><span class="ri">📍</span><span class="rk">Adres</span><span class="rv">'+camp.address+
      ' <a class="maplink" href="https://www.google.com/maps/search/?api=1&query='+camp.lat+','+camp.lon+'" target="_blank">Open in Maps</a></span></div>';
 
   if(isCurrent&&beforeStart){
-    // Levico before the Proloog: show the future start date+time instead of today's schedule
     var first=RIDE.stages[0];
-    h+='<div class="row"><span class="ri">🚴</span><span class="rk">Start</span><span class="rv"><b>'+isoToDate(first.iso).toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"})+', '+(today&&today.startNext?today.startNext:std.start)+'</b> · Proloog</span></div>';
+    var fDate=isoToDate(first.iso).toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"});
+    h+='<div class="row"><span class="ri">🚴</span><span class="rk">Start</span><span class="rv"><b>'+(today&&today.startNext?today.startNext:std.start)+'</b> · '+fDate+' · Proloog</span></div>';
   }else if(isCurrent&&isFinalLevicoStay()){
-    // final evening: only dinner, no start/breakfast (tour ends after the slotdiner)
     var diner=(today&&today.meals&&today.meals.diner)?today.meals.diner:std.diner;
-    h+='<div class="row"><span class="ri">🍝</span><span class="rk">Diner</span><span class="rv"><b>'+diner+'</b></span></div>';
+    h+='<div class="row"><span class="ri">🍝</span><span class="rk">Diner</span><span class="rv"><b>'+diner+'</b> · '+dateStr+'</span></div>';
+    h+='<div class="row"><span class="ri">📋</span><span class="rk">Menu</span><span class="rv">'+std.menu+'</span></div>';
   }else if(isCurrent){
     var ontbijt=(today&&today.meals&&today.meals.ontbijt)?today.meals.ontbijt:std.ontbijt;
     var diner=(today&&today.meals&&today.meals.diner)?today.meals.diner:std.diner;
     var startT=(today&&today.startNext)?today.startNext:std.start;
     var startLbl=today&&today.startNextLabel?today.startNextLabel:"";
-    h+='<div class="row"><span class="ri">🍳</span><span class="rk">Ontbijt</span><span class="rv"><b>'+ontbijt+'</b></span></div>';
-    h+='<div class="row"><span class="ri">🚴</span><span class="rk">Start</span><span class="rv"><b>'+startT+'</b>'+(startLbl?' · '+startLbl:'')+(today&&today.startOverride?'<span class="od">afwijkend</span>':'')+'</span></div>';
-    h+='<div class="row"><span class="ri">🍝</span><span class="rk">Diner</span><span class="rv"><b>'+diner+'</b></span></div>';
+    h+='<div class="row"><span class="ri">🍳</span><span class="rk">Ontbijt</span><span class="rv"><b>'+ontbijt+'</b> · '+dateStr+'</span></div>';
+    h+='<div class="row"><span class="ri">🚴</span><span class="rk">Start</span><span class="rv"><b>'+startT+'</b> · '+dateStr+(startLbl?' · '+startLbl:'')+(today&&today.startOverride?'<span class="od">afwijkend</span>':'')+'</span></div>';
+    h+='<div class="row"><span class="ri">🍝</span><span class="rk">Diner</span><span class="rv"><b>'+diner+'</b> · '+dateStr+'</span></div>';
+    h+='<div class="row"><span class="ri">📋</span><span class="rk">Menu</span><span class="rv">'+std.menu+'</span></div>';
   }
 
-  if(camp.map)h+='<div class="campmap"><img src="'+camp.map+'" alt="Plattegrond '+camp.name+'" loading="lazy"></div>';
-  else h+='<div class="row"><span class="ri">🗺</span><span class="rk">Plattegrond</span><span class="rv"><span class="od">nog te volgen</span></span></div>';
-
-  if(isCurrent&&today&&today.notices&&today.notices.length){
-    var nh="";today.notices.forEach(function(n){nh+='<div class="notice">'+n+'</div>';});
-    h+='<div class="row"><span class="ri">📣</span><span class="rk">Info</span><span class="rv">'+nh+'</span></div>';
+  if(camp.map){
+    h+='<button class="exp-btn" onclick="toggleCampMap(\''+camp.id+'\')">'+icon("terrain")+'<span class="lbl">Plattegrond camping</span><span class="cv">▼</span></button>';
+    h+='<div class="campmap" id="campmap-'+camp.id+'" style="display:none"><img src="'+camp.map+'" alt="Plattegrond '+camp.name+'" loading="lazy" onclick="openMapZoom(\''+camp.map+'\',\''+camp.name.replace(/'/g,"\\'")+'\')"></div>';
+  }else{
+    h+='<div class="row"><span class="ri">🗺</span><span class="rk">Plattegrond</span><span class="rv"><span class="od">nog te volgen</span></span></div>';
   }
 
   h+='</div></div>';
   return h;
 }
+function toggleCampMap(id){
+  var el=document.getElementById("campmap-"+id);
+  el.style.display=el.style.display==="none"?"block":"none";
+}
+
+/* ---- map zoom overlay: pinch (touch), wheel (desktop), drag-to-pan ---- */
+var mz={scale:1,x:0,y:0,startDist:0,startScale:1,dragging:false,lastX:0,lastY:0,pinching:false};
+function openMapZoom(src,title){
+  document.getElementById("mapZoomImg").src=src;
+  document.getElementById("mapZoomTitle").textContent=title;
+  mz.scale=1;mz.x=0;mz.y=0;applyMapTransform();
+  document.getElementById("mapZoom").classList.add("open");
+}
+function closeMapZoom(){document.getElementById("mapZoom").classList.remove("open");}
+function applyMapTransform(){
+  var img=document.getElementById("mapZoomImg");
+  img.style.transform="translate(-50%,-50%) translate("+mz.x+"px,"+mz.y+"px) scale("+mz.scale+")";
+}
+function mzDist(t0,t1){var dx=t1.clientX-t0.clientX,dy=t1.clientY-t0.clientY;return Math.sqrt(dx*dx+dy*dy);}
+(function(){
+  var vp;
+  function init(){
+    vp=document.getElementById("mapZoomViewport");
+    vp.addEventListener("wheel",function(e){
+      e.preventDefault();
+      var delta=e.deltaY<0?1.12:0.89;
+      mz.scale=Math.min(5,Math.max(1,mz.scale*delta));
+      if(mz.scale===1){mz.x=0;mz.y=0;}
+      applyMapTransform();
+    },{passive:false});
+    vp.addEventListener("touchstart",function(e){
+      if(e.touches.length===2){
+        mz.pinching=true;mz.startDist=mzDist(e.touches[0],e.touches[1]);mz.startScale=mz.scale;
+      }else if(e.touches.length===1&&mz.scale>1){
+        mz.dragging=true;mz.lastX=e.touches[0].clientX;mz.lastY=e.touches[0].clientY;
+      }
+    },{passive:true});
+    vp.addEventListener("touchmove",function(e){
+      if(mz.pinching&&e.touches.length===2){
+        e.preventDefault();
+        var d=mzDist(e.touches[0],e.touches[1]);
+        mz.scale=Math.min(5,Math.max(1,mz.startScale*(d/mz.startDist)));
+        if(mz.scale===1){mz.x=0;mz.y=0;}
+        applyMapTransform();
+      }else if(mz.dragging&&e.touches.length===1){
+        e.preventDefault();
+        var dx=e.touches[0].clientX-mz.lastX,dy=e.touches[0].clientY-mz.lastY;
+        mz.x+=dx;mz.y+=dy;mz.lastX=e.touches[0].clientX;mz.lastY=e.touches[0].clientY;
+        applyMapTransform();
+      }
+    },{passive:false});
+    vp.addEventListener("touchend",function(e){
+      if(e.touches.length<2)mz.pinching=false;
+      if(e.touches.length<1)mz.dragging=false;
+    });
+    vp.addEventListener("mousedown",function(e){
+      if(mz.scale<=1)return;
+      mz.dragging=true;mz.lastX=e.clientX;mz.lastY=e.clientY;
+    });
+    window.addEventListener("mousemove",function(e){
+      if(!mz.dragging)return;
+      var dx=e.clientX-mz.lastX,dy=e.clientY-mz.lastY;
+      mz.x+=dx;mz.y+=dy;mz.lastX=e.clientX;mz.lastY=e.clientY;
+      applyMapTransform();
+    });
+    window.addEventListener("mouseup",function(){mz.dragging=false;});
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
 
 function renderEvent(){
   var v=document.getElementById("v-event");
