@@ -65,6 +65,8 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
  font-size:13px;cursor:pointer;line-height:1;}
 .sim button:active{background:var(--rose-soft);}
 .sim .reset{width:auto;padding:0 8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;}
+.sim .pm-toggle{width:auto;padding:0 7px;font-family:var(--mono);font-size:9px;letter-spacing:.04em;}
+.sim .pm-toggle.on{background:var(--rose-deep);color:#fff;border-color:var(--rose-deep);}
 
 /* ---------- Tabs ---------- */
 .tabs{position:sticky;top:0;z-index:40;display:grid;grid-template-columns:repeat(var(--ntabs,4),1fr);background:#fff;border-bottom:1px solid var(--line2);}
@@ -300,6 +302,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
     <button onclick="stepSim(-1)" aria-label="vorige dag">‹</button>
     <span class="day mono" id="simDay">vandaag</span>
     <button onclick="stepSim(1)" aria-label="volgende dag">›</button>
+    <button class="pm-toggle" id="simPM" onclick="toggleSimPM()" aria-label="voor of na 16:00">&lt;16:00</button>
     <button class="reset" onclick="resetSim()">nu</button>
   </div>
 </header>
@@ -336,7 +339,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.27";
+var APP_VERSION="0.29";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -361,17 +364,21 @@ var SIM=(function(){
   d.setDate(d.getDate()-1);            // day before Proloog — one step from the live transition
   return d;
 })();
+var SIM_PM=false; // demo-only: false = "before 16:00" today, true = "16:00 or later" today
 function nowD(){var d=SIM?new Date(SIM):new Date();d.setHours(0,0,0,0);return d;}
-function nowHour(){return SIM?8:new Date().getHours();}
+function nowHour(){return SIM?(SIM_PM?16:8):new Date().getHours();}
 var allDates=RIDE.stages.map(function(s){return s.iso;});
 function stepSim(dir){
   var cur=SIM?new Date(SIM):new Date();cur.setHours(0,0,0,0);
   cur.setDate(cur.getDate()+dir);SIM=cur;renderAll();
 }
-function resetSim(){SIM=null;renderAll();}
+function toggleSimPM(){SIM_PM=!SIM_PM;renderAll();}
+function resetSim(){SIM=null;SIM_PM=false;renderAll();}
 function updateSimLabel(){
   var d=nowD();var lab=SIM?d.toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"}):"nu · "+d.toLocaleDateString("nl-NL",{day:"numeric",month:"short"});
   document.getElementById("simDay").textContent=lab;
+  var pmBtn=document.getElementById("simPM");
+  if(pmBtn){pmBtn.textContent=SIM_PM?"≥16:00":"<16:00";pmBtn.classList.toggle("on",SIM_PM);}
 }
 
 /* ============ active-day logic ============ */
@@ -682,25 +689,28 @@ var CAMP_SWITCHES=[
   {iso:"2026-09-18",camp:"levico"}
 ];
 function currentCampId(){
-  var t=nowD().getTime();
+  var t=nowD().getTime(),hr=nowHour();
   var id="levico";
   for(var i=0;i<CAMP_SWITCHES.length;i++){
     var sw=CAMP_SWITCHES[i];var swTime=isoToDate(sw.iso).getTime();
-    // Demo stepper moves by whole days (hour is irrelevant there); real clock respects the 16:00 cutoff on switch day.
-    var passed=SIM?(t>=swTime):(t>swTime||(t===swTime&&nowHour()>=16));
-    if(passed)id=sw.camp;
+    if(t>swTime||(t===swTime&&hr>=16))id=sw.camp;
   }
   return id;
 }
 function isFinalLevicoStay(){
-  // true once we've cycled back to levico after the last switch (18/9 16:00) — tour ends that evening
-  var t=nowD().getTime();
+  var t=nowD().getTime(),hr=nowHour();
   var last=isoToDate("2026-09-18").getTime();
-  var passed=SIM?(t>=last):(t>last||(t===last&&nowHour()>=16));
-  return currentCampId()==="levico"&&passed;
+  return currentCampId()==="levico"&&(t>last||(t===last&&hr>=16));
 }
 function dayByIso(iso){return RIDE.event.days.find(function(d){return d.iso===iso;});}
 function todayIso(){var d=nowD();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function isOutsideStandard(val,stdRange){
+  // stdRange like "08:00–09:00"; val can be a single time "12:00" or its own range.
+  if(!val||!stdRange)return false;
+  var parts=stdRange.split("–");var stdStart=parts[0],stdEnd=parts[1]||parts[0];
+  var valParts=val.split("–");var valStart=valParts[0],valEnd=valParts[1]||valParts[0];
+  return valStart<stdStart||valEnd>stdEnd;
+}
 
 function campCard(camp,isCurrent){
   var std=RIDE.event.standardTimes;
@@ -717,19 +727,24 @@ function campCard(camp,isCurrent){
   if(isCurrent&&beforeStart){
     var first=RIDE.stages[0];
     var fDate=isoToDate(first.iso).toLocaleDateString("nl-NL",{weekday:"long",day:"numeric",month:"long"});
-    h+='<div class="row"><span class="ri">🚴</span><span class="rk">Start</span><span class="rv"><b>'+(today&&today.startNext?today.startNext:std.start)+'</b> · '+fDate+' · Proloog</span></div>';
+    var arrDay=RIDE.event.days[0]; // arrival day — always the reference point before the tour starts
+    var startT=(arrDay&&arrDay.startNext)?arrDay.startNext:std.start;
+    h+='<div class="row"><span class="ri">🚴</span><span class="rk">Start</span><span class="rv"><b>'+startT+'</b> · '+fDate+' · Proloog'+(isOutsideStandard(startT,std.start)?'<span class="od">afwijkend</span>':'')+'</span></div>';
+    var dinerVal=(arrDay&&arrDay.meals&&arrDay.meals.diner)?arrDay.meals.diner:std.diner;
+    var dinerDate=isoToDate(arrDay.iso).toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"});
+    h+='<div class="row"><span class="ri">🍝</span><span class="rk">Diner</span><span class="rv"><b>'+dinerVal+'</b> · '+dinerDate+(isOutsideStandard(dinerVal,std.diner)?'<span class="od">afwijkend</span>':'')+'</span></div>';
   }else if(isCurrent&&isFinalLevicoStay()){
     var diner=(today&&today.meals&&today.meals.diner)?today.meals.diner:std.diner;
-    h+='<div class="row"><span class="ri">🍝</span><span class="rk">Diner</span><span class="rv"><b>'+diner+'</b> · '+dateStr+'</span></div>';
+    h+='<div class="row"><span class="ri">🍝</span><span class="rk">Diner</span><span class="rv"><b>'+diner+'</b> · '+dateStr+(isOutsideStandard(diner,std.diner)?'<span class="od">afwijkend</span>':'')+'</span></div>';
     h+='<div class="row"><span class="ri">📋</span><span class="rk">Menu</span><span class="rv">'+std.menu+'</span></div>';
   }else if(isCurrent){
     var ontbijt=(today&&today.meals&&today.meals.ontbijt)?today.meals.ontbijt:std.ontbijt;
     var diner=(today&&today.meals&&today.meals.diner)?today.meals.diner:std.diner;
     var startT=(today&&today.startNext)?today.startNext:std.start;
     var startLbl=today&&today.startNextLabel?today.startNextLabel:"";
-    h+='<div class="row"><span class="ri">🍳</span><span class="rk">Ontbijt</span><span class="rv"><b>'+ontbijt+'</b> · '+dateStr+'</span></div>';
-    h+='<div class="row"><span class="ri">🚴</span><span class="rk">Start</span><span class="rv"><b>'+startT+'</b> · '+dateStr+(startLbl?' · '+startLbl:'')+(today&&today.startOverride?'<span class="od">afwijkend</span>':'')+'</span></div>';
-    h+='<div class="row"><span class="ri">🍝</span><span class="rk">Diner</span><span class="rv"><b>'+diner+'</b> · '+dateStr+'</span></div>';
+    h+='<div class="row"><span class="ri">🍳</span><span class="rk">Ontbijt</span><span class="rv"><b>'+ontbijt+'</b> · '+dateStr+(isOutsideStandard(ontbijt,std.ontbijt)?'<span class="od">afwijkend</span>':'')+'</span></div>';
+    h+='<div class="row"><span class="ri">🚴</span><span class="rk">Start</span><span class="rv"><b>'+startT+'</b> · '+dateStr+(startLbl?' · '+startLbl:'')+(isOutsideStandard(startT,std.start)?'<span class="od">afwijkend</span>':'')+'</span></div>';
+    h+='<div class="row"><span class="ri">🍝</span><span class="rk">Diner</span><span class="rv"><b>'+diner+'</b> · '+dateStr+(isOutsideStandard(diner,std.diner)?'<span class="od">afwijkend</span>':'')+'</span></div>';
     h+='<div class="row"><span class="ri">📋</span><span class="rk">Menu</span><span class="rv">'+std.menu+'</span></div>';
   }
 
