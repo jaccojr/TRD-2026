@@ -315,7 +315,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.23";
+var APP_VERSION="0.24";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -717,11 +717,6 @@ function renderPrep(){
     });
     h+='</div>';
   });
-  h+='<div class="info-card"><h3>Goed om te weten</h3><ul>'+
-     '<li>Inbegrepen: 6 overnachtingen, bagagevervoer, dagelijks ontbijt/lunch/diner, 2 verzorgingsposten per etappe, mecaniciens, medische begeleiding.</li>'+
-     '<li>Zelf regelen: vervoer naar de Dolomieten, eigen reservemateriaal, verzekering.</li>'+
-     '<li>Hooggebergte (tot 2.244 m): neem warme kleding mee voor de afdalingen.</li>'+
-     '</ul></div>';
   v.innerHTML=h;
 }
 function saveOrgNumber(e){
