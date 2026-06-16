@@ -340,7 +340,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.32";
+var APP_VERSION="0.33";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -832,7 +832,7 @@ function renderPrep(){
     if(ci===0){
       h+='<div class="pitem orgnum'+(orgSaved?" done":"")+'" id="orgNumRow">'+
          '<div class="box">'+(orgSaved?"✓":"")+'</div>'+
-         '<div class="lbl">'+(orgSaved?"Noodnummer organisatie opgeslagen":"Noodnummer organisatie (bij letsel eerst 112!)")+'</div>'+
+         '<div class="lbl">'+(orgSaved?"Noodnummer organisatie opgeslagen":"Noodnummer organisatie")+'</div>'+
          (orgSaved?"":'<button class="orgnum-btn" onclick="saveOrgNumber(event)">+ Opslaan</button>')+
          '</div>';
     }
@@ -846,7 +846,7 @@ function renderPrep(){
 function saveOrgNumber(e){
   e.stopPropagation();
   var num=RIDE.event.emergency;
-  var vcard="BEGIN:VCARD\nVERSION:3.0\nN:;The Ride Dolomites — Noodnummer;;;\nFN:The Ride Dolomites — Noodnummer\nTEL;TYPE=CELL:"+num+"\nEND:VCARD";
+  var vcard="BEGIN:VCARD\nVERSION:3.0\nN:;The Ride Dolomites — Noodnummer;;;\nFN:The Ride Dolomites — Noodnummer\nTEL;TYPE=CELL:"+num+"\nNOTE:Bij letsel eerst 112 bellen!\nEND:VCARD";
   var blob=new Blob([vcard],{type:"text/vcard"});
   var url=URL.createObjectURL(blob);
   var a=document.createElement("a");a.href=url;a.download="the-ride-noodnummer.vcf";
