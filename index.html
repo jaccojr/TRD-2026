@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Dolomites">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,9 +36,7 @@ a{color:inherit;}
 header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
  backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);}
 .hd-top{display:flex;align-items:center;gap:11px;padding:13px 18px 9px;position:relative;}
-.mark{width:38px;height:38px;border-radius:10px;background:var(--rose-deep);display:flex;align-items:center;justify-content:center;
- flex-shrink:0;box-shadow:0 3px 10px rgba(245,155,176,.45);}
-.mark span{font-family:var(--disp);font-weight:900;color:#fff;font-size:16px;letter-spacing:-.04em;line-height:1;}
+.mark-logo{height:30px;width:auto;flex-shrink:0;}
 .hd-title .k{font-family:var(--mono);font-size:9px;letter-spacing:.32em;text-transform:uppercase;color:var(--rose-deep);font-weight:500;}
 .hd-title .t{font-family:var(--disp);font-weight:800;font-size:17px;letter-spacing:-.02em;line-height:1.05;}
 .hd-title .t b{color:var(--rose-deep);font-weight:800;}
@@ -264,9 +262,9 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 
 <header class="app">
   <div class="hd-top">
-    <div class="mark"><span>TR</span></div>
+    <img class="mark-logo" src="logo-transparent.png" alt="The Ride">
     <div class="hd-title">
-      <div class="k">The Ride · Dolomieten</div>
+      <div class="k">Dolomieten</div>
       <div class="t">DOLOMITES <b>2026</b></div>
     </div>
   </div>
@@ -313,7 +311,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.16";
+var APP_VERSION="0.17";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
