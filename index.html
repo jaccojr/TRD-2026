@@ -339,7 +339,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.30";
+var APP_VERSION="0.31";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -695,21 +695,28 @@ function currentSlot(){
 function todayIso(){var d=nowD();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function currentCampId(){return currentSlot().camp;}
 
+function splitMorgen(val){
+  if(!val)return{text:val,morgen:false};
+  var morgen=/\s*'morgen'\s*$/.test(val);
+  return{text:val.replace(/\s*'morgen'\s*$/,""),morgen:morgen};
+}
 function campCard(camp,isCurrent,slot){
   var dateStr=isoToDate(slot.iso).toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"});
   var h='<div class="ev'+(isCurrent&&slot.active?" now":"")+'">';
   h+='<div class="ev-h">'+(isCurrent&&slot.active?'<span class="ev-h-bar"></span>':'')+'<div class="ttl">'+camp.name+'</div></div>';
   h+='<div class="ev-b">';
-  h+='<div class="row"><span class="ri">'+icon("tent")+'</span><span class="rk">Camping</span><span class="rv"><b>'+camp.name+'</b> · '+camp.town+(camp.tbc?' <span class="od">tbc</span>':'')+'</span></div>';
-  h+='<div class="row"><span class="ri">📍</span><span class="rk">Adres</span><span class="rv">'+camp.address+
+  h+='<div class="row"><span class="rk">Camping</span><span class="rv"><b>'+camp.name+'</b> · '+camp.town+(camp.tbc?' <span class="od">tbc</span>':'')+'</span></div>';
+  h+='<div class="row"><span class="rk">Adres</span><span class="rv">'+camp.address+
      ' <a class="maplink" href="https://www.google.com/maps/search/?api=1&query='+camp.lat+','+camp.lon+'" target="_blank">Open in Maps</a></span></div>';
 
   if(isCurrent){
-    if(slot.ontbijt)h+='<div class="row"><span class="ri">🍳</span><span class="rk">Ontbijt</span><span class="rv"><b>'+slot.ontbijt+'</b> · '+dateStr+'</span></div>';
-    if(slot.start)h+='<div class="row"><span class="ri">🚴</span><span class="rk">Start</span><span class="rv"><b>'+slot.start+'</b> · '+dateStr+'</span></div>';
-    if(slot.diner){
-      h+='<div class="row"><span class="ri">🍝</span><span class="rk">Diner</span><span class="rv"><b>'+slot.diner+'</b> · '+dateStr+'</span></div>';
-      h+='<div class="row"><span class="ri">📋</span><span class="rk">Menu</span><span class="rv">onbekend</span></div>';
+    if(slot.ontbijt){var o=splitMorgen(slot.ontbijt);
+      h+='<div class="row"><span class="rk">Ontbijt</span><span class="rv"><b>'+o.text+'</b>'+(o.morgen?' <span class="od">morgen</span>':' · '+dateStr)+'</span></div>';}
+    if(slot.start){var st=splitMorgen(slot.start);
+      h+='<div class="row"><span class="rk">Start</span><span class="rv"><b>'+st.text+'</b>'+(st.morgen?' <span class="od">morgen</span>':' · '+dateStr)+'</span></div>';}
+    if(slot.diner){var d=splitMorgen(slot.diner);
+      h+='<div class="row"><span class="rk">Diner</span><span class="rv"><b>'+d.text+'</b>'+(d.morgen?' <span class="od">morgen</span>':' · '+dateStr)+'</span></div>';
+      h+='<div class="row"><span class="rk">Menu</span><span class="rv">onbekend</span></div>';
     }
   }
 
@@ -717,7 +724,7 @@ function campCard(camp,isCurrent,slot){
     h+='<button class="exp-btn" onclick="toggleCampMap(\''+camp.id+'\')">'+icon("terrain")+'<span class="lbl">Plattegrond camping</span><span class="cv">▼</span></button>';
     h+='<div class="campmap" id="campmap-'+camp.id+'" style="display:none"><img src="'+camp.map+'" alt="Plattegrond '+camp.name+'" loading="lazy" onclick="openMapZoom(\''+camp.map+'\',\''+camp.name.replace(/'/g,"\\'")+'\')"></div>';
   }else{
-    h+='<div class="row"><span class="ri">🗺</span><span class="rk">Plattegrond</span><span class="rv"><span class="od">nog te volgen</span></span></div>';
+    h+='<div class="row"><span class="rk">Plattegrond</span><span class="rv"><span class="od">nog te volgen</span></span></div>';
   }
 
   h+='</div></div>';
