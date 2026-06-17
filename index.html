@@ -142,7 +142,7 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .exp-btn .lbl{flex:1;text-align:left;}
 .exp-btn .ic-svg{width:17px;height:17px;flex-shrink:0;fill:var(--ink2);}
 .exp-btn.warn .ic-svg{fill:var(--amber);}
-.exp-btn+.wx,.exp-btn+.wx-done,.map-wrap+.wx,.map-wrap+.wx-done{border-top:none;}
+.exp-btn+.wx .wxrow:first-child,.map-wrap+.wx .wxrow:first-child,.exp-btn+.wx-done,.map-wrap+.wx-done{border-top:none;}
 .exp-btn .cv{transition:transform .2s;color:var(--muted);font-size:11px;}
 .exp-btn.open .cv{transform:rotate(180deg);}
 .exp-btn.warn{color:var(--amber);}
@@ -355,7 +355,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.53";
+var APP_VERSION="0.54";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
