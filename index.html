@@ -355,7 +355,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.55";
+var APP_VERSION="0.56";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -447,8 +447,8 @@ function routeFocusInfo(){
   var t=nowD().getTime();
   var first=isoToDate(RIDE.stages[0].iso).getTime();
   var last=isoToDate(RIDE.stages[RIDE.stages.length-1].iso).getTime();
-  if(t<first)return{label:"Eerste etappes",focus:[0,1].filter(function(i){return i<RIDE.stages.length;})};
-  if(t>last)return{label:"Laatste etappe",focus:[RIDE.stages.length-1]};
+  if(t<first)return{label:"",focus:[0,1].filter(function(i){return i<RIDE.stages.length;})};
+  if(t>last)return{label:"",focus:[RIDE.stages.length-1]};
   var ai=activeIndex();
   if(ai>=RIDE.stages.length-1)return{label:"Vandaag",focus:[ai]};
   return{label:"Vandaag & morgen",focus:[ai,ai+1]};
@@ -601,7 +601,7 @@ function renderRoute(){
   var v=document.getElementById("v-route");
   var info=routeFocusInfo();
   var focus=info.focus;
-  var html='<div class="section-eyebrow">'+info.label+'</div>';
+  var html=info.label?'<div class="section-eyebrow">'+info.label+'</div>':'';
   focus.forEach(function(i){html+=stageCard(RIDE.stages[i],true);});
   var rest=RIDE.stages.map(function(_,i){return i;}).filter(function(i){return focus.indexOf(i)<0;});
   if(rest.length){
