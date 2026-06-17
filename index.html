@@ -26,7 +26,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{background:var(--bg);}
-body{font-family:var(--body);color:var(--ink);min-height:100vh;overflow-x:hidden;line-height:1.45;
+body{font-family:var(--body);color:var(--ink);min-height:100vh;overflow-x:clip;overflow-y:visible;line-height:1.45;
  padding-bottom:env(safe-area-inset-bottom);-webkit-font-smoothing:antialiased;}
 .wrap{max-width:540px;margin:0 auto;}
 a{color:inherit;}
@@ -351,7 +351,7 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.60";
+var APP_VERSION="0.61";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
