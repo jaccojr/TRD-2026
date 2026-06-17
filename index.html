@@ -130,7 +130,7 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
  pointer-events:none;opacity:0;transition:opacity .1s;white-space:nowrap;}
 .tip.on{opacity:1;}
 .exp-btn{width:100%;appearance:none;border:none;background:#fff;padding:11px 14px;display:flex;align-items:center;gap:9px;justify-content:flex-start;
- cursor:pointer;font-family:var(--disp);font-weight:600;font-size:13px;color:var(--ink);border-bottom:1px solid var(--line);}
+ cursor:pointer;font-family:var(--disp);font-weight:600;font-size:13px;color:var(--ink);border-bottom:1px solid var(--line);text-decoration:none;box-sizing:border-box;}
 .exp-btn .lbl{flex:1;text-align:left;}
 .exp-btn .ic-svg{width:17px;height:17px;flex-shrink:0;fill:var(--ink2);}
 .exp-btn.warn .ic-svg{fill:var(--amber);}
@@ -345,7 +345,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.39";
+var APP_VERSION="0.40";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -522,6 +522,9 @@ function stageCard(s,expanded){
   }
   h+='<button class="exp-btn" onclick="toggleMap('+s.num+')" id="mapbtn-'+s.num+'"><span>🗺</span><span class="lbl">Bekijk route op kaart</span><span class="cv">▼</span></button>';
   h+='<div class="map-wrap" id="mapw-'+s.num+'"><div class="map-c" id="map-'+s.num+'"></div></div>';
+  if(s.gpxFile){
+    h+='<a class="exp-btn gpxdl" href="'+s.gpxFile+'" download><span>⬇</span><span class="lbl">Download GPX</span></a>';
+  }
   // weather
   if(!weatherWindowOpen()){
     h+='<div class="wx-done">🌤 Weersvoorspelling beschikbaar vanaf '+WEATHER_WINDOW_DAYS+' dagen voor de start</div>';
