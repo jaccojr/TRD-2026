@@ -47,6 +47,9 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .tot.k2{background:var(--rose-soft);}
 .tot.k2 .v{color:var(--rose-deep);}
 .tot .u{font-size:10px;color:var(--muted);font-weight:500;}
+.countdown{display:flex;align-items:center;justify-content:center;gap:9px;padding:8px 18px;border-top:1px solid var(--line);background:var(--rose-soft);}
+.countdown .cd-lab{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--rose-deep);}
+.countdown .cd-val{font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:-.02em;color:#2e3440;transform:skewX(-12.4deg);display:inline-block;}
 .sponsor-strip{display:flex;align-items:center;gap:8px;padding:12px 18px;border-top:1px solid var(--line);
  font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.05em;position:relative;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
 .sponsor-strip b{color:var(--ink2);font-weight:700;}
@@ -302,6 +305,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
     <div class="tot"><div class="l">Hoogtemeters</div><div class="v">16.890<span class="u"> m</span></div></div>
     <div class="tot k2"><div class="l">KM tot finish</div><div class="v" id="kmleft">—</div></div>
   </div>
+  <div class="countdown" id="countdown"><span class="cd-lab">Tot de start</span><span class="cd-val" id="cdVal">—</span></div>
   <div class="sponsor-strip"><span>Mede mogelijk gemaakt door</span> <b id="sponLine">fi'zi:k · SiS · JOIN · Kwaremont</b></div>
   <div class="hd-actions" id="hdActions">
     <button class="hbtn loc" onclick="getLoc()">📍 Deel mijn locatie</button>
@@ -351,7 +355,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.50";
+var APP_VERSION="0.52";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -370,6 +374,19 @@ var WX_DESC={0:"Helder",1:"Licht bewolkt",2:"Half bewolkt",3:"Bewolkt",45:"Mist"
 function windDir(d){return["N","NO","O","ZO","Z","ZW","W","NW"][Math.round(d/45)%8];}
 function stars(n){return "★".repeat(n)+"☆".repeat(5-n);}
 function isoToDate(iso){var p=iso.split("-");return new Date(+p[0],+p[1]-1,+p[2]);}
+/* Countdown to the real Proloog start — deliberately uses new Date() directly, never nowD(),
+   so it can't be affected by the Demo-dag simulator. Start hour (12:00) is the one piece not
+   otherwise structured in RIDE data, so it's a single named constant here. */
+var PROLOOG_START_HOUR=12;
+function countdownTarget(){var d=isoToDate(RIDE.stages[0].iso);d.setHours(PROLOOG_START_HOUR,0,0,0);return d;}
+function updateCountdown(){
+  var el=document.getElementById("countdown");if(!el)return;
+  var diff=countdownTarget().getTime()-new Date().getTime();
+  if(diff<=0){el.style.display="none";return;}
+  el.style.display="flex";
+  var totalH=Math.floor(diff/3600000),d=Math.floor(totalH/24),h=totalH%24;
+  document.getElementById("cdVal").textContent=d+(d===1?" dag, ":" dagen, ")+h+" uur";
+}
 var maxGain=Math.max.apply(null,RIDE.stages.map(function(s){return s.gain;}));
 
 /* ============ demo-day simulation ============ */
@@ -743,7 +760,7 @@ function campCard(camp,isCurrent,slot){
   h+='<div class="row"><span class="rk">Adres</span><span class="rv">'+camp.address+
      ' <a class="maplink" href="https://www.google.com/maps/search/?api=1&query='+camp.lat+','+camp.lon+'" target="_blank">Open in Maps</a></span></div>';
 
-  if(isCurrent){
+  if(isCurrent&&slot.active){
     // Row order matches camping-schema.xlsx's column order exactly: Diner, Ontbijt, Start.
     // No reordering logic needed — a pure-morning slot simply has diner:null and the row is skipped.
     var rows=[];
@@ -919,6 +936,7 @@ function renderAll(){
   renderNav();
   updateSimLabel();
   document.getElementById("kmleft").innerHTML=kmLeft().toLocaleString("nl")+'<span class="u"> km</span>';
+  updateCountdown();
   document.getElementById("sponLine").textContent=RIDE.sponsors.map(function(s){return s.name;}).join(" · ");
   document.getElementById("footLogos").innerHTML=RIDE.sponsors.map(function(s){return '<span>'+s.name+'</span>';}).join("");
   document.getElementById("hdSos").href="tel:"+RIDE.event.emergency;
@@ -929,6 +947,7 @@ function renderAll(){
   renderRoute();renderKlass();renderEvent();renderPrep();
 }
 renderAll();
+setInterval(updateCountdown,60000);
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
 </script>
 </body>
