@@ -296,6 +296,9 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
       <div class="t">DOLOMITES 2026</div>
     </div>
   </div>
+</header>
+
+<div class="hd-secondary">
   <div class="totals">
     <div class="tot"><div class="l">Afstand</div><div class="v">724<span class="u"> km</span></div></div>
     <div class="tot"><div class="l">Hoogtemeters</div><div class="v">16.890<span class="u"> m</span></div></div>
@@ -315,7 +318,7 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
     <button class="pm-toggle" id="simPM" onclick="toggleSimPM()" aria-label="voor of na 16:00">&lt;16:00</button>
     <button class="reset" onclick="resetSim()">nu</button>
   </div>
-</header>
+</div>
 
 <section class="view active" id="v-route"></section>
 <section class="view" id="v-event"></section>
@@ -348,7 +351,7 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.59";
+var APP_VERSION="0.60";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
