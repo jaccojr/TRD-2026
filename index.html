@@ -355,7 +355,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.54";
+var APP_VERSION="0.55";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -439,6 +439,19 @@ function activeIndex(){
     if(isoToDate(RIDE.stages[j].iso).getTime()>t)return j;
   }
   return RIDE.stages.length-1; // after event
+}
+// Decides what the Route tab's top section should show and how it's labeled:
+// before the Proloog and after the final stage, "vandaag" doesn't apply to any real stage,
+// so those get their own labels instead of a misleading "Vandaag & morgen".
+function routeFocusInfo(){
+  var t=nowD().getTime();
+  var first=isoToDate(RIDE.stages[0].iso).getTime();
+  var last=isoToDate(RIDE.stages[RIDE.stages.length-1].iso).getTime();
+  if(t<first)return{label:"Eerste etappes",focus:[0,1].filter(function(i){return i<RIDE.stages.length;})};
+  if(t>last)return{label:"Laatste etappe",focus:[RIDE.stages.length-1]};
+  var ai=activeIndex();
+  if(ai>=RIDE.stages.length-1)return{label:"Vandaag",focus:[ai]};
+  return{label:"Vandaag & morgen",focus:[ai,ai+1]};
 }
 function stageState(s){ // 'done' | 'today' | 'future'
   var t=nowD().getTime();var st=isoToDate(s.iso).getTime();
@@ -585,9 +598,10 @@ function stageCard(s,expanded){
   return h;
 }
 function renderRoute(){
-  var ai=activeIndex();var v=document.getElementById("v-route");
-  var focus=[ai,ai+1].filter(function(i){return i<RIDE.stages.length;});
-  var html='<div class="section-eyebrow">Vandaag &amp; morgen</div>';
+  var v=document.getElementById("v-route");
+  var info=routeFocusInfo();
+  var focus=info.focus;
+  var html='<div class="section-eyebrow">'+info.label+'</div>';
   focus.forEach(function(i){html+=stageCard(RIDE.stages[i],true);});
   var rest=RIDE.stages.map(function(_,i){return i;}).filter(function(i){return focus.indexOf(i)<0;});
   if(rest.length){
