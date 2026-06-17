@@ -349,7 +349,7 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.65";
+var APP_VERSION="0.67";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -771,15 +771,15 @@ function campCard(camp,isCurrent,slot){
     // No reordering logic needed — a pure-morning slot simply has diner:null and the row is skipped.
     var rows=[];
     if(slot.diner){var d=splitMorgen(slot.diner);
-      rows.push({k:"Diner",v:d.text,morgen:d.morgen});}
+      rows.push({k:"Diner",v:d.text,morgen:d.morgen});
+      rows.push({k:"Menu",v:slot.menu||"onbekend",plain:true});}
     if(slot.ontbijt){var o=splitMorgen(slot.ontbijt);
       rows.push({k:"Ontbijt",v:o.text,morgen:o.morgen});}
     if(slot.start){var st=splitMorgen(slot.start);
       rows.push({k:"Start",v:st.text,morgen:st.morgen});}
     rows.forEach(function(r){
-      h+='<div class="row"><span class="rk">'+r.k+'</span><span class="rv"><b>'+r.v+'</b>'+(r.morgen?' <span class="od">morgen</span>':'')+'</span></div>';
+      h+='<div class="row"><span class="rk">'+r.k+'</span><span class="rv">'+(r.plain?r.v:'<b>'+r.v+'</b>')+(r.morgen?' <span class="od">morgen</span>':'')+'</span></div>';
     });
-    if(slot.diner)h+='<div class="row"><span class="rk">Menu</span><span class="rv">onbekend</span></div>';
   }
 
   if(camp.map){
