@@ -33,7 +33,6 @@ a{color:inherit;}
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}
 
 /* ---------- Header ---------- */
-header.app{background:transparent;}
 .hd-top{display:flex;align-items:center;gap:11px;padding:14px 18px 13px;position:sticky;top:0;z-index:50;
  background:var(--rose);border-bottom:1px solid var(--rose-line);}
 .mark-logo{height:30px;width:auto;flex-shrink:0;}
@@ -289,13 +288,11 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
 <body>
 <div class="wrap">
 
-<header class="app">
-  <div class="hd-top">
+<header class="hd-top">
     <img class="mark-logo" src="logo-transparent.png" alt="The Ride">
     <div class="hd-title">
       <div class="t">DOLOMITES 2026</div>
     </div>
-  </div>
 </header>
 
 <div class="hd-secondary">
@@ -351,7 +348,7 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.61";
+var APP_VERSION="0.62";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
