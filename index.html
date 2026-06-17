@@ -67,6 +67,11 @@ header.app{position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.94);
 .sim .reset{width:auto;padding:0 8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;}
 .sim .pm-toggle{width:auto;padding:0 7px;font-family:var(--mono);font-size:9px;letter-spacing:.04em;}
 .sim .pm-toggle.on{background:var(--rose-deep);color:#fff;border-color:var(--rose-deep);}
+.data-refresh{display:flex;justify-content:center;padding:7px 18px;border-top:1px solid var(--line);}
+.data-refresh button{border:1px solid var(--line);background:#fff;color:var(--ink2);border-radius:8px;padding:6px 13px;
+ font-family:var(--mono);font-size:10px;letter-spacing:.05em;display:flex;align-items:center;gap:6px;appearance:none;cursor:pointer;}
+.data-refresh button:active{background:var(--rose-soft);}
+.data-refresh button.busy{opacity:.6;pointer-events:none;}
 
 /* ---------- Tabs ---------- */
 .tabs{position:sticky;top:0;z-index:40;display:grid;grid-template-columns:repeat(var(--ntabs,4),1fr);background:#fff;border-bottom:1px solid var(--line2);}
@@ -303,6 +308,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
     <a class="hbtn sos" href="tel:" id="hdSos">📞 Noodnummer</a>
   </div>
   <div class="hd-locout" id="locout"></div>
+  <div class="data-refresh"><button id="refreshBtn" onclick="refreshAppData()">↻ Vernieuw appdata</button></div>
   <div class="sim">
     <span class="lab">Demo&nbsp;dag</span>
     <button onclick="stepSim(-1)" aria-label="vorige dag">‹</button>
@@ -376,6 +382,23 @@ var SIM_PM=false; // demo-only: false = "before 16:00" today, true = "16:00 or l
 function nowD(){var d=SIM?new Date(SIM):new Date();d.setHours(0,0,0,0);return d;}
 function nowHour(){return SIM?(SIM_PM?16:8):new Date().getHours();}
 var allDates=RIDE.stages.map(function(s){return s.iso;});
+function refreshAppData(){
+  var btn=document.getElementById("refreshBtn");
+  if(btn){btn.classList.add("busy");btn.textContent="Vernieuwen…";}
+  (async function(){
+    try{
+      if("caches" in window){
+        var keys=await caches.keys();
+        await Promise.all(keys.map(function(k){return caches.delete(k);}));
+      }
+      if("serviceWorker" in navigator){
+        var regs=await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(function(r){return r.unregister();}));
+      }
+    }catch(e){}
+    location.reload();
+  })();
+}
 function stepSim(dir){
   var cur=SIM?new Date(SIM):new Date();cur.setHours(0,0,0,0);
   cur.setDate(cur.getDate()+dir);SIM=cur;renderAll();
