@@ -345,7 +345,7 @@ footer{padding:20px 18px 30px;border-top:1px solid var(--line);text-align:center
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.41";
+var APP_VERSION="0.42";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -689,17 +689,20 @@ function currentSlot(){
   // exact row lookup: today's iso + before/after 16:00 — no fallback, no derived logic.
   var iso=todayIso(),pm=nowHour()>=16;
   var sched=RIDE.event.campSchedule;
+  var last=sched[sched.length-1];
+  var lastT=isoToDate(last.iso).getTime()+(last.pm?1:0);
+  var nowT=isoToDate(iso).getTime()+(pm?1:0);
+  if(nowT>lastT)return null; // strictly past the final slot's window — official program has ended
   // find the latest slot whose (iso,pm) is <= now, since not every date necessarily has both rows defined
   var match=null;
   for(var i=0;i<sched.length;i++){
     var s=sched[i];var st=isoToDate(s.iso).getTime()+(s.pm?1:0);
-    var nowT=isoToDate(iso).getTime()+(pm?1:0);
     if(st<=nowT)match=s;
   }
   return match||sched[0];
 }
 function todayIso(){var d=nowD();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-function currentCampId(){return currentSlot().camp;}
+function currentCampId(){var s=currentSlot();return s?s.camp:"levico";}
 
 function splitMorgen(val){
   if(!val)return{text:val,morgen:false};
@@ -707,9 +710,9 @@ function splitMorgen(val){
   return{text:val.replace(/\s*'morgen'\s*$/,""),morgen:morgen};
 }
 function campCard(camp,isCurrent,slot){
-  var dateStr=isoToDate(slot.iso).toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"});
-  var h='<div class="ev'+(isCurrent&&slot.active?" now":"")+'">';
-  h+='<div class="ev-h">'+(isCurrent&&slot.active?'<span class="ev-h-bar"></span>':'')+'<div class="ttl">'+camp.name+'</div>'+(isCurrent&&slot.active?'<div class="dt">'+dateStr+'</div>':'')+'</div>';
+  var dateStr=slot?isoToDate(slot.iso).toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"}):"";
+  var h='<div class="ev'+(isCurrent&&slot&&slot.active?" now":"")+'">';
+  h+='<div class="ev-h">'+(isCurrent&&slot&&slot.active?'<span class="ev-h-bar"></span>':'')+'<div class="ttl">'+camp.name+'</div>'+(isCurrent&&slot&&slot.active?'<div class="dt">'+dateStr+'</div>':'')+'</div>';
   h+='<div class="ev-b">';
   h+='<div class="row"><span class="rk">Camping</span><span class="rv"><b>'+camp.name+'</b> · '+camp.town+(camp.tbc?' <span class="od">tbc</span>':'')+'</span></div>';
   h+='<div class="row"><span class="rk">Adres</span><span class="rv">'+camp.address+
@@ -725,7 +728,9 @@ function campCard(camp,isCurrent,slot){
       rows.push({k:"Diner",v:d.text,morgen:d.morgen});}
     // Chronological order: in the evening (pm slot), diner happens first (tonight),
     // followed by tomorrow's breakfast/start preview — not the default ontbijt/start/diner order.
-    if(slot.pm)rows.sort(function(a,b){return(a.k==="Diner"?-1:0)-(b.k==="Diner"?-1:0);});
+    // Diner-tonight + breakfast/start-tomorrow rows should always lead with diner, regardless of the pm flag
+    // (12/9's row is technically pm:false but still carries this evening-style "diner now, rest is tomorrow" shape).
+    if(slot.diner&&(slot.ontbijt||slot.start))rows.sort(function(a,b){return(a.k==="Diner"?-1:0)-(b.k==="Diner"?-1:0);});
     rows.forEach(function(r){
       h+='<div class="row"><span class="rk">'+r.k+'</span><span class="rv"><b>'+r.v+'</b>'+(r.morgen?' <span class="od">morgen</span>':'')+'</span></div>';
     });
@@ -815,10 +820,11 @@ function mzDist(t0,t1){var dx=t1.clientX-t0.clientX,dy=t1.clientY-t0.clientY;ret
 function renderEvent(){
   var v=document.getElementById("v-event");
   var slot=currentSlot();
-  var curId=slot.camp;
+  var curId=slot?slot.camp:null;
   var order=["levico","nevegal","bellamonte"];
-  var sorted=order.slice().sort(function(a,b){return (a===curId?-1:0)-(b===curId?-1:0);});
+  var sorted=curId?order.slice().sort(function(a,b){return (a===curId?-1:0)-(b===curId?-1:0);}):order;
   var h='<div class="section-eyebrow">Camping</div>';
+  if(!slot)h+='<div class="wx-done">Het officiële programma is afgelopen.</div>';
   sorted.forEach(function(id){var camp=campById(id);if(camp)h+=campCard(camp,id===curId,slot);});
   h+='<div class="partners"><h3>Partners</h3><div class="plogos">';
   RIDE.sponsors.forEach(function(sp){h+='<div class="plogo"><div class="pn">'+sp.name+'</div><div class="pt">'+sp.tag+'</div></div>';});
