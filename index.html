@@ -349,7 +349,7 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.67";
+var APP_VERSION="0.68";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -945,7 +945,7 @@ function renderAll(){
   updateCountdown();
   document.getElementById("footLogos").innerHTML=RIDE.sponsors.map(function(s){return '<span>'+s.name+'</span>';}).join("");
   document.getElementById("hdSos").href="tel:"+RIDE.event.emergency;
-  var liveActions=eventPhase()==="live";
+  var liveActions=eventPhase()==="live"&&nowD().getTime()<=isoToDate(RIDE.stages[RIDE.stages.length-1].iso).getTime();
   document.getElementById("hdActions").style.display=liveActions?"flex":"none";
   document.getElementById("locout").style.display=liveActions?"":"none";
   document.getElementById("footMeta").textContent="Routedata: GPX (dummy) · Weer: Open-Meteo · "+APP_STATUS+" · v"+APP_VERSION;
