@@ -50,9 +50,7 @@ header.app{background:transparent;}
 .countdown{display:flex;align-items:center;justify-content:center;gap:9px;padding:8px 18px;border-top:1px solid var(--line);background:var(--rose-soft);}
 .countdown .cd-lab{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--rose-deep);}
 .countdown .cd-val{font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:-.02em;color:#2e3440;transform:skewX(-12.4deg);display:inline-block;}
-.sponsor-strip{display:flex;align-items:center;gap:8px;padding:12px 18px;border-top:1px solid var(--line);
- font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.05em;position:relative;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
-.sponsor-strip b{color:var(--ink2);font-weight:700;}
+
 .hd-actions{display:flex;gap:9px;padding:9px 14px;border-top:1px solid var(--line);position:relative;}
 .hd-actions .hbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;border-radius:9px;
  font-family:var(--disp);font-weight:700;font-size:12px;text-decoration:none;cursor:pointer;border:1.5px solid;appearance:none;background:#fff;}
@@ -304,7 +302,6 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
     <div class="tot k2"><div class="l">KM tot finish</div><div class="v" id="kmleft">—</div></div>
   </div>
   <div class="countdown" id="countdown"><span class="cd-lab">Tot de start</span><span class="cd-val" id="cdVal">—</span></div>
-  <div class="sponsor-strip"><span>Mede mogelijk gemaakt door</span> <b id="sponLine">fi'zi:k · SiS · JOIN · Kwaremont</b></div>
   <div class="hd-actions" id="hdActions">
     <button class="hbtn loc" onclick="getLoc()">📍 Deel mijn locatie</button>
     <a class="hbtn sos" href="tel:" id="hdSos">📞 Noodnummer</a>
@@ -351,7 +348,7 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.58";
+var APP_VERSION="0.59";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -945,7 +942,6 @@ function renderAll(){
   updateSimLabel();
   document.getElementById("kmleft").innerHTML=kmLeft().toLocaleString("nl")+'<span class="u"> km</span>';
   updateCountdown();
-  document.getElementById("sponLine").textContent=RIDE.sponsors.map(function(s){return s.name;}).join(" · ");
   document.getElementById("footLogos").innerHTML=RIDE.sponsors.map(function(s){return '<span>'+s.name+'</span>';}).join("");
   document.getElementById("hdSos").href="tel:"+RIDE.event.emergency;
   var liveActions=eventPhase()==="live";
