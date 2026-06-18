@@ -354,7 +354,7 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
 <script src="data.js"></script>
 <script>
 /* ============ version ============ */
-var APP_VERSION="0.73";
+var APP_VERSION="0.74";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -576,7 +576,7 @@ function stageCard(s,expanded){
   h+='<button class="exp-btn" onclick="toggleMap('+s.num+')" id="mapbtn-'+s.num+'">'+icon("map")+'<span class="lbl">Bekijk route op kaart</span><span class="cv">▼</span></button>';
   h+='<div class="map-wrap" id="mapw-'+s.num+'"><div class="map-c" id="map-'+s.num+'"></div></div>';
   if(s.gpxFile){
-    h+='<a class="exp-btn gpxdl" href="'+s.gpxFile+'" download target="_blank" rel="noopener">'+icon("download")+'<span class="lbl">Download GPX</span></a>';
+    h+='<button class="exp-btn gpxdl" onclick="downloadGpx(\''+s.gpxFile+'\')">'+icon("download")+'<span class="lbl">Download GPX</span></button>';
   }
   // weather
   if(!weatherWindowOpen()){
@@ -618,6 +618,19 @@ function toggleAllStages(){
   if(r.style.display==="none"){r.style.display="block";b.textContent="Verberg etappes";
     requestAnimationFrame(function(){RIDE.stages.forEach(function(s){if(document.getElementById("pc-"+s.num)){buildProfile(s);hover(s);}});loadWeather();});
   }else{r.style.display="none";b.textContent="Toon alle etappes ("+(RIDE.stages.length-2)+")";}
+}
+function downloadGpx(filename){
+  fetch(filename).then(function(r){return r.blob();}).then(function(blob){
+    var file=new File([blob],filename,{type:"application/gpx+xml"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      return navigator.share({files:[file]}).catch(function(){/* user cancelled the share sheet — fine */});
+    }
+    throw 0; // fall through to plain link fallback
+  }).catch(function(){
+    var a=document.createElement("a");
+    a.href=filename;a.download=filename;a.target="_blank";a.rel="noopener";
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+  });
 }
 function togglePanel(num,k){
   document.getElementById("panel-"+k+"-"+num).classList.toggle("open");
