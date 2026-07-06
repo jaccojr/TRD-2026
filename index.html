@@ -374,7 +374,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="0.81";
+var APP_VERSION="0.83";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -580,8 +580,6 @@ function stageCard(s,expanded){
   var loadPct=Math.round(s.gain/maxGain*100);
   var routeChips='<span class="stars">'+stars(s.stars)+'</span><span>'+s.startName+(s.loop?' ↺':' → '+s.endName)+'</span>';
   if(s.loop)routeChips+='<span class="chip loop">Rondrit</span>';
-  if(!s.supported)routeChips+='<span class="chip free">Vrije rit · geen verzorging</span>';
-  if(eventPhase()==="preview")routeChips+='<span class="chip prev">Voorlopige route</span>';
   var h='<div class="card'+(isToday?' today':'')+'" id="card-'+s.num+'">';
   h+='<div class="s-top"><div class="badge'+(s.loop?' rt':'')+(isToday?' todaybg':'')+'"><div class="bl">'+(s.num===0?"Proloog":"Etappe")+'</div><div class="bn">'+(s.num===0?"P":s.num)+'</div><div class="bd">'+s.date.split(" ")[1]+'</div></div>';
   h+='<div class="s-info"><div class="s-name">'+s.it+'</div><div class="s-nl">'+s.nl+'</div><div class="s-route">'+routeChips+'</div></div></div>';
@@ -593,7 +591,7 @@ function stageCard(s,expanded){
   h+='<div class="loadbar"><div class="ll"><span>Klim-last t.o.v. zwaarste dag</span><span>'+loadPct+'%</span></div><div class="track"><div class="fill" style="width:'+loadPct+'%"></div></div></div>';
   h+='<div class="prof-wrap"><div class="prof-c" id="pw-'+s.num+'"><canvas id="pc-'+s.num+'"></canvas><div class="cursor" id="cur-'+s.num+'"></div><div class="tip" id="tip-'+s.num+'"></div></div></div>';
   h+='<button class="exp-btn" onclick="togglePanel('+s.num+',\'d\')">'+icon("terrain")+'<span class="lbl">Route, cols & segment</span><span class="cv">▼</span></button>';
-  h+='<div class="panel" id="panel-d-'+s.num+'"><div class="panel-in">'+segBlock(s)+'<div>'+wpRows(s)+'</div></div></div>';
+  h+='<div class="panel" id="panel-d-'+s.num+'"><div class="panel-in"><div>'+wpRows(s)+'</div>'+segBlock(s)+'</div></div>';
   if(s.warnings&&s.warnings.length){
     h+='<button class="exp-btn warn" onclick="togglePanel('+s.num+',\'w\')">'+icon("alert")+'<span class="lbl">Let op ('+s.warnings.length+')</span><span class="cv">▼</span></button>';
     h+='<div class="panel" id="panel-w-'+s.num+'"><div class="panel-in wlist">';
