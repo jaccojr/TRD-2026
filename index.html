@@ -115,9 +115,7 @@ a{color:inherit;}
 .stars{color:var(--rose);font-size:11px;letter-spacing:1px;}
 .chip{font-family:var(--mono);font-size:8.5px;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;border-radius:5px;font-weight:500;}
 .chip.loop{background:#eef1f4;color:#4a5563;}
-.chip.free{background:var(--rose-soft);color:var(--rose-deep);}
 .chip.cat{background:var(--ink);color:#fff;}
-.chip.prev{background:#eef1f4;color:#5a6473;border:1px dashed #c7ced6;}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line);}
 .m{padding:9px 8px 8px 12px;border-right:1px solid var(--line);}
 .m:last-child{border-right:none;}
@@ -340,7 +338,7 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
   </a>
   <div class="foot-spon">Partners</div>
   <div class="foot-logos" id="footLogos"></div>
-  <div class="foot-meta" id="footMeta">Routedata: GPX (dummy) · Weer: Open-Meteo</div>
+  <div class="foot-meta" id="footMeta">Routedata: GPX · Weer: Open-Meteo</div>
 </footer>
 <nav class="tabs" id="tabs"></nav>
 </div>
@@ -377,7 +375,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="0.91";
+var APP_VERSION="0.93";
 var APP_STATUS="PRELIMINARY"; // shown in header badge + footer; bump APP_VERSION with every iteration
 
 /* ============ helpers ============ */
@@ -561,9 +559,6 @@ function setAlt(num,val){
 function wpRows(s){
   var r=activeRoute(s);
   var cols=r.waypoints.filter(function(w){return w.type==="col";});
-  var vps=r.waypoints.filter(function(w){return w.type==="vp";});
-  var pois=r.waypoints.filter(function(w){return w.type==="poi";});
-  var tunnels=r.waypoints.filter(function(w){return w.type==="tunnel";});
   var h="";
   if(cols.length){
     cols.sort(function(a,b){return a.kmStart-b.kmStart;});
@@ -571,21 +566,15 @@ function wpRows(s){
       h+='<div class="wp"><span class="ic">⛰</span><div class="nm">'+c.name+'<small>'+c.desc+' · '+c.ele+' m</small></div><span class="km">km '+c.kmStart+'</span></div>';
     });
   }
-  if(vps.length){
-    vps.forEach(function(v){
-      h+='<div class="wp"><div class="nm">'+v.name+'</div><span class="km">km '+v.km+'</span></div>';
+  // VP/POI/tunnel only differ by icon (VP has none) — one shared render path.
+  // Adding a new simple waypoint type later is just one more entry here.
+  var ICONS={vp:"",poi:"📍",tunnel:"🔦"};
+  ["vp","poi","tunnel"].forEach(function(type){
+    r.waypoints.filter(function(w){return w.type===type;}).forEach(function(w){
+      var ic=ICONS[type]?'<span class="ic">'+ICONS[type]+'</span>':'';
+      h+='<div class="wp">'+ic+'<div class="nm">'+w.name+'</div><span class="km">km '+w.km+'</span></div>';
     });
-  }
-  if(pois.length){
-    pois.forEach(function(p){
-      h+='<div class="wp"><span class="ic">📍</span><div class="nm">'+p.name+'</div><span class="km">km '+p.km+'</span></div>';
-    });
-  }
-  if(tunnels.length){
-    tunnels.forEach(function(t){
-      h+='<div class="wp"><span class="ic">🔦</span><div class="nm">'+t.name+'</div><span class="km">km '+t.km+'</span></div>';
-    });
-  }
+  });
   return h;
 }
 var STRAVA_SVG='<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>';
@@ -1031,7 +1020,7 @@ function renderAll(){
   var liveActions=eventPhase()==="live"&&nowD().getTime()<=isoToDate(RIDE.stages[RIDE.stages.length-1].iso).getTime();
   document.getElementById("hdActions").style.display=liveActions?"flex":"none";
   document.getElementById("locout").style.display=liveActions?"":"none";
-  document.getElementById("footMeta").textContent="Routedata: GPX (dummy) · Weer: Open-Meteo · "+APP_STATUS+" · v"+APP_VERSION;
+  document.getElementById("footMeta").textContent="Routedata: GPX · Weer: Open-Meteo · "+APP_STATUS+" · v"+APP_VERSION;
   renderRoute();renderKlass();renderEvent();renderPrep();
 }
 renderAll();
