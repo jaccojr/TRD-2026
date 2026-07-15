@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Ride Dolomites 2026</title>
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="TRDolomites">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+ --bg:#ffffff;--paper:#faf7f4;--card:#ffffff;--ink:#2e3440;--ink2:#574e47;--muted:#9a918a;
+ --line:#eee8e1;--line2:#e2dad1;
+ --rose:#F59BB0;--rose-deep:#E51F4D;--rose-soft:#FAF2F4;--rose-line:#F4D7DE;
+ --green:#1f9d6b;--amber:#cf8412;--red:#d6455a;--blue:#3f7cc0;--summit:#7a6f64;
+ --disp:'Archivo',sans-serif;--body:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{background:var(--bg);}
+@media (max-width:540px){body{background:var(--rose);}}
+body{font-family:var(--body);color:var(--ink);min-height:100vh;overflow-x:clip;overflow-y:visible;line-height:1.45;
+ padding-bottom:env(safe-area-inset-bottom);-webkit-font-smoothing:antialiased;}
+.wrap{max-width:540px;margin:0 auto;background:var(--bg);}
+a{color:inherit;}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+
+/* ---------- Header ---------- */
+.hd-top{display:flex;align-items:center;gap:11px;padding:14px 18px 13px;position:sticky;top:0;z-index:50;
+ background:var(--rose);border-bottom:1px solid var(--rose-line);}
+.mark-logo{height:30px;width:auto;flex-shrink:0;}
+.hd-title .t{font-family:var(--disp);font-weight:800;font-size:17px;letter-spacing:-.02em;line-height:1.05;
+ color:#2e3440;transform:skewX(-12.4deg);display:inline-block;}
+.totals{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:1px;background:var(--line);
+ border-top:1px solid var(--line);position:relative;}
+.tot{background:#fff;padding:9px 14px;}
+.tot .l{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+.tot .v{font-family:var(--mono);font-weight:700;font-size:18px;letter-spacing:-.02em;margin-top:1px;}
+.tot.k2{background:var(--rose-soft);}
+.tot.k2 .v{color:var(--rose-deep);}
+.tot .u{font-size:10px;color:var(--muted);font-weight:500;}
+.countdown{display:flex;align-items:center;justify-content:center;gap:9px;padding:8px 18px;border-top:1px solid var(--line);background:var(--rose-soft);}
+.countdown .cd-lab{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--rose-deep);}
+.countdown .cd-val{font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:-.02em;color:#2e3440;transform:skewX(-12.4deg);display:inline-block;}
+
+.hd-actions{display:flex;gap:9px;padding:9px 14px;border-top:1px solid var(--line);position:relative;}
+.hd-actions .hbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;border-radius:9px;
+ font-family:var(--disp);font-weight:700;font-size:12px;text-decoration:none;cursor:pointer;border:1.5px solid;appearance:none;background:#fff;}
+.hbtn.loc{border-color:var(--green);color:var(--green);}
+.hbtn.loc:active{background:#eefaf3;}
+.hbtn.sos{border-color:var(--red);color:var(--red);}
+.hbtn.sos:active{background:#fcecee;}
+.hd-locout{font-family:var(--mono);font-size:10.5px;color:var(--blue);padding:0 14px 8px;margin-top:-2px;min-height:0;border-top:none;}
+
+/* ---------- Tabs ---------- */
+.tabs{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:540px;z-index:60;transform:translateZ(0);will-change:transform;
+ display:grid;grid-template-columns:repeat(var(--ntabs,4),1fr);background:var(--rose);
+ border-top:1px solid var(--rose-line);padding-bottom:env(safe-area-inset-bottom,0px);}
+.tab{appearance:none;border:none;background:none;padding:8px 4px;cursor:pointer;display:flex;justify-content:center;}
+.tab-inner{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 12px 6px;border-radius:14px;}
+.tab .ic{display:flex;justify-content:center;font-size:15px;font-weight:400;}
+.tab .ic .ic-svg{width:17px;height:17px;fill:var(--ink);}
+.tab .lbl{font-family:var(--disp);font-weight:700;font-size:11.5px;letter-spacing:.01em;color:var(--ink);}
+.tab.active .tab-inner{border:1.5px solid #fff;}
+.tab.active .ic .ic-svg{fill:#fff;}
+.tab.active .lbl{color:#fff;}
+
+/* ---------- Views ---------- */
+.view{display:none;padding:16px 14px 34px;animation:fade .25s ease;}
+.view.active{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+.section-eyebrow{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--rose-deep);
+ margin:2px 4px 11px;display:flex;align-items:center;gap:8px;}
+.section-eyebrow::after{content:"";flex:1;height:1px;background:var(--line2);}
+
+/* ---------- Stage / day cards ---------- */
+.card{background:var(--card);border:1px solid var(--line2);border-radius:15px;overflow:hidden;margin-bottom:14px;
+ box-shadow:0 1px 2px rgba(26,21,18,.03);}
+.card.today{border-color:var(--rose-line);box-shadow:0 4px 18px rgba(245,155,176,.18);}
+.s-top{display:flex;align-items:stretch;border-bottom:1px solid var(--line);}
+.badge{width:62px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ padding:13px 6px;background:var(--paper);border-right:1px solid var(--line);text-align:center;}
+.today .badge,.badge.todaybg{background:var(--rose);}
+.badge .bl{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+.today .badge .bl{color:rgba(46,52,64,.65);}
+.badge .bn{font-family:var(--disp);font-weight:700;font-size:21px;line-height:1;color:#2e3440;
+ transform:skewX(-12.4deg);display:inline-block;}
+.badge .bd{font-family:var(--mono);font-size:8.5px;margin-top:3px;color:var(--ink2);}
+.today .badge .bd{color:rgba(46,52,64,.8);}
+.s-info{flex:1;padding:11px 14px;min-width:0;position:relative;}
+.ab-toggle{position:absolute;top:9px;right:12px;display:flex;border:1.5px solid var(--rose-deep);border-radius:8px;overflow:hidden;}
+.ab-toggle button{border:none;background:#fff;color:var(--rose-deep);font-family:var(--disp);font-weight:800;font-size:11px;width:22px;height:20px;line-height:20px;cursor:pointer;padding:0;}
+.ab-toggle button.on{background:var(--rose);color:#fff;}
+.s-name{font-family:var(--disp);font-weight:800;font-size:16.5px;letter-spacing:-.01em;line-height:1.1;
+ transform:skewX(-12.4deg);display:inline-block;}
+.s-nl{font-size:11px;color:var(--muted);margin-top:1px;}
+.s-route{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:6px;font-size:11px;color:var(--ink2);}
+.stars{color:var(--rose);font-size:11px;letter-spacing:1px;}
+.chip{font-family:var(--mono);font-size:8.5px;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;border-radius:5px;font-weight:500;}
+.chip.loop{background:#eef1f4;color:#4a5563;}
+.chip.cat{background:var(--ink);color:#fff;}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line);}
+.m{padding:9px 8px 8px 12px;border-right:1px solid var(--line);}
+.m:last-child{border-right:none;}
+.m .l{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.m .v{font-family:var(--mono);font-weight:700;font-size:14px;margin-top:2px;}
+.m .u{font-size:9px;color:var(--muted);font-weight:500;}
+.loadbar{padding:8px 14px 9px;border-bottom:1px solid var(--line);}
+.loadbar .ll{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.track{height:4px;background:#f0ece7;border-radius:3px;overflow:hidden;}
+.fill{height:100%;background:linear-gradient(90deg,var(--rose),#f5a0c4);border-radius:3px;}
+.prof-wrap{padding:11px 12px 10px;border-bottom:1px solid var(--line);}
+.prof-c{position:relative;height:98px;cursor:crosshair;}
+.prof-c canvas{width:100%;height:98px;display:block;}
+.cursor{position:absolute;top:0;bottom:0;width:1px;background:var(--rose);opacity:0;pointer-events:none;}
+.cursor.on{opacity:.7;}
+.tip{position:absolute;top:2px;background:var(--ink);color:#fff;font-family:var(--mono);font-size:9.5px;padding:3px 7px;border-radius:6px;
+ pointer-events:none;opacity:0;transition:opacity .1s;white-space:nowrap;}
+.tip.on{opacity:1;}
+.exp-btn{width:100%;appearance:none;border:none;background:#fff;padding:11px 14px;display:flex;align-items:center;gap:9px;justify-content:flex-start;
+ cursor:pointer;font-family:var(--disp);font-weight:600;font-size:13px;color:var(--ink);border-bottom:1px solid var(--line);text-decoration:none;box-sizing:border-box;}
+.exp-btn .lbl{flex:1;text-align:left;}
+.exp-btn .ic-svg{width:17px;height:17px;flex-shrink:0;fill:var(--ink2);}
+.exp-btn.warn .ic-svg{fill:var(--amber);}
+.exp-btn+.wx .wxrow:first-child,.map-wrap+.wx .wxrow:first-child,.exp-btn+.wx-done,.map-wrap+.wx-done{border-top:none;}
+.exp-btn .cv{transition:transform .2s;color:var(--muted);font-size:11px;}
+.exp-btn.open .cv{transform:rotate(180deg);}
+.exp-btn.warn{color:var(--amber);}
+.exp-btn.dummy{cursor:default;opacity:.6;}
+.exp-btn.dummy .ic-svg{fill:var(--muted);}
+.panel{max-height:0;overflow:hidden;transition:max-height .3s ease;background:var(--paper);}
+.panel.open{max-height:2400px;}
+.panel-in{padding:13px 15px;}
+.seg{background:var(--rose-soft);border:1px solid var(--rose-line);border-radius:10px;padding:10px 12px;margin-bottom:12px;}
+.seg .sh{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.seg .st{font-family:var(--disp);font-weight:800;font-size:13px;color:var(--rose-deep);display:flex;align-items:center;gap:6px;}
+.seg .sd{font-size:11px;color:var(--ink2);margin-top:3px;}
+.seg .ss{font-family:var(--mono);font-size:10px;color:var(--rose-deep);margin-top:5px;}
+.seg .sbtns{display:flex;gap:8px;margin-top:9px;}
+.seg .sbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--mono);font-size:10px;font-weight:700;
+ text-decoration:none;letter-spacing:.04em;padding:8px 10px;border-radius:7px;}
+.seg .sbtn.strava{color:#fff;background:#FC4C02;}
+.seg .sbtn.klass{color:#fff;background:var(--ink);}
+.seg .sbtn .ic-svg{width:14px;height:14px;flex-shrink:0;fill:currentColor;}
+.wp{display:flex;align-items:baseline;gap:10px;padding:6px 0;}
+.wp-decision{display:flex;align-items:flex-start;gap:10px;margin:8px 0;padding:10px 12px;border:1.5px dashed var(--rose);border-radius:10px;background:var(--rose-soft);}
+.wp-decision .ic{font-size:15px;}
+.wp-decision .nm{font-family:var(--disp);font-weight:800;font-size:12.5px;color:var(--ink);}
+.wp-decision small{display:block;font-weight:500;color:var(--ink2);font-size:11px;margin-top:2px;}
+.wp-decision .km{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--rose-deep);margin-left:4px;}
+.wp-tap{cursor:zoom-in;margin:0 -4px;padding:6px 4px;border-radius:8px;}
+.wp-tap:active{background:var(--rose-soft);}
+.wp .km{font-family:var(--mono);font-size:10px;color:var(--muted);min-width:46px;}
+.wp .nm{font-size:12.5px;font-weight:600;flex:1;}
+.wp .nm small{display:block;font-weight:400;font-size:10.5px;color:var(--muted);font-family:var(--mono);margin-top:1px;}
+.wp .ic{font-size:13px;}
+.wlist .witem{display:flex;gap:9px;align-items:flex-start;padding:6px 0;font-size:12px;color:var(--ink2);}
+.wlist .wd{color:var(--amber);flex-shrink:0;}
+.map-wrap{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.map-wrap.open{max-height:330px;}
+.map-c{height:300px;background:var(--paper);}
+.wx{display:flex;flex-direction:column;}
+.wxrow{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:12px;padding:10px 15px;border-top:1px solid var(--line);}
+.wxrow .wl{min-width:0;overflow:hidden;}
+.wxrow .wt{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.wxrow .wn{font-size:12px;font-weight:600;}
+.wxrow .we{font-family:var(--mono);font-size:9.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wxrow .wi{font-size:23px;}
+.wxrow .wd2{min-width:0;}
+.wxrow .wd-inner{display:flex;align-items:center;gap:11px;}
+.wxrow .wtemp{font-family:var(--mono);font-weight:700;font-size:16px;}
+.wxrow .wc{font-size:10.5px;color:var(--muted);}
+.wxrow .wpills{display:flex;gap:6px;margin-top:3px;}
+.wpill{font-family:var(--mono);font-size:9px;color:var(--ink2);background:#f3efea;padding:2px 6px;border-radius:5px;}
+.wx-done{padding:11px 15px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.06em;}
+
+/* ---------- Klassement ---------- */
+.note{background:var(--paper);border:1px solid var(--line2);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--ink2);margin-bottom:14px;line-height:1.5;}
+.note b{color:var(--ink);}
+.seg-toggle{display:flex;background:var(--paper);border:1px solid var(--line2);border-radius:10px;padding:3px;margin-bottom:11px;}
+.seg-toggle button{flex:1;border:none;background:none;padding:9px;border-radius:8px;font-family:var(--disp);font-weight:700;font-size:12.5px;color:var(--muted);cursor:pointer;}
+.seg-toggle button.on{background:#fff;color:var(--rose-deep);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.cats{display:flex;gap:7px;overflow-x:auto;padding-bottom:9px;margin-bottom:6px;scrollbar-width:none;}
+.cats::-webkit-scrollbar{display:none;}
+.catchip{flex-shrink:0;border:1px solid var(--line2);background:#fff;border-radius:20px;padding:7px 13px;font-size:11.5px;font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap;}
+.catchip.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+.lb{border:1px solid var(--line2);border-radius:12px;overflow:hidden;}
+.lbrow{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line);}
+.lbrow:last-child{border-bottom:none;}
+.lbrow.p1{background:var(--rose-soft);}
+.lbrow .pos{font-family:var(--disp);font-weight:900;font-size:15px;width:24px;color:var(--muted);}
+.lbrow.p1 .pos,.lbrow.p2 .pos,.lbrow.p3 .pos{color:var(--rose-deep);}
+.lbrow .rn{flex:1;font-weight:600;font-size:13.5px;}
+.lbrow .gap{font-family:var(--mono);font-size:12px;color:var(--ink2);}
+.lbrow .gap.lead{color:var(--rose-deep);font-weight:700;}
+.ext-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;background:var(--ink);color:#fff;
+ border:none;border-radius:11px;padding:14px;font-family:var(--disp);font-weight:700;font-size:13px;text-decoration:none;cursor:pointer;}
+
+/* ---------- Event ---------- */
+.ev{background:#fff;border:1px solid var(--line2);border-radius:14px;margin-bottom:13px;overflow:hidden;}
+.ev.now{border-color:var(--rose-line);box-shadow:0 4px 16px rgba(245,155,176,.18);}
+.ev-h{display:flex;align-items:center;gap:10px;padding:12px 15px;border-bottom:1px solid var(--line);}
+.ev.now .ev-h{background:var(--rose);border-bottom-color:var(--rose-line);}
+.ev-h .ttl{font-family:var(--disp);font-weight:800;font-size:15px;flex:1;color:#2e3440;
+ transform:skewX(-12.4deg);display:inline-block;}
+.campmap{margin-top:8px;border-radius:10px;overflow:hidden;border:1px solid var(--line);cursor:zoom-in;}
+.campmap img{display:block;width:100%;height:auto;}
+.map-zoom{position:fixed;inset:0;background:rgba(26,21,18,.94);z-index:999;display:none;flex-direction:column;}
+.map-zoom.open{display:flex;}
+.map-zoom-close{position:absolute;top:14px;right:14px;z-index:2;width:36px;height:36px;border-radius:50%;border:none;
+ background:rgba(255,255,255,.15);color:#fff;font-size:16px;cursor:pointer;}
+.map-zoom-title{color:#fff;text-align:center;font-family:var(--disp);font-weight:700;font-size:13px;padding:14px 50px 6px;}
+.map-zoom-viewport{flex:1;overflow:hidden;position:relative;touch-action:none;cursor:grab;}
+.map-zoom-viewport:active{cursor:grabbing;}
+.map-zoom-viewport img{position:absolute;top:50%;left:50%;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;transform-origin:center center;
+ transform:translate(-50%,-50%) scale(1);will-change:transform;user-select:none;-webkit-user-drag:none;}
+.map-zoom-hint{color:rgba(255,255,255,.55);text-align:center;font-family:var(--mono);font-size:9.5px;padding:10px 14px 16px;}
+.ev-h .dt{font-family:var(--mono);font-size:10px;color:var(--muted);}
+.ev.now .ev-h .dt{color:rgba(46,52,64,.8);}
+.ev-b{padding:6px 15px 13px;}
+.row{display:flex;gap:11px;padding:7px 0;align-items:flex-start;}
+.row .rk{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:74px;padding-top:2px;}
+.row .rv{flex:1;font-size:12.5px;}
+.row .rv b{font-weight:700;}
+.row .rv .od{display:inline-block;font-family:var(--mono);font-size:9px;color:var(--rose-deep);background:var(--rose-soft);padding:1px 6px;border-radius:5px;margin-left:6px;letter-spacing:.05em;}
+.maplink{display:inline-block;margin-left:6px;font-family:var(--mono);font-size:10.5px;color:var(--rose-deep);font-weight:700;text-decoration:none;white-space:nowrap;}
+.partners{background:var(--rose-soft);border:1px solid var(--rose-line);border-radius:14px;padding:15px;margin-top:6px;}
+.partners h3{font-family:var(--disp);font-size:13px;font-weight:800;margin-bottom:11px;}
+.plogos{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.plogo{background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px;text-align:center;display:flex;align-items:center;justify-content:center;height:70px;box-sizing:content-box;}
+.plogo img{max-width:100%;max-height:28px;object-fit:contain;}
+.plogo.dummy{opacity:.6;cursor:default;}
+
+/* ---------- Prep ---------- */
+.pack-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.pack-prog{font-family:var(--mono);font-size:11px;color:var(--muted);}
+.pack-reset{font-family:var(--mono);font-size:10px;color:var(--rose-deep);background:none;border:none;cursor:pointer;letter-spacing:.05em;}
+.pcat{margin-bottom:13px;}
+.pcat-head{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;appearance:none;border:none;background:none;padding:8px 2px;cursor:pointer;
+ font-family:var(--disp);font-weight:800;font-size:12px;letter-spacing:.04em;color:var(--ink);text-transform:uppercase;}
+.pcat-head .cv{font-size:10px;color:var(--muted);transition:transform .25s ease;flex-shrink:0;}
+.pcat-head.open .cv{transform:rotate(180deg);}
+.pcat-body{max-height:0;overflow:hidden;transition:max-height .3s ease;padding-top:2px;}
+.pcat-body.open{max-height:2400px;}
+.pitem{display:flex;align-items:center;gap:11px;padding:9px 11px;background:#fff;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;cursor:pointer;}
+.pitem .box{width:20px;height:20px;border-radius:6px;border:2px solid var(--line2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;}
+.pitem.done .box{background:var(--rose-deep);border-color:var(--rose-deep);}
+.pitem .lbl{font-size:13px;}
+.pitem.done .lbl{color:var(--muted);text-decoration:line-through;}
+.pitem.orgnum{cursor:default;flex-wrap:wrap;}
+.pitem.orgnum .lbl{flex:1;}
+.pitem.orgnum.done{background:var(--rose-soft);border-color:var(--rose-line);}
+.pitem.orgnum.done .lbl{color:var(--ink);text-decoration:none;font-weight:600;}
+.orgnum-btn{appearance:none;border:none;background:var(--rose-deep);color:#fff;font-family:var(--disp);font-weight:700;
+ font-size:11.5px;padding:7px 12px;border-radius:7px;cursor:pointer;white-space:nowrap;}
+.orgnum-btn:active{opacity:.85;}
+
+footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:center;}
+.spotify-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:#1DB954;border-radius:11px;
+ padding:13px 20px;text-decoration:none;color:#fff;font-family:var(--disp);font-weight:700;font-size:13px;margin-bottom:18px;}
+.spotify-btn:active{opacity:.9;}
+.foot-spon{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+.foot-logos{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-bottom:14px;}
+.foot-logos span{font-family:var(--disp);font-weight:800;font-size:13px;color:var(--ink2);}
+.foot-meta{font-family:var(--mono);font-size:9.5px;color:var(--muted);letter-spacing:.04em;}
+.leaflet-container{font-family:var(--body);}
+#cover{position:fixed;inset:0;z-index:10000;background:#000;overflow:hidden;cursor:pointer;}
+#cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%;}
+#cover .cover-fade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.15) 0%,rgba(0,0,0,.05) 45%,rgba(0,0,0,.65) 100%);}
+#cover .cover-content{position:absolute;left:0;right:0;bottom:0;padding:0 28px 48px;text-align:center;color:#fff;}
+#cover .cover-logo{position:static;display:block;margin:0 auto 12px;width:180px;height:auto;filter:drop-shadow(0 3px 14px rgba(0,0,0,.4));}
+#cover .cover-sub{font-family:var(--disp);font-weight:800;font-size:17px;letter-spacing:-.02em;line-height:1.05;
+ color:#fff;transform:skewX(-12.4deg);display:inline-block;margin-top:6px;text-shadow:0 2px 10px rgba(0,0,0,.35);}
+#cover .cover-tap{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:rgba(255,255,255,.75);margin-top:22px;animation:coverPulse 2s ease-in-out infinite;}
+@keyframes coverPulse{0%,100%{opacity:.5;}50%{opacity:1;}}
+#gate{position:fixed;inset:0;z-index:9999;background:var(--rose);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:32px;}
+#gate img{width:160px;}
+#gate .gt{font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:.06em;color:var(--ink);text-transform:uppercase;}
+#gate input{width:100%;max-width:280px;padding:13px 16px;border:2px solid var(--rose-deep);border-radius:11px;font-family:var(--body);font-size:16px;text-align:center;background:#fff;color:var(--ink);outline:none;}
+#gate input.err{border-color:#c00;animation:shake .25s ease;}
+#gate button{width:100%;max-width:280px;padding:13px;border:none;border-radius:11px;background:var(--rose-deep);color:#fff;font-family:var(--disp);font-weight:800;font-size:14px;letter-spacing:.04em;cursor:pointer;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+</style>
+</head>
+<body>
+<div id="cover" onclick="dismissCover()">
+  <img src="cover-photo.jpg" alt="" id="coverImg">
+  <div class="cover-fade"></div>
+  <div class="cover-content">
+    <img class="cover-logo" src="logo-transparent.png" alt="The Ride">
+    <div class="cover-sub">DOLOMITES 2026</div>
+    <div class="cover-tap">Tik om verder te gaan</div>
+  </div>
+</div>
+<div id="gate">
+  <img src="logo-transparent.png" alt="The Ride">
+  <div class="gt">DOLOMITES 2026</div>
+  <input id="gateInput" type="password" placeholder="wachtwoord" autocomplete="off" onkeydown="if(event.key==='Enter')gateCheck()">
+  <button onclick="gateCheck()">Toegang</button>
+</div>
+<div class="wrap">
+
+<header class="hd-top">
+    <img class="mark-logo" src="logo-transparent.png" alt="The Ride">
+    <div class="hd-title">
+      <div class="t" id="hdTitle">DOLOMITES 2026</div>
+    </div>
+</header>
+
+<div class="hd-secondary">
+  <div class="totals">
+    <div class="tot"><div class="l">Afstand</div><div class="v" id="totDist">—<span class="u"> km</span></div></div>
+    <div class="tot"><div class="l">Hoogtemeters</div><div class="v" id="totGain">—<span class="u"> m</span></div></div>
+    <div class="tot k2"><div class="l">KM tot finish</div><div class="v" id="kmleft">—</div></div>
+  </div>
+  <div class="countdown" id="countdown"><span class="cd-lab">Tot de start</span><span class="cd-val" id="cdVal">—</span></div>
+  <div class="hd-actions" id="hdActions">
+    <button class="hbtn loc" onclick="getLoc()">📍 Deel mijn locatie</button>
+    <a class="hbtn sos" href="tel:" id="hdSos">📞 Noodnummer</a>
+  </div>
+  <div class="hd-locout" id="locout"></div>
+</div>
+
+<section class="view active" id="v-route"></section>
+<section class="view" id="v-event"></section>
+<section class="view" id="v-prep"></section>
+<section class="view" id="v-klassement"></section>
+
+<footer>
+  <a class="spotify-btn" id="spotifyLink" href="https://open.spotify.com/playlist/06I3CJeX295bVcJTp512P9" target="_blank">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+    </svg>
+    <span id="spotifyLbl">The Ride Dolomites · Playlist</span>
+  </a>
+  <div class="foot-spon">Partners</div>
+  <div class="foot-logos" id="footLogos"></div>
+  <div class="foot-meta" id="footMeta">Routedata: GPX · Weer: Open-Meteo</div>
+  <button onclick="showWeatherCheck()" style="display:block;margin:10px auto 0;padding:10px 16px;background:#E51F4D;color:#fff;border:none;border-radius:10px;font-family:var(--disp);font-weight:800;font-size:12px;cursor:pointer;">🌦 Weer testen</button>
+</footer>
+<nav class="tabs" id="tabs"></nav>
+</div>
+
+<div class="map-zoom" id="mapZoom" onclick="if(event.target.id==='mapZoom')closeMapZoom()">
+  <button class="map-zoom-close" onclick="closeMapZoom()" aria-label="Sluiten">✕</button>
+  <div class="map-zoom-title" id="mapZoomTitle"></div>
+  <div class="map-zoom-viewport" id="mapZoomViewport">
+    <img id="mapZoomImg" src="" alt="">
+  </div>
+  <div class="map-zoom-hint">Knijp of scroll om in/uit te zoomen · sleep om te verplaatsen</div>
+</div>
+
+<script src="data.js"></script>
+<script>
+/* ============ version ============ */
+(function(){
+  // sessionStorage survives simple backgrounding (OS keeps the page alive in memory,
+  // same JS session) but clears when the app is actually closed and relaunched —
+  // that's exactly "show again only on a genuinely fresh open", not on every focus.
+  if(sessionStorage.getItem("trd_cover_seen")==="1"){
+    document.getElementById("cover").style.display="none";
+  }
+})();
+function dismissCover(){
+  sessionStorage.setItem("trd_cover_seen","1");
+  var cov=document.getElementById("cover");
+  cov.style.transition="opacity .35s ease";
+  cov.style.opacity="0";
+  setTimeout(function(){cov.style.display="none";},350);
+}
+(function(){
+  var g=document.getElementById("gate");
+  var pw=RIDE.event.gatePassword;
+  if(localStorage.getItem("trd_unlocked")===pw){g.style.display="none";return;}
+  // password changed or never unlocked — clear any stale unlock
+  localStorage.removeItem("trd_unlocked");
+})();
+function gateCheck(){
+  var inp=document.getElementById("gateInput");
+  var pw=RIDE.event.gatePassword;
+  if(inp.value.trim().toLowerCase()===pw){
+    localStorage.setItem("trd_unlocked",pw);
+    document.getElementById("gate").style.display="none";
+  } else {
+    inp.classList.remove("err");
+    void inp.offsetWidth;
+    inp.classList.add("err");
+    inp.value="";inp.focus();
+  }
+}
+var APP_VERSION="1.12";
+var APP_STATUS="TEST-JULI-DATES"; // shown in header badge + footer; bump APP_VERSION with every iteration
+
+/* ============ helpers ============ */
+var ICONS={
+  terrain:"M23 18H1L8.25 8.33L10.25 11L14 6L23 18M11.5 12.67L14 16L19 16L14 9.33L11.5 12.67M5 16L11.5 16L8.25 11.67L5 16Z",
+  alert:"M12,2L1,21H23M12,6L19.53,19H4.47M11,10V14H13V10M11,16V18H13V16",
+  bag:"M22 19H2V21H22V19M4 15C4 15.5 4.2 16 4.6 16.4C5 16.8 5.5 17 6 17V6C5.5 6 5 6.2 4.6 6.6C4.2 7 4 7.5 4 8V15M13.5 6H10.5C10.5 5.6 10.6 5.2 10.9 4.9C11.2 4.6 11.5 4.5 12 4.5C12.4 4.5 12.8 4.6 13.1 4.9C13.3 5.2 13.5 5.6 13.5 6M7 6V17H17V6H15C15 5.2 14.7 4.5 14.1 3.9S12.8 3 12 3C11.2 3 10.5 3.3 9.9 3.9C9.3 4.5 9 5.2 9 6H7M18 17C18.5 17 19 16.8 19.4 16.4C19.8 16 20 15.5 20 15V8C20 7.5 19.8 7 19.4 6.6C19 6.2 18.5 6 18 6V17Z",
+  trophy:"M18 2C17.1 2 16 3 16 4H8C8 3 6.9 2 6 2H2V11C2 12 3 13 4 13H6.2C6.6 15 7.9 16.7 11 17V19.08C8 19.54 8 22 8 22H16C16 22 16 19.54 13 19.08V17C16.1 16.7 17.4 15 17.8 13H20C21 13 22 12 22 11V2H18M6 11H4V4H6V11M16 11.5C16 13.43 15.42 15 12 15C8.59 15 8 13.43 8 11.5V6H16V11.5M20 11H18V4H20V11Z",
+  tent:"M4,6C4,7.19 4.39,8.27 5,9A3,3 0 0,1 2,6A3,3 0 0,1 5,3C4.39,3.73 4,4.81 4,6M2,21V19H4.76L12,4.78L19.24,19H22V21H2M12,9.19L7,19H17L12,9.19Z",
+  map:"M15,19L9,16.89V5L15,7.11M20.5,3C20.44,3 20.39,3 20.34,3.03L15,5L9,3L3.36,4.9C3.15,4.97 3,5.15 3,5.38V20.5A0.5,0.5 0 0,0 3.5,21C3.55,21 3.61,21 3.66,20.97L9,19L15,21L20.64,19.1C20.85,19.03 21,18.85 21,18.62V3.5A0.5,0.5 0 0,0 20.5,3Z",
+  download:"M2 12H4V17H20V12H22V17C22 18.11 21.11 19 20 19H4C2.9 19 2 18.11 2 17V12M12 15L17.55 9.54L16.13 8.13L13 11.25V2H11V11.25L7.88 8.13L6.46 9.55L12 15Z"
+};
+function icon(name){return '<svg class="ic-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="'+ICONS[name]+'"/></svg>';}
+var WX_ICON={0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌧️",61:"🌧️",63:"🌧️",65:"🌧️",71:"🌨️",80:"🌦️",81:"🌧️",95:"⛈️"};
+var WX_DESC={0:"Helder",1:"Licht bewolkt",2:"Half bewolkt",3:"Bewolkt",45:"Mist",51:"Motregen",53:"Motregen",61:"Regen",63:"Regen",65:"Zware regen",80:"Buien",81:"Buien",95:"Onweer"};
+function windDir(d){return["N","NO","O","ZO","Z","ZW","W","NW"][Math.round(d/45)%8];}
+function stars(n){return "★".repeat(n)+"☆".repeat(5-n);}
+function isoToDate(iso){var p=iso.split("-");return new Date(+p[0],+p[1]-1,+p[2]);}
+/* Countdown to the real Proloog start — deliberately uses new Date() directly, never nowD(),
+   so it can't be affected by the Demo-dag simulator. Start hour (12:00) is the one piece not
+   otherwise structured in RIDE data, so it's a single named constant here. */
+var PROLOOG_START_HOUR=12;
+function countdownTarget(){var d=isoToDate(RIDE.stages[0].iso);d.setHours(PROLOOG_START_HOUR,0,0,0);return d;}
+function updateCountdown(){
+  var el=document.getElementById("countdown");if(!el)return;
+  var diff=countdownTarget().getTime()-new Date().getTime();
+  if(diff<=0){el.style.display="none";return;}
+  el.style.display="flex";
+  var totalH=Math.floor(diff/3600000),d=Math.floor(totalH/24),h=totalH%24;
+  document.getElementById("cdVal").textContent=d+(d===1?" dag, ":" dagen, ")+h+" uur";
+}
+var maxGain=Math.max.apply(null,RIDE.stages.map(function(s){return s.gain;}));
+
+/* ============ real date/time (Demo Dag removed — production uses the real clock only) ============ */
+function nowD(){var d=new Date();d.setHours(0,0,0,0);return d;}
+function nowHour(){return new Date().getHours();}
+function nowMinutes(){var d=new Date();return d.getHours()*60+d.getMinutes();}
+var allDates=RIDE.stages.map(function(s){return s.iso;});
+// Re-fetches data.js fresh from the network and swaps it into the running app in place —
+// no reload, no lost tab, no lost scroll position. sw.js already fetches data.js/weather.json
+// network-first with no-store, so this just needs to ask again.
+function softRefresh(){
+  fetch("data.js?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.text();}).then(function(text){
+    var eq=text.indexOf("=");
+    var body=text.slice(eq+1).trim();
+    if(body.charAt(body.length-1)===";")body=body.slice(0,-1);
+    RIDE=JSON.parse(body); // requires data.js to declare "var RIDE=", not "const", so this reassignment is legal
+    renderAll(); // also re-fetches weather.json fresh, via loadWeather() inside renderRoute()
+  }).catch(function(){/* offline or fetch failed — keep showing whatever's currently loaded */});
+}
+document.addEventListener("visibilitychange",function(){
+  if(document.visibilityState==="visible")softRefresh();
+});
+window.addEventListener("online",function(){softRefresh();});
+
+/* ============ active-day logic ============ */
+function activeIndex(){
+  var t=nowD().getTime();
+  for(var i=0;i<RIDE.stages.length;i++){
+    if(isoToDate(RIDE.stages[i].iso).getTime()===t)return i;
+  }
+  for(var j=0;j<RIDE.stages.length;j++){
+    if(isoToDate(RIDE.stages[j].iso).getTime()>t)return j;
+  }
+  return RIDE.stages.length-1; // after event
+}
+// Decides what the Route tab's top section should show and how it's labeled:
+// before the Proloog and after the final stage, "vandaag" doesn't apply to any real stage,
+// so those get their own labels instead of a misleading "Vandaag & morgen".
+function routeFocusInfo(){
+  var t=nowD().getTime();
+  var first=isoToDate(RIDE.stages[0].iso).getTime();
+  var last=isoToDate(RIDE.stages[RIDE.stages.length-1].iso).getTime();
+  if(t<first)return{label:"",focus:[0,1].filter(function(i){return i<RIDE.stages.length;})};
+  if(t>last)return{label:"",focus:[RIDE.stages.length-1]};
+  var ai=activeIndex();
+  if(ai>=RIDE.stages.length-1)return{label:"Vandaag",focus:[ai]};
+  return{label:"Vandaag & morgen",focus:[ai,ai+1]};
+}
+function stageState(s){ // 'done' | 'today' | 'future'
+  var t=nowD().getTime();var st=isoToDate(s.iso).getTime();
+  if(st<t)return "done";
+  if(st===t)return nowHour()>=18?"done":"today";
+  return "future";
+}
+function kmLeft(){
+  var done=0,t=nowD().getTime();
+  RIDE.stages.forEach(function(s){
+    var st=isoToDate(s.iso).getTime();
+    if(st<t||(st===t&&nowHour()>=18))done+=s.dist;
+  });
+  var total=RIDE.stages.reduce(function(a,s){return a+s.dist;},0);
+  if(nowD().getTime()<isoToDate(RIDE.stages[0].iso).getTime())return total;
+  return Math.max(0,total-done);
+}
+
+/* ============ event phase ============ */
+// 'preview' : before the Proloog — tabs Prep · Event · Route, Klassement hidden, opens on Prep
+// 'live'    : Proloog day .. last stage (and after) — tabs Route · Event · Klassement, Prep hidden, opens on Route
+function eventPhase(){
+  var t=nowD().getTime();
+  var first=isoToDate(RIDE.stages[0].iso).getTime();
+  return t<first?"preview":"live";
+}
+// Weather becomes available once we're within the forecast horizon of the Proloog
+// (Open-Meteo best_match ~7 days out), independent of the preview/live tab split.
+var WEATHER_WINDOW_DAYS=7;
+function weatherWindowOpen(){
+  var t=nowD().getTime();
+  var first=isoToDate(RIDE.stages[0].iso);
+  var open=new Date(first);open.setDate(open.getDate()-WEATHER_WINDOW_DAYS);
+  return t>=open.getTime();
+}
+var TAB_DEF={
+  route:{ic:"terrain",label:"Route"},
+  event:{ic:"tent",label:"Camping"},
+  prep:{ic:"bag",label:"Prep"},
+  klassement:{ic:"trophy",label:"Klassement"}
+};
+var TAB_ORDER={
+  preview:["route","event","prep"],
+  live:["route","event"]
+};
+
+/* ============ tabs ============ */
+var curTab=null;
+function renderNav(){
+  var phase=eventPhase();var order=TAB_ORDER[phase];
+  var nav=document.getElementById("tabs");
+  nav.style.setProperty("--ntabs",order.length);
+  // keep current tab if still valid for this phase, else open on the phase default (first in order)
+  if(!curTab||order.indexOf(curTab)<0)curTab=order[0];
+  nav.innerHTML=order.map(function(v){
+    var d=TAB_DEF[v];
+    var iconHtml=ICONS[d.ic]?icon(d.ic):d.ic;
+    return '<button class="tab'+(v===curTab?" active":"")+'" data-v="'+v+'" onclick="showTab(\''+v+'\')"><span class="tab-inner"><span class="ic">'+iconHtml+'</span><span class="lbl">'+d.label+'</span></span></button>';
+  }).join("");
+  document.querySelectorAll(".view").forEach(function(el){el.classList.toggle("active",el.id==="v-"+curTab);});
+}
+function showTab(v){
+  curTab=v;
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("active",t.dataset.v===v);});
+  document.querySelectorAll(".view").forEach(function(el){el.classList.toggle("active",el.id==="v-"+v);});
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ============ ROUTE ============ */
+/* ============ A/B route toggle (stages with s.alt only) ============ */
+var altState={}; // stage num -> true (B/alt selected), default falsy = A/main
+function activeRoute(s){return (altState[s.num]&&s.alt)?s.alt:s;}
+function setAlt(num,val){
+  if(!!altState[num]===val)return;
+  altState[num]=val;
+  if(maps[num]){maps[num].remove();delete maps[num];}
+  var s=RIDE.stages.find(function(x){return x.num===num;});
+  var old=document.getElementById("card-"+num);
+  if(!old)return;
+  old.outerHTML=stageCard(s);
+  requestAnimationFrame(function(){
+    if(document.getElementById("pc-"+num)){buildProfile(s);hover(s);}
+    loadWeather();
+  });
+}
+function wpRows(s){
+  var r=activeRoute(s);
+  var cols=r.waypoints.filter(function(w){return w.type==="col";});
+  var decisions=r.waypoints.filter(function(w){return w.type==="decision";});
+  var h="";
+  if(cols.length||decisions.length){
+    var mixed=cols.concat(decisions);
+    mixed.sort(function(a,b){return a.kmStart-b.kmStart;});
+    mixed.forEach(function(c){
+      if(c.type==="decision"){
+        h+='<div class="wp-decision"><span class="ic">🔀</span><div><div class="nm">'+c.name+' <span class="km">km '+(c.kmReal!==undefined?c.kmReal:c.kmStart)+'</span><small>'+c.desc+'</small></div></div></div>';
+        return;
+      }
+      var clickable=c.profile?' onclick="openMapZoom(\''+c.profile+'\',\''+c.name.replace(/'/g,"\\'")+'\')"':'';
+      var cls='wp'+(c.profile?' wp-tap':'');
+      h+='<div class="'+cls+'"'+clickable+'><span class="ic">⛰</span><div class="nm">'+c.name+'<small>'+c.desc+' · '+c.ele+' m</small></div><span class="km">km '+c.kmStart+'</span></div>';
+    });
+  }
+  // VP/POI/tunnel only differ by icon (VP has none) — one shared render path.
+  // Adding a new simple waypoint type later is just one more entry here.
+  var ICONS={vp:"",poi:"📍",tunnel:"🔦"};
+  ["vp","poi","tunnel"].forEach(function(type){
+    r.waypoints.filter(function(w){return w.type===type;}).forEach(function(w){
+      var ic=ICONS[type]?'<span class="ic">'+ICONS[type]+'</span>':'';
+      h+='<div class="wp">'+ic+'<div class="nm">'+w.name+'</div><span class="km">km '+w.km+'</span></div>';
+    });
+  });
+  return h;
+}
+var STRAVA_SVG='<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>';
+function segBlock(s){
+  var r=activeRoute(s);
+  if(!r.segment)return "";
+  var sg=r.segment;
+  var h='<div class="seg"><div class="sh"><div><div class="st">⚡ Strava Challenge</div><div class="sd">'+sg.desc+'</div></div><span class="chip cat">CAT '+sg.cat+'</span></div>'+
+    '<div class="ss">km '+sg.kmStart+' → '+sg.kmEnd+' · '+sg.length+'</div>';
+  h+='<div class="sbtns">';
+  h+='<a class="sbtn strava" href="'+sg.strava+'" target="_blank">'+STRAVA_SVG+' Strava segment</a>';
+  h+='<a class="sbtn klass" href="https://challenges.the-ride.cc/" target="_blank">⚡ Klassement</a>';
+  h+='</div></div>';
+  return h;
+}
+function stageCard(s,expanded){
+  var r=activeRoute(s);
+  var state=stageState(s); // still used for weather-hiding — that 18:00 cutoff is intentional
+  var isToday=isoToDate(s.iso).getTime()===nowD().getTime(); // card highlight: whole calendar day, no hour cutoff — "here's where we are"
+  var loadPct=Math.round(r.gain/maxGain*100);
+  var routeChips='<span class="stars">'+stars(s.stars)+'</span><span>'+s.startName+(s.loop?' ↺':' → '+s.endName)+'</span>';
+  if(s.loop)routeChips+='<span class="chip loop">Rondrit</span>';
+  var h='<div class="card'+(isToday?' today':'')+'" id="card-'+s.num+'">';
+  h+='<div class="s-top"><div class="badge'+(s.loop?' rt':'')+(isToday?' todaybg':'')+'"><div class="bl">'+(s.num===0?"Proloog":"Etappe")+'</div><div class="bn">'+(s.num===0?"P":s.num)+'</div><div class="bd">'+s.date.split(" ")[1]+'</div></div>';
+  h+='<div class="s-info">'+(s.alt?'<div class="ab-toggle"><button class="'+(!altState[s.num]?"on":"")+'" onclick="setAlt('+s.num+',false)">A</button><button class="'+(altState[s.num]?"on":"")+'" onclick="setAlt('+s.num+',true)">B</button></div>':'')+'<div class="s-name">'+s.it+'</div><div class="s-nl">'+s.nl+'</div><div class="s-route">'+routeChips+'</div></div></div>';
+  h+='<div class="metrics">'+
+     '<div class="m"><div class="l">Afstand</div><div class="v">'+r.dist+'<span class="u"> km</span></div></div>'+
+     '<div class="m"><div class="l">Klimmen</div><div class="v">+'+r.gain.toLocaleString("nl")+'<span class="u"> m</span></div></div>'+
+     '<div class="m"><div class="l">Max</div><div class="v">'+r.maxElev.toLocaleString("nl")+'<span class="u"> m</span></div></div>'+
+     '<div class="m"><div class="l">Daling</div><div class="v">−'+r.loss.toLocaleString("nl")+'<span class="u"> m</span></div></div></div>';
+  h+='<div class="loadbar"><div class="ll"><span>Klim-last t.o.v. zwaarste dag</span><span>'+loadPct+'%</span></div><div class="track"><div class="fill" style="width:'+loadPct+'%"></div></div></div>';
+  h+='<div class="prof-wrap"><div class="prof-c" id="pw-'+s.num+'"><canvas id="pc-'+s.num+'"></canvas><div class="cursor" id="cur-'+s.num+'"></div><div class="tip" id="tip-'+s.num+'"></div></div></div>';
+  h+='<button class="exp-btn" onclick="togglePanel('+s.num+',\'d\')">'+icon("terrain")+'<span class="lbl">Route, cols & segment</span><span class="cv">▼</span></button>';
+  h+='<div class="panel" id="panel-d-'+s.num+'"><div class="panel-in"><div>'+wpRows(s)+'</div>'+segBlock(s)+'</div></div>';
+  if(r.warnings&&r.warnings.length){
+    h+='<button class="exp-btn warn" onclick="togglePanel('+s.num+',\'w\')">'+icon("alert")+'<span class="lbl">Let op ('+r.warnings.length+')</span><span class="cv">▼</span></button>';
+    h+='<div class="panel" id="panel-w-'+s.num+'"><div class="panel-in wlist">';
+    r.warnings.forEach(function(w){h+='<div class="witem"><span class="wd">▲</span>'+w+'</div>';});
+    h+='</div></div>';
+  }
+  h+='<button class="exp-btn" onclick="toggleMap('+s.num+')" id="mapbtn-'+s.num+'">'+icon("map")+'<span class="lbl">Bekijk route op kaart</span><span class="cv">▼</span></button>';
+  h+='<div class="map-wrap" id="mapw-'+s.num+'"><div class="map-c" id="map-'+s.num+'"></div></div>';
+  if(r.gpxFile){
+    h+='<button class="exp-btn gpxdl" onclick="downloadGpx(\''+r.gpxFile+'\')">'+icon("download")+'<span class="lbl">Download GPX</span></button>';
+  }
+  // weather
+  if(!weatherWindowOpen()){
+    h+='<div class="wx-done">🌤 Weersvoorspelling beschikbaar vanaf '+WEATHER_WINDOW_DAYS+' dagen voor de start</div>';
+  }else if(state==="done"){
+    h+='<div class="wx-done">✓ Etappe afgerond — weersdata verborgen</div>';
+  }else{
+    h+='<div class="wx">';
+    s.wxPoints.forEach(function(p,pi){
+      var nm=pi===0?s.startName:pi===1?s.midName.replace("Regio ",""):(s.loop?s.startName:s.endName);
+      h+='<div class="wxrow"><div class="wl"><div class="wt">'+p.time+'</div><div class="wn">'+p.label+'</div><div class="we">'+p.ele+' m · '+nm+'</div></div><div class="wd2" id="wx-'+s.num+'-'+pi+'"><div class="wc">…</div></div></div>';
+    });
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+var routeScrolled=false; // only auto-scroll to today once per app session, not on every re-render
+function renderRoute(){
+  var v=document.getElementById("v-route");
+  var info=routeFocusInfo();
+  var focus=info.focus;
+  var html="";
+  RIDE.stages.forEach(function(s,i){
+    if(info.label && focus.indexOf(i)===0){html+='<div class="section-eyebrow">'+info.label+'</div>';}
+    html+=stageCard(s,focus.indexOf(i)>=0);
+  });
+  v.innerHTML=html;
+  requestAnimationFrame(function(){
+    RIDE.stages.forEach(function(s){if(document.getElementById("pc-"+s.num)){buildProfile(s);hover(s);}});
+    if(!routeScrolled && focus.length){
+      var el=document.getElementById("card-"+RIDE.stages[focus[0]].num);
+      if(el){el.scrollIntoView({block:"center",behavior:"instant"});}
+      routeScrolled=true;
+    }
+  });
+  loadWeather();
+}
+function downloadGpx(filename){
+  fetch(filename).then(function(r){return r.blob();}).then(function(blob){
+    var file=new File([blob],filename,{type:"application/gpx+xml"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      return navigator.share({files:[file]}).catch(function(){/* user cancelled the share sheet — fine */});
+    }
+    throw 0; // fall through to plain link fallback
+  }).catch(function(){
+    var a=document.createElement("a");
+    a.href=filename;a.download=filename;a.target="_blank";a.rel="noopener";
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+  });
+}
+function togglePanel(num,k){
+  document.getElementById("panel-"+k+"-"+num).classList.toggle("open");
+  event.currentTarget.classList.toggle("open");
+}
+function togglePcat(i){
+  document.getElementById("pcat-"+i).classList.toggle("open");
+  event.currentTarget.classList.toggle("open");
+}
+
+/* profile canvas */
+// Reads an actual CSS custom-property value (canvas and Leaflet need real color strings, not var() references) —
+// keeps the route profile + map markers in sync with the CSS palette instead of duplicating hex values in JS.
+function cssVar(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim();}
+function buildProfile(s){
+  var r=activeRoute(s);
+  var wrap=document.getElementById("pw-"+s.num);var cv=document.getElementById("pc-"+s.num);
+  if(!wrap||!cv)return;var W=wrap.clientWidth||320,H=98,PT=20,PB=4;
+  cv.width=W*devicePixelRatio;cv.height=H*devicePixelRatio;cv.style.width=W+"px";cv.style.height=H+"px";
+  var ctx=cv.getContext("2d");ctx.scale(devicePixelRatio,devicePixelRatio);
+  var prof=r.profile,dist=r.dist;var es=prof.map(function(p){return p.e;});
+  var mn=Math.min.apply(null,es),mx=Math.max.apply(null,es),rg=mx-mn||1;
+  function X(i){return prof[i].d/dist*W;}function Y(i){return H-PB-((prof[i].e-mn)/rg)*(H-PT-PB);}
+  // area
+  var grad=ctx.createLinearGradient(0,0,0,H);grad.addColorStop(0,"rgba(245,155,176,.30)");grad.addColorStop(1,"rgba(245,155,176,.03)");
+  ctx.beginPath();ctx.moveTo(X(0),Y(0));for(var i=1;i<prof.length;i++)ctx.lineTo(X(i),Y(i));
+  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  ctx.beginPath();ctx.moveTo(X(0),Y(0));for(var j=1;j<prof.length;j++)ctx.lineTo(X(j),Y(j));
+  ctx.strokeStyle=cssVar("--rose-deep");ctx.lineWidth=1.6;ctx.stroke();
+  // col markers
+  r.waypoints.filter(function(w){return w.type==="col";}).forEach(function(c){
+    var px=c.kmTop/dist*W;ctx.beginPath();ctx.arc(px,PT-6,2.4,0,7);ctx.fillStyle=cssVar("--rose-deep");ctx.fill();
+  });
+  ctx.font="9px 'JetBrains Mono',monospace";ctx.fillStyle="#9a918a";ctx.textAlign="left";
+  ctx.fillText(mx+" m",4,13);ctx.fillText(mn+" m",4,H-2);
+  cv._p=prof;cv._d=dist;cv._W=W;cv._done=true;
+}
+function hover(s){
+  var cv=document.getElementById("pc-"+s.num),tip=document.getElementById("tip-"+s.num),cur=document.getElementById("cur-"+s.num);
+  if(!cv||cv._hov)return;cv._hov=true;
+  function go(cx){
+    var r=cv.getBoundingClientRect(),x=cx-r.left,W=cv._W;if(!W)return;
+    var frac=Math.max(0,Math.min(1,x/W)),td=frac*cv._d,best=0,bd=1e9;
+    for(var i=0;i<cv._p.length;i++){var df=Math.abs(cv._p[i].d-td);if(df<bd){bd=df;best=i;}}
+    var p=cv._p[best],px=p.d/cv._d*W;cur.style.left=px+"px";cur.classList.add("on");
+    tip.textContent=p.d.toFixed(1)+" km · "+p.e+" m";var tl=px-tip.offsetWidth/2;
+    tl=Math.max(2,Math.min(W-tip.offsetWidth-2,tl));tip.style.left=tl+"px";tip.classList.add("on");
+  }
+  function out(){tip.classList.remove("on");cur.classList.remove("on");}
+  cv.addEventListener("mousemove",function(e){go(e.clientX);});
+  cv.addEventListener("mouseleave",out);
+  cv.addEventListener("touchmove",function(e){e.preventDefault();go(e.touches[0].clientX);},{passive:false});
+  cv.addEventListener("touchend",out);
+}
+var maps={};
+function toggleMap(num){
+  var w=document.getElementById("mapw-"+num),b=document.getElementById("mapbtn-"+num);
+  var open=w.classList.toggle("open");b.classList.toggle("open");
+  if(!open)return;
+  if(maps[num]){maps[num].invalidateSize();return;}
+  var s=RIDE.stages.find(function(x){return x.num===num;});
+  var r=activeRoute(s);
+  var m=L.map("map-"+num,{zoomControl:true,attributionControl:false});
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:17}).addTo(m);
+  var line=L.polyline(r.mapCoords,{color:cssVar("--rose-deep"),weight:3.5,opacity:.95}).addTo(m);
+  m.fitBounds(line.getBounds(),{padding:[18,18]});
+  L.circleMarker(r.mapCoords[0],{radius:6,color:"#1f9d6b",fillColor:"#1f9d6b",fillOpacity:1,weight:2}).addTo(m).bindPopup("Start: "+s.startName);
+  L.circleMarker(r.mapCoords[r.mapCoords.length-1],{radius:6,color:cssVar("--rose-deep"),fillColor:cssVar("--rose-deep"),fillOpacity:1,weight:2}).addTo(m).bindPopup((s.loop?"Finish ↺ ":"Finish: ")+s.endName);
+  r.waypoints.filter(function(w2){return w2.type==="col";}).forEach(function(c){
+    L.circleMarker([c.lat,c.lon],{radius:4.5,color:cssVar("--rose-deep"),fillColor:"#fff",fillOpacity:1,weight:2}).addTo(m).bindPopup(c.name+" ("+c.ele+" m)");
+  });
+  r.waypoints.filter(function(w2){return w2.type==="vp";}).forEach(function(v){
+    L.circleMarker([v.lat,v.lon],{radius:4.5,color:"#cf8412",fillColor:"#fff",fillOpacity:1,weight:2}).addTo(m).bindPopup(v.name);
+  });
+  maps[num]=m;setTimeout(function(){m.invalidateSize();},250);
+}
+
+/* weather: try weather.json, else synthesize */
+function synthWx(p){
+  var base=18-(p.ele/1000)*6.5;var h=parseInt(p.time);var t=Math.round(base+(h-8)*0.7);
+  var codes=[0,1,2,2,3,61];var code=codes[(Math.round(p.lat*7+p.lon*3+h))%codes.length];
+  var rain=code>=61?60:code>=2?25:5;
+  return {temp:t,code:code,wind:8+((Math.round(p.lon*5))%14),windDeg:((Math.round(p.lat*40))%360),rain:rain};
+}
+function loadWeather(){
+  if(!weatherWindowOpen())return;
+  fetch("weather.json?t="+Date.now()).then(function(r){return r.ok?r.json():null;}).then(function(d){
+    var data=d&&d.data?d.data:null;paintWx(data);
+  }).catch(function(){paintWx(null);});
+}
+function paintWx(data){
+  RIDE.stages.forEach(function(s){
+    if(stageState(s)==="done")return;
+    s.wxPoints.forEach(function(p,pi){
+      var el=document.getElementById("wx-"+s.num+"-"+pi);if(!el)return;
+      var wx=data&&data[s.num+"-"+pi]?data[s.num+"-"+pi]:synthWx(p);
+      el.innerHTML='<div class="wd-inner"><div class="wi">'+(WX_ICON[wx.code]||"🌡️")+'</div>'+
+        '<div><div class="wtemp">'+wx.temp+'°</div><div class="wc">'+(WX_DESC[wx.code]||"")+'</div>'+
+        '<div class="wpills"><span class="wpill">💨 '+wx.wind+' '+windDir(wx.windDeg)+'</span><span class="wpill">🌧 '+wx.rain+'%</span></div></div></div>';
+    });
+  });
+}
+
+/* ============ KLASSEMENT ============ */
+var curCat=RIDE.cats[0][0],curMode="dag";
+function renderKlass(){
+  var v=document.getElementById("v-klassement");
+  if(eventPhase()!=="live")return; // tab is hidden in preview; guard for safety
+  var h='<div class="note">Elke dag telt één <b>competitief segment</b>. Iedere deelnemer in de Strava-club is automatisch ingeschreven. Hieronder een <b>voorbeeldklassement</b> — de live standen komen van <b>challenges.the-ride.cc</b>.</div>';
+  h+='<div class="seg-toggle"><button id="m-dag" class="'+(curMode==="dag"?"on":"")+'" onclick="setMode(\'dag\')">Dagklassement</button><button id="m-alg" class="'+(curMode==="algemeen"?"on":"")+'" onclick="setMode(\'algemeen\')">Algemeen</button></div>';
+  h+='<div class="cats">';
+  RIDE.cats.forEach(function(c){h+='<button class="catchip'+(c[0]===curCat?" on":"")+'" onclick="setCat(\''+c[0]+'\')">'+c[1]+'</button>';});
+  h+='</div>';
+  var rows=RIDE.standings[curCat][curMode];
+  h+='<div class="lb">';
+  rows.forEach(function(r){
+    h+='<div class="lbrow p'+r.pos+'"><div class="pos">'+r.pos+'</div><div class="rn">'+r.name+'</div><div class="gap'+(r.pos===1?" lead":"")+'">'+r.gap+'</div></div>';
+  });
+  h+='</div>';
+  h+='<a class="ext-btn" href="https://challenges.the-ride.cc/" target="_blank">⚡ Open live klassement</a>';
+  v.innerHTML=h;
+}
+function setCat(c){curCat=c;renderKlass();}
+function setMode(m){curMode=m;renderKlass();}
+
+/* ============ EVENT ============ */
+function campById(id){return RIDE.event.camps.find(function(c){return c.id===id;});}
+
+/* ---- campsite-active-window logic: simple lookup against the flat campSchedule table ---- */
+function currentSlot(){
+  // exact row lookup: today's iso + before/after 13:00 — no fallback, no derived logic.
+  var iso=todayIso(),pm=nowHour()>=13;
+  var sched=RIDE.event.campSchedule;
+  var last=sched[sched.length-1];
+  var lastT=isoToDate(last.iso).getTime()+(last.pm?1:0);
+  var nowT=isoToDate(iso).getTime()+(pm?1:0);
+  if(nowT>lastT)return null; // strictly past the final slot's window — official program has ended
+  // find the latest slot whose (iso,pm) is <= now, since not every date necessarily has both rows defined
+  var match=null;
+  for(var i=0;i<sched.length;i++){
+    var s=sched[i];var st=isoToDate(s.iso).getTime()+(s.pm?1:0);
+    if(st<=nowT)match=s;
+  }
+  return match||sched[0];
+}
+function todayIso(){var d=nowD();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+
+function splitMorgen(val){
+  if(!val)return{text:val,morgen:false};
+  var morgen=/\s*'morgen'\s*$/.test(val);
+  return{text:val.replace(/\s*'morgen'\s*$/,""),morgen:morgen};
+}
+function campCard(camp,isCurrent,slot){
+  var dateStr=slot?isoToDate(slot.iso).toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"}):"";
+  var h='<div class="ev'+(isCurrent&&slot&&slot.active?" now":"")+'">';
+  h+='<div class="ev-h">'+(isCurrent&&slot&&slot.active?'<span class="ev-h-bar"></span>':'')+'<div class="ttl">'+camp.name+'</div>'+(isCurrent&&slot&&slot.active?'<div class="dt">'+dateStr+'</div>':'')+'</div>';
+  h+='<div class="ev-b">';
+  h+='<div class="row"><span class="rk">Camping</span><span class="rv"><b>'+camp.name+'</b> · '+camp.town+(camp.tbc?' <span class="od">tbc</span>':'')+'</span></div>';
+  h+='<div class="row"><span class="rk">Adres</span><span class="rv">'+camp.address+
+     ' <a class="maplink" href="https://www.google.com/maps/search/?api=1&query='+camp.lat+','+camp.lon+'" target="_blank">Open in Maps</a></span></div>';
+
+  if(isCurrent&&slot.active){
+    // Row order matches camping-schema.xlsx's column order exactly: Diner, Ontbijt, Start.
+    // No reordering logic needed — a pure-morning slot simply has diner:null and the row is skipped.
+    var rows=[];
+    if(slot.diner && nowMinutes()>=780 && nowMinutes()<1230){ // 13:00–20:30 only
+      var d=splitMorgen(slot.diner);
+      rows.push({k:"Diner",v:d.text,morgen:d.morgen});
+      rows.push({k:"Menu",v:slot.menu||"onbekend",plain:true});}
+    if(slot.ontbijt){var o=splitMorgen(slot.ontbijt);
+      rows.push({k:"Ontbijt",v:o.text,morgen:o.morgen});}
+    if(slot.start){var st=splitMorgen(slot.start);
+      rows.push({k:"Start",v:st.text,morgen:st.morgen});}
+    rows.forEach(function(r){
+      h+='<div class="row"><span class="rk">'+r.k+'</span><span class="rv">'+(r.plain?r.v:'<b>'+r.v+'</b>')+(r.morgen?' <span class="od">morgen</span>':'')+'</span></div>';
+    });
+  }
+
+  if(camp.map){
+    h+='<button class="exp-btn" onclick="toggleCampMap(\''+camp.id+'\')">'+icon("map")+'<span class="lbl">Plattegrond camping</span><span class="cv">▼</span></button>';
+    h+='<div class="campmap" id="campmap-'+camp.id+'" style="display:none"><img src="'+camp.map+'" alt="Plattegrond '+camp.name+'" loading="lazy" onclick="openMapZoom(\''+camp.map+'\',\''+camp.name.replace(/'/g,"\\'")+'\')"></div>';
+  }else{
+    h+='<button class="exp-btn dummy" disabled>'+icon("map")+'<span class="lbl">Plattegrond camping</span><span class="od">nog te volgen</span></button>';
+  }
+
+  h+='</div></div>';
+  return h;
+}
+function toggleCampMap(id){
+  var el=document.getElementById("campmap-"+id);
+  el.style.display=el.style.display==="none"?"block":"none";
+}
+
+/* ---- map zoom overlay: pinch (touch), wheel (desktop), drag-to-pan ---- */
+var mz={scale:1,x:0,y:0,startDist:0,startScale:1,dragging:false,lastX:0,lastY:0,pinching:false};
+function openMapZoom(src,title){
+  document.getElementById("mapZoomImg").src=src;
+  document.getElementById("mapZoomTitle").textContent=title;
+  mz.scale=1;mz.x=0;mz.y=0;applyMapTransform();
+  document.getElementById("mapZoom").classList.add("open");
+}
+function closeMapZoom(){document.getElementById("mapZoom").classList.remove("open");}
+function applyMapTransform(){
+  var img=document.getElementById("mapZoomImg");
+  img.style.transform="translate(-50%,-50%) translate("+mz.x+"px,"+mz.y+"px) scale("+mz.scale+")";
+}
+function mzDist(t0,t1){var dx=t1.clientX-t0.clientX,dy=t1.clientY-t0.clientY;return Math.sqrt(dx*dx+dy*dy);}
+(function(){
+  var vp;
+  function init(){
+    vp=document.getElementById("mapZoomViewport");
+    vp.addEventListener("wheel",function(e){
+      e.preventDefault();
+      var delta=e.deltaY<0?1.12:0.89;
+      mz.scale=Math.min(5,Math.max(1,mz.scale*delta));
+      if(mz.scale===1){mz.x=0;mz.y=0;}
+      applyMapTransform();
+    },{passive:false});
+    vp.addEventListener("touchstart",function(e){
+      if(e.touches.length===2){
+        mz.pinching=true;mz.startDist=mzDist(e.touches[0],e.touches[1]);mz.startScale=mz.scale;
+      }else if(e.touches.length===1&&mz.scale>1){
+        mz.dragging=true;mz.lastX=e.touches[0].clientX;mz.lastY=e.touches[0].clientY;
+      }
+    },{passive:true});
+    vp.addEventListener("touchmove",function(e){
+      if(mz.pinching&&e.touches.length===2){
+        e.preventDefault();
+        var d=mzDist(e.touches[0],e.touches[1]);
+        mz.scale=Math.min(5,Math.max(1,mz.startScale*(d/mz.startDist)));
+        if(mz.scale===1){mz.x=0;mz.y=0;}
+        applyMapTransform();
+      }else if(mz.dragging&&e.touches.length===1){
+        e.preventDefault();
+        var dx=e.touches[0].clientX-mz.lastX,dy=e.touches[0].clientY-mz.lastY;
+        mz.x+=dx;mz.y+=dy;mz.lastX=e.touches[0].clientX;mz.lastY=e.touches[0].clientY;
+        applyMapTransform();
+      }
+    },{passive:false});
+    vp.addEventListener("touchend",function(e){
+      if(e.touches.length<2)mz.pinching=false;
+      if(e.touches.length<1)mz.dragging=false;
+    });
+    vp.addEventListener("mousedown",function(e){
+      if(mz.scale<=1)return;
+      mz.dragging=true;mz.lastX=e.clientX;mz.lastY=e.clientY;
+    });
+    window.addEventListener("mousemove",function(e){
+      if(!mz.dragging)return;
+      var dx=e.clientX-mz.lastX,dy=e.clientY-mz.lastY;
+      mz.x+=dx;mz.y+=dy;mz.lastX=e.clientX;mz.lastY=e.clientY;
+      applyMapTransform();
+    });
+    window.addEventListener("mouseup",function(){mz.dragging=false;});
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
+
+function renderEvent(){
+  var v=document.getElementById("v-event");
+  var slot=currentSlot();
+  var curId=slot?slot.camp:null;
+  var order=["levico","nevegal","bellamonte"];
+  var sorted=curId?order.slice().sort(function(a,b){return (a===curId?-1:0)-(b===curId?-1:0);}):order;
+  var h='<div class="section-eyebrow">Camping</div>';
+  if(!slot)h+='<div class="wx-done">Het officiële programma is afgelopen.</div>';
+  sorted.forEach(function(id){var camp=campById(id);if(camp)h+=campCard(camp,id===curId,slot);});
+  h+='<div class="partners"><h3>Partners</h3><div class="plogos">';
+  RIDE.sponsors.forEach(function(sp){
+    var img='<img src="'+sp.logo+'" alt="'+sp.name+'" loading="lazy"'+(sp.logoH?' style="max-height:'+sp.logoH+'px"':'')+'>';
+    h+=sp.url?('<a class="plogo" href="'+sp.url+'" target="_blank">'+img+'</a>'):('<div class="plogo dummy">'+img+'</div>');
+  });
+  h+='</div></div>';
+  v.innerHTML=h;
+}
+
+/* ============ PREP ============ */
+var PKEY="ride_dolomites_pack_v1";
+function loadPack(){try{return JSON.parse(localStorage.getItem(PKEY))||{};}catch(e){return {};}}
+function savePack(o){try{localStorage.setItem(PKEY,JSON.stringify(o));}catch(e){}}
+function renderPrep(){
+  var v=document.getElementById("v-prep");var st=loadPack();
+  var ORG_KEY="Sla deze nummers op in je telefoon|Noodnummer organisatie";
+  var orgSaved=!!st[ORG_KEY];
+  var total=1;var done=orgSaved?1:0; // +1 for the org-number button row, counted alongside the checklist
+  RIDE.pack.forEach(function(c){c[1].forEach(function(it){total++;if(st[c[0]+"|"+it])done++;});});
+  var h='<div class="section-eyebrow">Paklijst</div>';
+  h+='<div class="pack-head"><span class="pack-prog" id="packProg">'+done+' / '+total+' ingepakt</span><button class="pack-reset" onclick="resetPack()">Alles wissen</button></div>';
+  RIDE.pack.forEach(function(c,ci){
+    h+='<div class="pcat"><button class="pcat-head" onclick="togglePcat('+ci+')"><span>'+c[0]+'</span><span class="cv">▼</span></button><div class="pcat-body" id="pcat-'+ci+'">';
+    if(ci===0){
+      h+='<div class="pitem orgnum'+(orgSaved?" done":"")+'" id="orgNumRow">'+
+         '<div class="box">'+(orgSaved?"✓":"")+'</div>'+
+         '<div class="lbl">'+(orgSaved?"Noodnummer organisatie opgeslagen":"Noodnummer organisatie")+'</div>'+
+         (orgSaved?"":'<button class="orgnum-btn" onclick="saveOrgNumber(event)">+ Opslaan</button>')+
+         '</div>';
+    }
+    c[1].forEach(function(it){var key=c[0]+"|"+it;var d=!!st[key];
+      h+='<div class="pitem'+(d?" done":"")+'" onclick="togglePack(this,\''+key.replace(/'/g,"\\'")+'\')"><div class="box">'+(d?"✓":"")+'</div><div class="lbl">'+it+'</div></div>';
+    });
+    h+='</div></div>';
+  });
+  v.innerHTML=h;
+}
+function saveOrgNumber(e){
+  e.stopPropagation();
+  var num=RIDE.event.emergency;
+  var vcard="BEGIN:VCARD\nVERSION:3.0\nN:;"+RIDE.event.name+" — Noodnummer;;;\nFN:"+RIDE.event.name+" — Noodnummer\nTEL;TYPE=CELL:"+num+"\nNOTE:Bij letsel eerst 112 bellen!\nEND:VCARD";
+  var blob=new Blob([vcard],{type:"text/vcard"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");a.href=url;a.download="the-ride-noodnummer.vcf";
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},2000);
+  var st=loadPack();var ORG_KEY="Sla deze nummers op in je telefoon|Noodnummer organisatie";
+  st[ORG_KEY]=true;savePack(st);renderPrep();
+}
+function togglePack(el,key){var st=loadPack();st[key]=!st[key];if(!st[key])delete st[key];savePack(st);
+  el.classList.toggle("done");el.querySelector(".box").textContent=el.classList.contains("done")?"✓":"";
+  var ORG_KEY="Sla deze nummers op in je telefoon|Noodnummer organisatie";
+  var total=1,done=st[ORG_KEY]?1:0;
+  RIDE.pack.forEach(function(c){c[1].forEach(function(it){total++;if(st[c[0]+"|"+it])done++;});});
+  document.getElementById("packProg").textContent=done+" / "+total+" ingepakt";
+}
+function resetPack(){if(confirm("Hele paklijst wissen?")){savePack({});renderPrep();}}
+function getLoc(){
+  var o=document.getElementById("locout");o.textContent="Locatie ophalen…";
+  if(!navigator.geolocation){o.textContent="Geen GPS beschikbaar.";return;}
+  navigator.geolocation.getCurrentPosition(function(p){
+    var la=p.coords.latitude.toFixed(5),lo=p.coords.longitude.toFixed(5);
+    o.innerHTML='<a href="https://maps.google.com/?q='+la+','+lo+'" target="_blank">'+la+', '+lo+' ↗ open in Maps</a>';
+  },function(){o.textContent="Locatie niet beschikbaar (geef toestemming).";});
+}
+
+/* ============ boot ============ */
+function renderAll(){
+  renderNav();
+  document.title=RIDE.event.name;
+  document.getElementById("hdTitle").textContent=RIDE.event.shortName;
+  document.getElementById("spotifyLink").href=RIDE.event.playlistUrl;
+  document.getElementById("spotifyLbl").textContent=RIDE.event.name+" · Playlist";
+  var totDist=RIDE.stages.reduce(function(sum,s){return sum+s.dist;},0);
+  var totGain=RIDE.stages.reduce(function(sum,s){return sum+s.gain;},0);
+  document.getElementById("totDist").innerHTML=Math.round(totDist).toLocaleString("nl")+'<span class="u"> km</span>';
+  document.getElementById("totGain").innerHTML=totGain.toLocaleString("nl")+'<span class="u"> m</span>';
+  document.getElementById("kmleft").innerHTML=kmLeft().toLocaleString("nl")+'<span class="u"> km</span>';
+  updateCountdown();
+  document.getElementById("footLogos").innerHTML=RIDE.sponsors.map(function(s){return '<span>'+s.name+'</span>';}).join("");
+  document.getElementById("hdSos").href="tel:"+RIDE.event.emergency;
+  var liveActions=eventPhase()==="live"&&nowD().getTime()<=isoToDate(RIDE.stages[RIDE.stages.length-1].iso).getTime();
+  document.getElementById("hdActions").style.display=liveActions?"flex":"none";
+  document.getElementById("locout").style.display=liveActions?"":"none";
+  document.getElementById("footMeta").textContent="Routedata: GPX · Weer: Open-Meteo · "+APP_STATUS+" · v"+APP_VERSION;
+  renderRoute();renderKlass();renderEvent();renderPrep();
+}
+renderAll();
+setInterval(updateCountdown,60000);
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
+
+/* ============ weather diagnostic panel (TEST BUILD ONLY) — tap the "Weer testen" button in the footer ============ */
+async function showWeatherCheck(){
+  var box=document.createElement("div");
+  box.style.cssText="position:fixed;inset:0;z-index:20000;background:#FAF7F5;overflow:auto;padding:16px;font-family:-apple-system,sans-serif;font-size:12.5px;color:#2e3440;";
+  box.innerHTML="<button onclick='this.parentElement.remove()' style='float:right;background:#2e3440;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:700;'>Sluiten ✕</button><h2 style='margin:0 0 4px'>Weather check (test build)</h2><div style='color:#9a918a;margin-bottom:14px'>Same-origin check — leest dit sites eigen weather.json + _points_data.json.</div><div id='wcOut'>Loading…</div>";
+  document.body.appendChild(box);
+  var wcOut=box.querySelector("#wcOut");
+  try{
+    var wjson=await (await fetch("weather.json",{cache:"no-store"})).json();
+    var pdata=await (await fetch("_points_data.json",{cache:"no-store"})).json();
+    var updated=new Date(wjson.updated);
+    var ageMin=Math.round((Date.now()-updated.getTime())/60000);
+    var checkedAt=new Date();
+    var html="<div style='background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:12px;'>weather.json last updated: <b style='color:#E51F4D'>"+updated.toLocaleString("nl-NL")+"</b> — "+
+      (ageMin<90?"<span style='color:#1f9d6b;font-weight:700'>":"<span style='color:#E51F4D;font-weight:700'>")+ageMin+" minuten geleden"+(ageMin<90?" ✓":" ⚠")+"</span></div>";
+    html+="<div style='color:#9a918a;margin-bottom:8px'>Check uitgevoerd om "+checkedAt.toLocaleTimeString("nl-NL")+"</div>";
+    var headerRow="<tr style='background:#f3eeeb'><th style='padding:6px;text-align:left'>Punt</th><th style='padding:6px;text-align:left'>Lat/Lon</th><th style='padding:6px;text-align:left'>Datum</th><th style='padding:6px;text-align:left'>Uur</th><th style='padding:6px;text-align:left'>Opgeslagen °C</th><th style='padding:6px;text-align:left'>Live °C</th><th style='padding:6px;text-align:left'>Verschil</th></tr>";
+    wcOut.innerHTML=html+"<table style='width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden'>"+headerRow+"</table><div style='margin-top:8px'>Bezig met live vergelijken…</div>";
+    var rowsHtml="";
+    for(var i=0;i<pdata.length;i++){
+      var p=pdata[i], stored=wjson.data[p.key];
+      if(!stored){
+        rowsHtml+="<tr><td style='padding:6px'>"+p.key+"</td><td style='padding:6px;color:#9a918a'>"+p.lat+", "+p.lon+"</td><td style='padding:6px'>"+p.date+"</td><td style='padding:6px'>"+p.hour+":00</td><td style='padding:6px'>(missing)</td><td style='padding:6px'>—</td><td style='padding:6px;color:#E51F4D;font-weight:700'>⚠</td></tr>";
+        continue;
+      }
+      try{
+        var lurl="https://api.open-meteo.com/v1/forecast?latitude="+p.lat+"&longitude="+p.lon+"&hourly=temperature_2m&start_date="+p.date+"&end_date="+p.date+"&timezone=auto";
+        var ld=await (await fetch(lurl)).json();
+        var target=p.date+"T"+String(p.hour).padStart(2,"0")+":00";
+        var idx=ld.hourly.time.indexOf(target);
+        var liveTemp=idx>=0?ld.hourly.temperature_2m[idx]:null;
+        var diff=(liveTemp!=null)?Math.abs(liveTemp-stored.temp):null;
+        var ok=diff!=null&&diff<=1.5;
+        rowsHtml+="<tr><td style='padding:6px'>"+p.key+"</td><td style='padding:6px;color:#9a918a'>"+p.lat+", "+p.lon+"</td><td style='padding:6px'>"+p.date+"</td><td style='padding:6px'>"+p.hour+":00</td><td style='padding:6px'>"+stored.temp+"</td><td style='padding:6px'>"+liveTemp+"</td>"+
+          "<td style='padding:6px;font-weight:700;color:"+(ok?"#1f9d6b":"#E51F4D")+"'>"+(diff!=null?diff.toFixed(1)+"°"+(ok?" ✓":" ⚠"):"—")+"</td></tr>";
+      }catch(e){
+        rowsHtml+="<tr><td style='padding:6px'>"+p.key+"</td><td style='padding:6px;color:#9a918a'>"+p.lat+", "+p.lon+"</td><td style='padding:6px'>"+p.date+"</td><td style='padding:6px'>"+p.hour+":00</td><td style='padding:6px'>"+stored.temp+"</td><td style='padding:6px'>error</td><td style='padding:6px;color:#E51F4D;font-weight:700'>⚠</td></tr>";
+      }
+      wcOut.innerHTML=html+"<table style='width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden'>"+headerRow+rowsHtml+"</table>";
+    }
+  }catch(e){
+    wcOut.innerHTML="<span style='color:#E51F4D'>Kon weather.json of _points_data.json niet laden: "+e+"</span>";
+  }
+}
+</script>
+</body>
+</html>
