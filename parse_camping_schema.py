@@ -1,11 +1,13 @@
 """
 Reads camping-schema.xlsx and produces the campSchedule list used by build_data.py.
 
-The spreadsheet's column order (Datum/tijd, Campsite, Actief?, Diner, Ontbijt, Start)
-is the actual source of truth for both VALUES and DISPLAY ORDER. The app's rendering
-code should read rows in this same left-to-right order rather than maintaining its
-own separate field sequence — that mismatch (app used Ontbijt/Start/Diner while the
-sheet always had Diner/Ontbijt/Start) is what caused the evening-row ordering bug.
+The spreadsheet's column order (Datum/tijd, Campsite, Actief?, Diner, Dagbriefing,
+Ontbijt, Start) is the actual source of truth for both VALUES and DISPLAY ORDER.
+The app's rendering code should read rows in this same left-to-right order rather
+than maintaining its own separate field sequence — that mismatch (app used
+Ontbijt/Start/Diner while the sheet always had Diner/Ontbijt/Start) is what caused
+the evening-row ordering bug. Dagbriefing was added the same way after it was
+found hardcoded to "20:30" directly in the app instead of coming from the sheet.
 
 Usage: python3 parse_camping_schema.py camping-schema.xlsx > campSchedule.json
 """
@@ -16,7 +18,7 @@ from openpyxl import load_workbook
 
 CAMP_NAME_TO_ID = {
     "Levico Terme": "levico",
-    "Nevegal": "nevegal",
+    "Campitello di Fassa": "campitello",
     "Bellamonte": "bellamonte",
 }
 
@@ -44,7 +46,7 @@ def main(xlsx_path):
     rows = list(ws.iter_rows(min_row=2, values_only=True))  # skip header
 
     schedule = []
-    for raw_datum, raw_camp, raw_actief, raw_diner, raw_ontbijt, raw_start in rows:
+    for raw_datum, raw_camp, raw_actief, raw_diner, raw_dagbriefing, raw_ontbijt, raw_start in rows:
         if raw_datum is None:
             continue
         camp_id = CAMP_NAME_TO_ID.get(str(raw_camp).strip())
@@ -67,8 +69,9 @@ def main(xlsx_path):
             "pm": pm,
             "camp": camp_id,
             "active": active,
-            # Order preserved exactly as the sheet has it: diner, ontbijt, start.
+            # Order preserved exactly as the sheet has it: diner, dagbriefing, ontbijt, start.
             "diner": clean_value(raw_diner),
+            "dagbriefing": clean_value(raw_dagbriefing),
             "ontbijt": clean_value(raw_ontbijt),
             "start": clean_value(raw_start),
         })
