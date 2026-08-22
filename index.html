@@ -61,10 +61,12 @@ a{color:inherit;}
 .sim-row{display:flex;align-items:center;gap:8px;}
 .sim-lab{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--rose-deep);}
 .sim-row button{border:1px solid var(--rose-line);background:#fff;color:var(--rose-deep);border-radius:7px;width:26px;height:22px;font-size:13px;cursor:pointer;line-height:1;}
-.sim-row button.sim-reset{width:auto;padding:0 8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;}
+.sim-row button.sim-reset,.sim-row button.sim-setbtn{width:auto;padding:0 8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;}
 .sim-day{font-size:11px;font-weight:700;color:var(--ink);flex:1;text-align:center;}
 .sim-time{font-size:11px;font-weight:700;color:var(--rose-deep);min-width:78px;text-align:right;}
 .sim-row input[type=range]{flex:1;accent-color:var(--rose-deep);}
+.sim-date-input{border:1px solid var(--rose-line);background:#fff;color:var(--ink);border-radius:7px;
+ padding:2px 6px;font-family:var(--mono);font-size:11px;flex:1;}
 
 /* ---------- Tabs ---------- */
 .tabs{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:540px;z-index:60;transform:translateZ(0);will-change:transform;
@@ -375,20 +377,22 @@ a{color:inherit;}
    legal footer block below the divider line. */
 .quick-links{padding:16px 18px 4px;text-align:center;}
 footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:center;}
-.link-btn{display:flex;align-items:center;justify-content:center;gap:10px;border-radius:11px;
- padding:13px 20px;text-decoration:none;color:#fff;font-family:var(--disp);font-weight:700;font-size:13px;margin-bottom:10px;}
-.link-btn:active{opacity:.9;}
+/* Confirmed 2026-08-22 (mockup approved as-is): side-by-side, colorless, matching
+   the .plogo partner-card style exactly -- same white/bordered/70px-tall
+   card, just a 2-up grid instead of the old full-width stacked buttons. */
+.ql-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px;}
+.link-btn{background:#fff;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:9px;
+ padding:12px;text-decoration:none;color:var(--ink);font-family:var(--disp);font-weight:700;font-size:11.5px;height:70px;box-sizing:content-box;}
+.link-btn:active{opacity:.85;}
+.link-btn .lb-row{display:flex;align-items:center;gap:5px;}
 .link-btn .lb-ic{font-size:16px;line-height:1;display:flex;}
 .link-btn .lb-ic svg{display:block;}
-.link-btn .lb-logo{height:20px;width:auto;display:block;}
-.link-btn .lb-txt{font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:.04em;}
-/* 2026-08-22: switched from --rose-deep to --rose -- matches the app's actual
-   signature rose (the .hd-top header bar uses var(--rose), not --rose-deep,
-   which is reserved for CTA buttons like the gate/orgnum buttons). Text
-   color follows the same dark-on-rose pattern the header title uses
-   (.hd-title .t{color:#2e3440}), since white reads poorly on the lighter pink. */
-.mtr-btn{background:var(--rose);color:#2e3440;}
-.wa-btn{background:#25D366;}
+.link-btn .lb-logo{height:16px;width:auto;display:block;}
+.link-btn .lb-txt{font-family:var(--disp);font-weight:800;font-size:11.5px;letter-spacing:.04em;}
+/* Confirmed 2026-08-22 (mockup approved as-is): colorless, per Jacco's request -- both cards
+   just use the plain white .link-btn card style above, no per-button tint.
+   WhatsApp identity now comes from the icon itself (colored green, see the
+   inline SVG fill below) rather than a green card background. */
 .spotify-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:#1DB954;border-radius:11px;
  padding:13px 20px;text-decoration:none;color:#fff;font-family:var(--disp);font-weight:700;font-size:13px;margin-bottom:18px;}
 .spotify-btn:active{opacity:.9;}
@@ -440,6 +444,19 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
     <input type="range" id="simTimeSlider" min="0" max="1439" step="30" value="480" oninput="simSetMinutes(this.value)">
     <span class="sim-time mono" id="simTimeLabel">08:00</span>
   </div>
+  <!-- Auto-walk (2026-08-22): pins "today" to a fixed offset from the real
+       date instead of one static simulated day -- walks forward with real
+       time automatically (e.g. real 22/8 = simulated 12/9, so real 23/8
+       becomes simulated 13/9 the next time you open the app), so multi-day
+       flows (weather arriving as dates enter Open-Meteo's real forecast
+       window, today/route/campsite transitioning stage to stage) can be
+       watched over the coming days without re-touching the slider each time.
+       Persisted in localStorage so it survives reloads/new days. -->
+  <div class="sim-row">
+    <span class="sim-lab">Auto-walk vanaf</span>
+    <input type="date" id="simOffsetInput" class="sim-date-input">
+    <button class="sim-setbtn" onclick="simSetOffsetFromInput()">instellen</button>
+  </div>
 </div>
 
 <section class="view active" id="v-today"></section>
@@ -454,21 +471,24 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
      footer's divider line now falls between here and the Spotify/partners
      block instead. -->
 <div class="quick-links">
-  <!-- Restyled 2026-08-22: real logo mark instead of emoji, per Jacco's feedback.
-       Composition: "MIJN" text preceding the small logo mark. -->
-  <a class="link-btn mtr-btn" href="http://www.the-ride.cc/2026-mijn-the-ride-dolomites" target="_blank">
-    <span class="lb-txt">MIJN</span>
-    <img class="lb-logo" src="logo-transparent.png" alt="The Ride" loading="lazy">
-  </a>
-  <!-- Restyled 2026-08-22: WhatsApp logo + The Ride logo (same size as above) + "COMMUNITY" text,
-       per Jacco's literal description ("whatsapp logo. again the ride logo ... followed by COMMUNITY").
-       Confirmed 2026-08-22 (real logo checked in-app, reads well on both backgrounds).
-       TODO: placeholder href -- real WhatsApp community invite link still needed before go-live. -->
-  <a class="link-btn wa-btn" href="#" target="_blank">
-    <span class="lb-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" xmlns="http://www.w3.org/2000/svg"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 5L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2m0 1.67a8.23 8.23 0 018.24 8.24c0 4.55-3.7 8.24-8.25 8.24a8.2 8.2 0 01-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 01-1.26-4.38c.01-4.55 3.7-8.24 8.25-8.24M8.53 7.33c-.16 0-.43.06-.66.31-.22.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.25 3.73.59.26 1.06.41 1.42.52.6.19 1.14.16 1.57.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.23-.16-.48-.28-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.24-.42.08-.17.04-.31-.02-.43-.06-.12-.55-1.36-.76-1.86-.2-.48-.4-.42-.56-.43h-.4z"/></svg></span>
-    <img class="lb-logo" src="logo-transparent.png" alt="The Ride" loading="lazy">
-    <span class="lb-txt">COMMUNITY</span>
-  </a>
+  <!-- Confirmed 2026-08-22 (mockup approved as-is): side by side, colorless,
+       matching the .plogo partner-card style. -->
+  <div class="ql-grid">
+    <a class="link-btn mtr-btn" href="http://www.the-ride.cc/2026-mijn-the-ride-dolomites" target="_blank">
+      <div class="lb-row">
+        <span class="lb-txt">MIJN</span>
+        <img class="lb-logo" src="logo-transparent.png" alt="The Ride" loading="lazy">
+      </div>
+    </a>
+    <!-- TODO: placeholder href -- real WhatsApp community invite link still needed before go-live. -->
+    <a class="link-btn wa-btn" href="#" target="_blank">
+      <div class="lb-row">
+        <span class="lb-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="#25D366" xmlns="http://www.w3.org/2000/svg"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 5L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2m0 1.67a8.23 8.23 0 018.24 8.24c0 4.55-3.7 8.24-8.25 8.24a8.2 8.2 0 01-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 01-1.26-4.38c.01-4.55 3.7-8.24 8.25-8.24M8.53 7.33c-.16 0-.43.06-.66.31-.22.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.25 3.73.59.26 1.06.41 1.42.52.6.19 1.14.16 1.57.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.23-.16-.48-.28-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.24-.42.08-.17.04-.31-.02-.43-.06-.12-.55-1.36-.76-1.86-.2-.48-.4-.42-.56-.43h-.4z"/></svg></span>
+        <img class="lb-logo" src="logo-transparent.png" alt="The Ride" loading="lazy">
+      </div>
+      <span class="lb-txt">COMMUNITY</span>
+    </a>
+  </div>
 </div>
 
 <footer>
@@ -527,7 +547,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="1.86";
+var APP_VERSION="1.90";
 // APP_STATUS is release-readiness only (PRELIMINARY -> later LIVE), NOT a
 // test-vs-production switch -- kept genuinely independent of which repo
 // this file runs in. It has no visible rendering right now (no consumer
@@ -547,7 +567,14 @@ var APP_STATUS="PRELIMINARY"; // bump APP_VERSION with every iteration
 // a copy-pasted/stale value could always disagree with where the file
 // actually was. A repo genuinely cannot lie about which URL it's serving
 // from, so this class of bug stops being possible.
-var IS_TEST_URL=/TRD-2026-TEST/i.test(location.href);
+// 2026-08-22: also unlock via a URL flag (?demo=1), so the simulator is
+// reachable on the REAL live PROD page itself -- no separate file/copy
+// needed, test against the real data.js in place. Safe for real riders:
+// nobody stumbles onto ?demo=1 by accident, it's not linked from anywhere
+// in the app, and even if someone did add it, all it does is reveal the
+// demo-day slider and "Weer testen" button, not any real data change.
+// (file:// and localhost are also still recognized, for local testing.)
+var IS_TEST_URL=/TRD-2026-TEST/i.test(location.href)||location.protocol==="file:"||/^(localhost|127\.0\.0\.1)(:|$)/i.test(location.hostname)||/[?&]demo=1(&|$)/.test(location.search);
 // Dev-only tools (date simulator, weather diagnostic) only render on TEST --
 // keeps them out of riders' hands on PROD without deleting the code.
 // GPX download hidden until the real, final route files replace the current ones —
@@ -656,19 +683,54 @@ var maxGain=Math.max.apply(null,RIDE.stages.map(function(s){return s.gain;}));
 
 /* ============ real date/time (Demo Dag removed — production uses the real clock only) ============ */
 /* ============ demo day+time simulator (TEST BUILD ONLY) ============ */
-var SIM_DATE=null;        // simulated calendar day, or null = real
+var SIM_DATE=null;        // simulated calendar day (manual single-day pin), or null
 var SIM_MIN=null;         // simulated minutes-since-midnight, or null = real
-function nowD(){var d=SIM_DATE?new Date(SIM_DATE):new Date();d.setHours(0,0,0,0);return d;}
+// Auto-walk offset (2026-08-22): a day-count added to the REAL date every
+// time nowD() is called, so simulated "today" advances with real time
+// instead of staying frozen. Persisted in localStorage so it survives
+// reloads and new days. Mutually exclusive with SIM_DATE (the manual
+// single-day pin) -- setting one clears the other.
+var SIM_OFFSET_DAYS=(function(){
+  try{var v=localStorage.getItem("trd_sim_offset");return v!==null?parseInt(v,10):null;}catch(e){return null;}
+})();
+function nowD(){
+  var d;
+  if(SIM_DATE)d=new Date(SIM_DATE);
+  else if(SIM_OFFSET_DAYS!=null){d=new Date();d.setDate(d.getDate()+SIM_OFFSET_DAYS);}
+  else d=new Date();
+  d.setHours(0,0,0,0);
+  return d;
+}
 function nowHour(){return SIM_MIN!=null?Math.floor(SIM_MIN/60):new Date().getHours();}
 function nowMinutes(){return SIM_MIN!=null?SIM_MIN:(new Date().getHours()*60+new Date().getMinutes());}
+function simClearOffset(){
+  try{localStorage.removeItem("trd_sim_offset");}catch(e){}
+  SIM_OFFSET_DAYS=null;
+}
+function simSetOffsetToDate(targetIso){
+  var target=isoToDate(targetIso);
+  var real=new Date();real.setHours(0,0,0,0);
+  var offsetDays=Math.round((target-real)/86400000);
+  try{localStorage.setItem("trd_sim_offset",offsetDays);}catch(e){}
+  SIM_OFFSET_DAYS=offsetDays;
+  SIM_DATE=null; // offset (auto-walk) mode replaces any manual single-day pin
+  SIM_MIN=null;  // time-of-day still follows the real clock, so it "lives" hour by hour too
+  renderAll();updateSimBanner();
+}
+function simSetOffsetFromInput(){
+  var el=document.getElementById("simOffsetInput");
+  if(!el||!el.value)return;
+  simSetOffsetToDate(el.value);
+}
 function simStepDay(dir){
+  if(SIM_OFFSET_DAYS!=null)simClearOffset(); // manual arrows switch out of auto-walk mode
   var cur=SIM_DATE?new Date(SIM_DATE):new Date();cur.setHours(0,0,0,0);
   cur.setDate(cur.getDate()+dir);SIM_DATE=cur;
   if(SIM_MIN==null)SIM_MIN=8*60; // first time touching the simulator, start at a sensible 08:00
   renderAll();updateSimBanner();
 }
 function simSetMinutes(v){SIM_MIN=parseInt(v,10);renderAll();updateSimBanner();}
-function simReset(){SIM_DATE=null;SIM_MIN=null;renderAll();updateSimBanner();}
+function simReset(){SIM_DATE=null;SIM_MIN=null;simClearOffset();renderAll();updateSimBanner();}
 function updateSimBanner(){
   var lab=document.getElementById("simDayLabel");
   var slider=document.getElementById("simTimeSlider");
@@ -679,10 +741,15 @@ function updateSimBanner(){
     slider.value=SIM_MIN;
     var hh=Math.floor(SIM_MIN/60),mm=SIM_MIN%60;
     timeLabel.textContent=(hh<10?"0":"")+hh+":"+(mm<10?"0":"")+mm;
+  }else if(SIM_OFFSET_DAYS!=null){
+    lab.textContent="auto · "+nowD().toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"});
+    var realMin=nowMinutes();slider.value=realMin;
+    var ah=Math.floor(realMin/60),am=realMin%60;
+    timeLabel.textContent=(ah<10?"0":"")+ah+":"+(am<10?"0":"")+am+" (echt, +"+SIM_OFFSET_DAYS+"d)";
   }else{
     lab.textContent="nu · "+nowD().toLocaleDateString("nl-NL",{day:"numeric",month:"short"});
-    var realMin=nowMinutes();slider.value=realMin;
-    var rh=Math.floor(realMin/60),rm=realMin%60;
+    var realMin2=nowMinutes();slider.value=realMin2;
+    var rh=Math.floor(realMin2/60),rm=realMin2%60;
     timeLabel.textContent=(rh<10?"0":"")+rh+":"+(rm<10?"0":"")+rm+" (echt)";
   }
 }
@@ -1510,7 +1577,12 @@ function renderToday(){
   var s=RIDE.stages[phase];
   var stageKey=s.num===0?"proloog":"etappe"+s.num;
   var min=nowMinutes();
-  var showCard1=min<600;        // until 10:00
+  // 2026-08-22: Proloog's own start window (campSchedule "start":"12:00–13:30")
+  // runs much later than a normal stage's 08:00 start, so the "VOOR DE START"
+  // campsite card needs a later cutoff too -- 14:00 (~30min after the latest
+  // possible Proloog start), matching the same buffer logic the 10:00 cutoff
+  // already uses for a normal 08:00 start. Every other stage keeps 10:00.
+  var showCard1=min<(s.num===0?840:600); // until 14:00 on Proloog, else 10:00
   var showCards23=min<1050;     // until 17:30
   var showCard4=!showCards23;   // 17:30 onward
 
