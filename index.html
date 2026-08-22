@@ -22,6 +22,7 @@
  --line:#eee8e1;--line2:#e2dad1;
  --rose:#F59BB0;--rose-deep:#E51F4D;--rose-soft:#FAF2F4;--rose-line:#F4D7DE;
  --green:#1f9d6b;--amber:#cf8412;--red:#d6455a;--blue:#3f7cc0;--summit:#7a6f64;
+ --gold:#E3A625;/* stage stars (2026-08-22): distinct from --amber (hazard warnings) -- flag for review, exact shade not yet confirmed by Jacco */
  --disp:'Archivo',sans-serif;--body:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -97,6 +98,11 @@ a{color:inherit;}
    anything else still references them -- safe to remove in a later pass. */
 .s-top2{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
  padding:13px 14px 8px;border-bottom:1px solid var(--line);}
+/* Active/today rose banner (2026-08-22): matches the same treatment the
+   Camping tab already gives its active-campsite header (.ev.now .ev-h) --
+   solid rose fill on the header row, not just a border/shadow on the card. */
+.card.today .s-top2{background:var(--rose);border-bottom-color:var(--rose-line);}
+.card.today .s-date2{color:rgba(46,52,64,.8);}
 .s-name2{font-family:var(--disp);font-weight:800;font-size:16.5px;letter-spacing:-.01em;
  transform:skewX(-12.4deg);display:inline-block;color:var(--ink);}
 .s-hdr-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
@@ -109,7 +115,7 @@ a{color:inherit;}
  transform:skewX(-12.4deg);display:inline-block;}
 .s-nl{font-size:11px;color:var(--muted);margin-top:1px;}
 .s-route{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:9px;font-size:11px;color:var(--ink2);}
-.stars{color:var(--rose);font-size:11px;letter-spacing:1px;}
+.stars{color:var(--gold);font-size:11px;letter-spacing:1px;}
 .chip{font-family:var(--mono);font-size:8.5px;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;border-radius:5px;font-weight:500;}
 .chip.loop{background:#eef1f4;color:#4a5563;}
 .chip.cat{background:var(--ink);color:#fff;}
@@ -193,7 +199,9 @@ a{color:inherit;}
  text-decoration:none;letter-spacing:.04em;padding:8px 10px;border-radius:7px;border:none;cursor:pointer;min-width:88px;}
 .seg .sbtn.strava{color:#fff;background:#FC4C02;}
 .seg .sbtn.klass{color:#fff;background:var(--ink);}
-.seg .sbtn.profile{color:#fff;background:var(--rose-deep);}
+.seg .sbtn.profile{color:#fff;background:var(--rose-deep);}/* unused since 2026-08-22 (replaced by tap-anywhere below), kept for reference/rollback */
+.seg.seg-tap{cursor:zoom-in;}
+.seg.seg-tap:active{background:var(--rose-line);}
 .seg .sbtn .ic-svg{width:14px;height:14px;flex-shrink:0;fill:currentColor;}
 .wp{display:flex;align-items:baseline;gap:10px;padding:6px 0;}
 .wp-decision{display:flex;align-items:flex-start;gap:10px;margin:8px 0;padding:10px 12px;border:1.5px dashed var(--rose);border-radius:10px;background:var(--rose-soft);}
@@ -365,7 +373,10 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
 .link-btn{display:flex;align-items:center;justify-content:center;gap:10px;border-radius:11px;
  padding:13px 20px;text-decoration:none;color:#fff;font-family:var(--disp);font-weight:700;font-size:13px;margin-bottom:10px;}
 .link-btn:active{opacity:.9;}
-.link-btn .lb-ic{font-size:16px;line-height:1;}
+.link-btn .lb-ic{font-size:16px;line-height:1;display:flex;}
+.link-btn .lb-ic svg{display:block;}
+.link-btn .lb-logo{height:20px;width:auto;display:block;}
+.link-btn .lb-txt{font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:.04em;}
 .mtr-btn{background:var(--rose-deep);}
 .wa-btn{background:#25D366;}
 .spotify-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:#1DB954;border-radius:11px;
@@ -428,14 +439,20 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
 <section class="view" id="v-klassement"></section>
 
 <footer>
+  <!-- Restyled 2026-08-22: real logo mark instead of emoji, per Jacco's feedback.
+       Composition: "MIJN" text preceding the small logo mark. -->
   <a class="link-btn mtr-btn" href="http://www.the-ride.cc/2026-mijn-the-ride-dolomites" target="_blank">
-    <span class="lb-ic">🚴</span>
-    <span>Mijn The Ride</span>
+    <span class="lb-txt">MIJN</span>
+    <img class="lb-logo" src="logo-transparent.png" alt="The Ride" loading="lazy">
   </a>
-  <!-- TODO: placeholder href -- real WhatsApp community invite link still needed before go-live -->
+  <!-- Restyled 2026-08-22: WhatsApp logo + The Ride logo (same size as above) + "COMMUNITY" text,
+       per Jacco's literal description ("whatsapp logo. again the ride logo ... followed by COMMUNITY").
+       Flagged as a best-effort reading of that composition -- confirm before shipping.
+       TODO: placeholder href -- real WhatsApp community invite link still needed before go-live. -->
   <a class="link-btn wa-btn" href="#" target="_blank">
-    <span class="lb-ic">💬</span>
-    <span>WhatsApp community</span>
+    <span class="lb-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" xmlns="http://www.w3.org/2000/svg"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 5L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2m0 1.67a8.23 8.23 0 018.24 8.24c0 4.55-3.7 8.24-8.25 8.24a8.2 8.2 0 01-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 01-1.26-4.38c.01-4.55 3.7-8.24 8.25-8.24M8.53 7.33c-.16 0-.43.06-.66.31-.22.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.25 3.73.59.26 1.06.41 1.42.52.6.19 1.14.16 1.57.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.23-.16-.48-.28-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.24-.42.08-.17.04-.31-.02-.43-.06-.12-.55-1.36-.76-1.86-.2-.48-.4-.42-.56-.43h-.4z"/></svg></span>
+    <img class="lb-logo" src="logo-transparent.png" alt="The Ride" loading="lazy">
+    <span class="lb-txt">COMMUNITY</span>
   </a>
   <a class="spotify-btn" id="spotifyLink" href="https://open.spotify.com/playlist/06I3CJeX295bVcJTp512P9" target="_blank">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
@@ -492,22 +509,37 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="1.83";
-var APP_STATUS="TEST"; // shown in header badge + footer; bump APP_VERSION with every iteration
+var APP_VERSION="1.85";
+// APP_STATUS is release-readiness only (PRELIMINARY -> later LIVE), NOT a
+// test-vs-production switch -- kept genuinely independent of which repo
+// this file runs in. It has no visible rendering right now (no consumer
+// left once the footer line below moved to IS_TEST_URL); flip it to
+// "LIVE" whenever that becomes the real release state, purely for anyone
+// reading the source, or wire up a display for it later if wanted.
+var APP_STATUS="PRELIMINARY"; // bump APP_VERSION with every iteration
 
-// Dev-only tools (date simulator, weather diagnostic) only render when APP_STATUS
-// contains "TEST" — this keeps them out of riders' hands on the PRELIMINARY/production
-// build without needing to delete the code each time. They were previously always
-// visible regardless of build status, which was a real leak into production.
-var IS_TEST_BUILD=/test/i.test(APP_STATUS);
+// IS_TEST_URL (2026-08-22): derived from the URL this file is actually running
+// on, not a hand-set flag -- this file is byte-identical in both the PROD
+// (jaccojr/TRD-2026) and TEST (jaccojr/TRD-2026-TEST) repos, and GitHub Pages
+// shares the jaccojr.github.io hostname, so the /TRD-2026-TEST/ path segment
+// is what distinguishes them, not the hostname. Replaces the old hand-set
+// IS_TEST_BUILD=/test/i.test(APP_STATUS): that coupling is exactly how the
+// "Weer testen button leaked into PROD" bug happened, and how APP_STATUS
+// silently reverted to "TEST" between sessions and leaked again just now --
+// a copy-pasted/stale value could always disagree with where the file
+// actually was. A repo genuinely cannot lie about which URL it's serving
+// from, so this class of bug stops being possible.
+var IS_TEST_URL=/TRD-2026-TEST/i.test(location.href);
+// Dev-only tools (date simulator, weather diagnostic) only render on TEST --
+// keeps them out of riders' hands on PROD without deleting the code.
 // GPX download hidden until the real, final route files replace the current ones —
 // expected roughly 7 days before the tour starts. Deliberately independent of
-// IS_TEST_BUILD: this isn't a test-vs-production distinction, it's "are these routes
+// IS_TEST_URL: this isn't a test-vs-production distinction, it's "are these routes
 // the ones riders should actually download yet." Flip to true once the final GPX files
 // are in place, in either repo.
 var GPX_FINAL=false;
 document.addEventListener("DOMContentLoaded",function(){
-  if(!IS_TEST_BUILD){
+  if(!IS_TEST_URL){
     var sb=document.getElementById("simBanner"); if(sb)sb.style.display="none";
     var wt=document.getElementById("btnWeerTest"); if(wt)wt.style.display="none";
   }else{
@@ -801,7 +833,13 @@ function segBlock(s){
   var r=activeRoute(s);
   if(!r.segment)return "";
   var sg=r.segment;
-  var h='<div class="seg"><div class="sh"><div><div class="st">⚡ Strava Challenge</div><div class="sd">'+sg.desc+'</div></div><span class="chip cat">CAT '+sg.cat+'</span></div>';
+  // Tap-anywhere (2026-08-22): replaces the old dedicated "📈 Profiel" button
+  // with the same wp-tap pattern the col rows already use -- tap the card
+  // itself (header/stats), the two link buttons stop propagation so they
+  // still work as external links, not as the zoom trigger.
+  var tapCls=sg.profile?' seg-tap':'';
+  var tapAttr=sg.profile?' onclick="openMapZoom(\''+sg.profile+'\',\''+sg.desc.replace(/'/g,"\\'")+'\')"':'';
+  var h='<div class="seg'+tapCls+'"'+tapAttr+'><div class="sh"><div><div class="st">⚡ Strava Challenge</div><div class="sd">'+sg.desc+'</div></div><span class="chip cat">CAT '+sg.cat+'</span></div>';
   if(sg.pending){
     h+='<div class="ss">Locatie op route wordt nog bevestigd</div>';
   }else{
@@ -816,9 +854,8 @@ function segBlock(s){
       '</div>';
   }
   h+='<div class="sbtns">';
-  if(sg.profile){h+='<button type="button" class="sbtn profile" onclick="openMapZoom(\''+sg.profile+'\',\''+sg.desc.replace(/'/g,"\\'")+'\')">📈 Profiel</button>';}
-  if(sg.strava){h+='<a class="sbtn strava" href="'+sg.strava+'" target="_blank">'+STRAVA_SVG+' Strava segment</a>';}
-  h+='<a class="sbtn klass" href="https://challenges.the-ride.cc/" target="_blank">⚡ Klassement</a>';
+  if(sg.strava){h+='<a class="sbtn strava" href="'+sg.strava+'" target="_blank" onclick="event.stopPropagation()">'+STRAVA_SVG+' Strava segment</a>';}
+  h+='<a class="sbtn klass" href="https://challenges.the-ride.cc/" target="_blank" onclick="event.stopPropagation()">⚡ Klassement</a>';
   h+='</div></div>';
   return h;
 }
@@ -1850,7 +1887,7 @@ function renderAll(){
   var liveActions=eventPhase()==="live"&&nowD().getTime()<=isoToDate(RIDE.stages[RIDE.stages.length-1].iso).getTime();
   document.getElementById("hdActions").style.display=liveActions?"flex":"none";
   document.getElementById("locout").style.display=liveActions?"":"none";
-  document.getElementById("footMeta").textContent="Routedata: GPX · Weer: Open-Meteo · "+APP_STATUS+" · v"+APP_VERSION;
+  document.getElementById("footMeta").textContent="Routedata: GPX · Weer: Open-Meteo · "+(IS_TEST_URL?"TEST":"production")+" · v"+APP_VERSION;
   renderToday();renderRoute();renderKlass();renderEvent();renderPrep();
 }
 renderAll();
