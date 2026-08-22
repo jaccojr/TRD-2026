@@ -61,12 +61,10 @@ a{color:inherit;}
 .sim-row{display:flex;align-items:center;gap:8px;}
 .sim-lab{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--rose-deep);}
 .sim-row button{border:1px solid var(--rose-line);background:#fff;color:var(--rose-deep);border-radius:7px;width:26px;height:22px;font-size:13px;cursor:pointer;line-height:1;}
-.sim-row button.sim-reset,.sim-row button.sim-setbtn{width:auto;padding:0 8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;}
+.sim-row button.sim-reset{width:auto;padding:0 8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;}
 .sim-day{font-size:11px;font-weight:700;color:var(--ink);flex:1;text-align:center;}
 .sim-time{font-size:11px;font-weight:700;color:var(--rose-deep);min-width:78px;text-align:right;}
 .sim-row input[type=range]{flex:1;accent-color:var(--rose-deep);}
-.sim-date-input{border:1px solid var(--rose-line);background:#fff;color:var(--ink);border-radius:7px;
- padding:2px 6px;font-family:var(--mono);font-size:11px;flex:1;}
 
 /* ---------- Tabs ---------- */
 .tabs{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:540px;z-index:60;transform:translateZ(0);will-change:transform;
@@ -447,19 +445,6 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
     <input type="range" id="simTimeSlider" min="0" max="1439" step="30" value="480" oninput="simSetMinutes(this.value)">
     <span class="sim-time mono" id="simTimeLabel">08:00</span>
   </div>
-  <!-- Auto-walk (2026-08-22): pins "today" to a fixed offset from the real
-       date instead of one static simulated day -- walks forward with real
-       time automatically (e.g. real 22/8 = simulated 12/9, so real 23/8
-       becomes simulated 13/9 the next time you open the app), so multi-day
-       flows (weather arriving as dates enter Open-Meteo's real forecast
-       window, today/route/campsite transitioning stage to stage) can be
-       watched over the coming days without re-touching the slider each time.
-       Persisted in localStorage so it survives reloads/new days. -->
-  <div class="sim-row">
-    <span class="sim-lab">Auto-walk vanaf</span>
-    <input type="date" id="simOffsetInput" class="sim-date-input">
-    <button class="sim-setbtn" onclick="simSetOffsetFromInput()">instellen</button>
-  </div>
 </div>
 
 <section class="view active" id="v-today"></section>
@@ -550,7 +535,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="1.92";
+var APP_VERSION="1.93";
 // APP_STATUS is release-readiness only (PRELIMINARY -> later LIVE), NOT a
 // test-vs-production switch -- kept genuinely independent of which repo
 // this file runs in. It has no visible rendering right now (no consumer
@@ -570,14 +555,7 @@ var APP_STATUS="PRELIMINARY"; // bump APP_VERSION with every iteration
 // a copy-pasted/stale value could always disagree with where the file
 // actually was. A repo genuinely cannot lie about which URL it's serving
 // from, so this class of bug stops being possible.
-// 2026-08-22: also unlock via a URL flag (?demo=1), so the simulator is
-// reachable on the REAL live PROD page itself -- no separate file/copy
-// needed, test against the real data.js in place. Safe for real riders:
-// nobody stumbles onto ?demo=1 by accident, it's not linked from anywhere
-// in the app, and even if someone did add it, all it does is reveal the
-// demo-day slider and "Weer testen" button, not any real data change.
-// (file:// and localhost are also still recognized, for local testing.)
-var IS_TEST_URL=/TRD-2026-TEST/i.test(location.href)||location.protocol==="file:"||/^(localhost|127\.0\.0\.1)(:|$)/i.test(location.hostname)||/[?&]demo=1(&|$)/.test(location.search);
+var IS_TEST_URL=/TRD-2026-TEST/i.test(location.href);
 // Dev-only tools (date simulator, weather diagnostic) only render on TEST --
 // keeps them out of riders' hands on PROD without deleting the code.
 // GPX download hidden until the real, final route files replace the current ones —
@@ -684,56 +662,24 @@ function stars(n){return "★".repeat(n)+"☆".repeat(5-n);}
 function isoToDate(iso){var p=iso.split("-");return new Date(+p[0],+p[1]-1,+p[2]);}
 var maxGain=Math.max.apply(null,RIDE.stages.map(function(s){return s.gain;}));
 
-/* ============ real date/time (Demo Dag removed — production uses the real clock only) ============ */
 /* ============ demo day+time simulator (TEST BUILD ONLY) ============ */
 var SIM_DATE=null;        // simulated calendar day (manual single-day pin), or null
 var SIM_MIN=null;         // simulated minutes-since-midnight, or null = real
-// Auto-walk offset (2026-08-22): a day-count added to the REAL date every
-// time nowD() is called, so simulated "today" advances with real time
-// instead of staying frozen. Persisted in localStorage so it survives
-// reloads and new days. Mutually exclusive with SIM_DATE (the manual
-// single-day pin) -- setting one clears the other.
-var SIM_OFFSET_DAYS=(function(){
-  try{var v=localStorage.getItem("trd_sim_offset");return v!==null?parseInt(v,10):null;}catch(e){return null;}
-})();
 function nowD(){
-  var d;
-  if(SIM_DATE)d=new Date(SIM_DATE);
-  else if(SIM_OFFSET_DAYS!=null){d=new Date();d.setDate(d.getDate()+SIM_OFFSET_DAYS);}
-  else d=new Date();
+  var d=SIM_DATE?new Date(SIM_DATE):new Date();
   d.setHours(0,0,0,0);
   return d;
 }
 function nowHour(){return SIM_MIN!=null?Math.floor(SIM_MIN/60):new Date().getHours();}
 function nowMinutes(){return SIM_MIN!=null?SIM_MIN:(new Date().getHours()*60+new Date().getMinutes());}
-function simClearOffset(){
-  try{localStorage.removeItem("trd_sim_offset");}catch(e){}
-  SIM_OFFSET_DAYS=null;
-}
-function simSetOffsetToDate(targetIso){
-  var target=isoToDate(targetIso);
-  var real=new Date();real.setHours(0,0,0,0);
-  var offsetDays=Math.round((target-real)/86400000);
-  try{localStorage.setItem("trd_sim_offset",offsetDays);}catch(e){}
-  SIM_OFFSET_DAYS=offsetDays;
-  SIM_DATE=null; // offset (auto-walk) mode replaces any manual single-day pin
-  SIM_MIN=null;  // time-of-day still follows the real clock, so it "lives" hour by hour too
-  renderAll();updateSimBanner();
-}
-function simSetOffsetFromInput(){
-  var el=document.getElementById("simOffsetInput");
-  if(!el||!el.value)return;
-  simSetOffsetToDate(el.value);
-}
 function simStepDay(dir){
-  if(SIM_OFFSET_DAYS!=null)simClearOffset(); // manual arrows switch out of auto-walk mode
   var cur=SIM_DATE?new Date(SIM_DATE):new Date();cur.setHours(0,0,0,0);
   cur.setDate(cur.getDate()+dir);SIM_DATE=cur;
   if(SIM_MIN==null)SIM_MIN=8*60; // first time touching the simulator, start at a sensible 08:00
   renderAll();updateSimBanner();
 }
 function simSetMinutes(v){SIM_MIN=parseInt(v,10);renderAll();updateSimBanner();}
-function simReset(){SIM_DATE=null;SIM_MIN=null;simClearOffset();renderAll();updateSimBanner();}
+function simReset(){SIM_DATE=null;SIM_MIN=null;renderAll();updateSimBanner();}
 function updateSimBanner(){
   var lab=document.getElementById("simDayLabel");
   var slider=document.getElementById("simTimeSlider");
@@ -744,11 +690,6 @@ function updateSimBanner(){
     slider.value=SIM_MIN;
     var hh=Math.floor(SIM_MIN/60),mm=SIM_MIN%60;
     timeLabel.textContent=(hh<10?"0":"")+hh+":"+(mm<10?"0":"")+mm;
-  }else if(SIM_OFFSET_DAYS!=null){
-    lab.textContent="auto · "+nowD().toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"});
-    var realMin=nowMinutes();slider.value=realMin;
-    var ah=Math.floor(realMin/60),am=realMin%60;
-    timeLabel.textContent=(ah<10?"0":"")+ah+":"+(am<10?"0":"")+am+" (echt, +"+SIM_OFFSET_DAYS+"d)";
   }else{
     lab.textContent="nu · "+nowD().toLocaleDateString("nl-NL",{day:"numeric",month:"short"});
     var realMin2=nowMinutes();slider.value=realMin2;
