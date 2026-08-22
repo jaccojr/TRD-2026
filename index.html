@@ -369,7 +369,12 @@ a{color:inherit;}
  font-size:11.5px;padding:7px 12px;border-radius:7px;cursor:pointer;white-space:nowrap;}
 .orgnum-btn:active{opacity:.85;}
 
-footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:center;}
+/* 2026-08-22: MIJN/WhatsApp buttons moved out of <footer> into .quick-links
+   (sits right after the tab content, no divider above it) so they read as
+   part of the main app content, not lumped in with the Spotify/partners/
+   legal footer block below the divider line. */
+.quick-links{padding:16px 18px 4px;text-align:center;}
+footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:center;}
 .link-btn{display:flex;align-items:center;justify-content:center;gap:10px;border-radius:11px;
  padding:13px 20px;text-decoration:none;color:#fff;font-family:var(--disp);font-weight:700;font-size:13px;margin-bottom:10px;}
 .link-btn:active{opacity:.9;}
@@ -377,7 +382,12 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
 .link-btn .lb-ic svg{display:block;}
 .link-btn .lb-logo{height:20px;width:auto;display:block;}
 .link-btn .lb-txt{font-family:var(--disp);font-weight:800;font-size:13px;letter-spacing:.04em;}
-.mtr-btn{background:var(--rose-deep);}
+/* 2026-08-22: switched from --rose-deep to --rose -- matches the app's actual
+   signature rose (the .hd-top header bar uses var(--rose), not --rose-deep,
+   which is reserved for CTA buttons like the gate/orgnum buttons). Text
+   color follows the same dark-on-rose pattern the header title uses
+   (.hd-title .t{color:#2e3440}), since white reads poorly on the lighter pink. */
+.mtr-btn{background:var(--rose);color:#2e3440;}
 .wa-btn{background:#25D366;}
 .spotify-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:#1DB954;border-radius:11px;
  padding:13px 20px;text-decoration:none;color:#fff;font-family:var(--disp);font-weight:700;font-size:13px;margin-bottom:18px;}
@@ -438,7 +448,12 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
 <section class="view" id="v-prep"></section>
 <section class="view" id="v-klassement"></section>
 
-<footer>
+<!-- Promoted out of <footer> 2026-08-22, per Jacco's feedback: these two
+     read as core app content, not minor footer links, so they now sit
+     directly under the tab content with no divider above them -- the
+     footer's divider line now falls between here and the Spotify/partners
+     block instead. -->
+<div class="quick-links">
   <!-- Restyled 2026-08-22: real logo mark instead of emoji, per Jacco's feedback.
        Composition: "MIJN" text preceding the small logo mark. -->
   <a class="link-btn mtr-btn" href="http://www.the-ride.cc/2026-mijn-the-ride-dolomites" target="_blank">
@@ -447,13 +462,16 @@ footer{padding:20px 18px 100px;border-top:1px solid var(--line);text-align:cente
   </a>
   <!-- Restyled 2026-08-22: WhatsApp logo + The Ride logo (same size as above) + "COMMUNITY" text,
        per Jacco's literal description ("whatsapp logo. again the ride logo ... followed by COMMUNITY").
-       Flagged as a best-effort reading of that composition -- confirm before shipping.
+       Confirmed 2026-08-22 (real logo checked in-app, reads well on both backgrounds).
        TODO: placeholder href -- real WhatsApp community invite link still needed before go-live. -->
   <a class="link-btn wa-btn" href="#" target="_blank">
     <span class="lb-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" xmlns="http://www.w3.org/2000/svg"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 5L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2m0 1.67a8.23 8.23 0 018.24 8.24c0 4.55-3.7 8.24-8.25 8.24a8.2 8.2 0 01-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 01-1.26-4.38c.01-4.55 3.7-8.24 8.25-8.24M8.53 7.33c-.16 0-.43.06-.66.31-.22.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.25 3.73.59.26 1.06.41 1.42.52.6.19 1.14.16 1.57.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.23-.16-.48-.28-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.24-.42.08-.17.04-.31-.02-.43-.06-.12-.55-1.36-.76-1.86-.2-.48-.4-.42-.56-.43h-.4z"/></svg></span>
     <img class="lb-logo" src="logo-transparent.png" alt="The Ride" loading="lazy">
     <span class="lb-txt">COMMUNITY</span>
   </a>
+</div>
+
+<footer>
   <a class="spotify-btn" id="spotifyLink" href="https://open.spotify.com/playlist/06I3CJeX295bVcJTp512P9" target="_blank">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
@@ -509,7 +527,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="1.85";
+var APP_VERSION="1.86";
 // APP_STATUS is release-readiness only (PRELIMINARY -> later LIVE), NOT a
 // test-vs-production switch -- kept genuinely independent of which repo
 // this file runs in. It has no visible rendering right now (no consumer
@@ -1869,7 +1887,18 @@ function getLoc(){
   navigator.geolocation.getCurrentPosition(function(p){
     var la=p.coords.latitude.toFixed(5),lo=p.coords.longitude.toFixed(5);
     o.innerHTML='<a href="https://maps.google.com/?q='+la+','+lo+'" target="_blank">'+la+', '+lo+' ↗ open in Maps</a>';
-  },function(){o.textContent="Locatie niet beschikbaar (geef toestemming).";});
+  },function(err){
+    // 2026-08-22: browsers remember a location decision permanently once
+    // blocked and will never show the native permission dialog again for
+    // this site -- no web API can force it back open (deliberate browser
+    // anti-annoyance/security behavior, not an app bug). The old message
+    // ("geef toestemming") falsely implied tapping again would re-prompt.
+    if(err&&err.code===1){
+      o.textContent="Locatie geblokkeerd — pas dit aan bij je browserinstellingen (tik het slotje naast de adresbalk → Locatie → Toestaan).";
+    }else{
+      o.textContent="Locatie niet beschikbaar.";
+    }
+  });
 }
 
 /* ============ boot ============ */
