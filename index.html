@@ -393,8 +393,11 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
    just use the plain white .link-btn card style above, no per-button tint.
    WhatsApp identity now comes from the icon itself (colored green, see the
    inline SVG fill below) rather than a green card background. */
-.spotify-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:#1DB954;border-radius:11px;
- padding:13px 20px;text-decoration:none;color:#fff;font-family:var(--disp);font-weight:700;font-size:13px;margin-bottom:18px;}
+/* Confirmed 2026-08-22 (mockup approved as-is): colorless, matching the same
+   white/bordered card style as the MIJN/WhatsApp buttons and partner
+   cards -- logo inverted from white-on-green to Spotify-green-on-white. */
+.spotify-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:11px;
+ padding:13px 20px;text-decoration:none;color:var(--ink);font-family:var(--disp);font-weight:700;font-size:13px;margin-bottom:18px;}
 .spotify-btn:active{opacity:.9;}
 .foot-spon{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
 .foot-logos{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
@@ -493,7 +496,7 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
 
 <footer>
   <a class="spotify-btn" id="spotifyLink" href="https://open.spotify.com/playlist/06I3CJeX295bVcJTp512P9" target="_blank">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="#1DB954" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
     </svg>
     <span id="spotifyLbl">The Ride Dolomites · Playlist</span>
@@ -547,7 +550,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="1.90";
+var APP_VERSION="1.91";
 // APP_STATUS is release-readiness only (PRELIMINARY -> later LIVE), NOT a
 // test-vs-production switch -- kept genuinely independent of which repo
 // this file runs in. It has no visible rendering right now (no consumer
