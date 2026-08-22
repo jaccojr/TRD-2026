@@ -258,6 +258,10 @@ a{color:inherit;}
 .tc-photo{position:relative;aspect-ratio:16/9;background:var(--rose-soft);overflow:hidden;}
 .tc-photo img{width:100%;height:100%;object-fit:cover;display:block;}
 .tc-photo.img-fallback{background:linear-gradient(135deg,var(--rose-soft),var(--rose-line));}
+/* Confirmed 2026-08-22 (mockup approved as-is): finish-banner photo is
+   shorter than the other today-cards -- half the height at the same width
+   (32:9 instead of 16:9), with a less-zoomed-out crop of the same photo. */
+.tc-photo.tc-photo-short{aspect-ratio:32/9;}
 .tc-ab{position:absolute;top:10px;right:10px;display:flex;border:1.5px solid #fff;border-radius:8px;overflow:hidden;background:rgba(0,0,0,.35);backdrop-filter:blur(2px);}
 .tc-ab button{border:none;background:transparent;color:#fff;font-family:var(--disp);font-weight:800;font-size:11px;width:24px;height:22px;cursor:pointer;}
 .tc-ab button.on{background:var(--rose);}
@@ -535,7 +539,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="1.93";
+var APP_VERSION="1.94";
 // APP_STATUS is release-readiness only (PRELIMINARY -> later LIVE), NOT a
 // test-vs-production switch -- kept genuinely independent of which repo
 // this file runs in. It has no visible rendering right now (no consumer
@@ -1583,7 +1587,7 @@ function renderToday(){
        on every stage (the real arch banner is the same physical object
        at every finish, not per-stage). */
     html+='<div class="today-card tc-tap" onclick="showTab(\'event\')">'+
-      '<div class="tc-photo"><img src="finish-banner.jpg" alt="" loading="lazy" '+
+      '<div class="tc-photo tc-photo-short"><img src="finish-banner.jpg" alt="" loading="lazy" '+
       'onerror="this.style.display=\'none\';this.parentElement.classList.add(\'img-fallback\')"></div>'+
       '<div class="tc-body">'+
       '<div class="tc-eyebrow">VERWACHTE FINISH</div>'+
