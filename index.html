@@ -550,7 +550,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="1.91";
+var APP_VERSION="1.92";
 // APP_STATUS is release-readiness only (PRELIMINARY -> later LIVE), NOT a
 // test-vs-production switch -- kept genuinely independent of which repo
 // this file runs in. It has no visible rendering right now (no consumer
@@ -1636,7 +1636,14 @@ function renderToday(){
 
     var slot1=RIDE.event.campSchedule.filter(function(r){return r.iso===s.iso && r.pm;})[0]||{};
     var campTonight=slot1.camp?campById(slot1.camp):null;
+    /* Confirmed 2026-08-22 (mockup approved as-is): banner photo added
+       above the VERWACHTE FINISH card body, same .tc-photo pattern every
+       other today-card image uses. Same single "finish-banner.jpg" file
+       on every stage (the real arch banner is the same physical object
+       at every finish, not per-stage). */
     html+='<div class="today-card tc-tap" onclick="showTab(\'event\')">'+
+      '<div class="tc-photo"><img src="finish-banner.jpg" alt="" loading="lazy" '+
+      'onerror="this.style.display=\'none\';this.parentElement.classList.add(\'img-fallback\')"></div>'+
       '<div class="tc-body">'+
       '<div class="tc-eyebrow">VERWACHTE FINISH</div>'+
       '<div class="tc-title" id="tcfinish-'+s.num+'">'+estFinishTime(s)+'</div>'+
