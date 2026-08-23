@@ -21,7 +21,7 @@
  --bg:#ffffff;--paper:#faf7f4;--card:#ffffff;--ink:#2e3440;--ink2:#574e47;--muted:#9a918a;
  --line:#eee8e1;--line2:#e2dad1;
  --rose:#F59BB0;--rose-deep:#E51F4D;--rose-soft:#FAF2F4;--rose-line:#F4D7DE;
- --green:#1f9d6b;--amber:#cf8412;--red:#d6455a;--blue:#3f7cc0;--summit:#7a6f64;
+ --green:#1f9d6b;--amber:#cf8412;--red:#d6455a;--blue:#3f7cc0;
  --gold:#E3A625;/* stage stars (2026-08-22): distinct from --amber (hazard warnings) -- flag for review, exact shade not yet confirmed by Jacco */
  --disp:'Archivo',sans-serif;--body:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
 }
@@ -94,8 +94,8 @@ a{color:inherit;}
 /* Simplified header (2026-08-22): one clean line (stage name + date), no
    boxed number badge, no separate .s-nl tagline underneath -- the old
    3-part badge/name/tagline stack is replaced by .s-top2/.s-name2/.s-date2.
-   Kept .s-name/.s-nl class defs (unused by stageCard() now) only in case
-   anything else still references them -- safe to remove in a later pass. */
+   The old .s-name/.s-nl rules were removed 2026-08-22 after an audit
+   confirmed nothing references them. */
 .s-top2{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
  padding:13px 14px 8px;border-bottom:1px solid var(--line);}
 /* Active/today rose banner (2026-08-22): matches the same treatment the
@@ -111,9 +111,6 @@ a{color:inherit;}
 .ab-toggle{display:flex;border:1.5px solid var(--rose-deep);border-radius:8px;overflow:hidden;flex-shrink:0;}
 .ab-toggle button{border:none;background:#fff;color:var(--rose-deep);font-family:var(--disp);font-weight:800;font-size:11px;width:22px;height:20px;line-height:20px;cursor:pointer;padding:0;}
 .ab-toggle button.on{background:var(--rose);color:#fff;}
-.s-name{font-family:var(--disp);font-weight:800;font-size:16.5px;letter-spacing:-.01em;line-height:1.1;
- transform:skewX(-12.4deg);display:inline-block;}
-.s-nl{font-size:11px;color:var(--muted);margin-top:1px;}
 .s-route{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:9px;font-size:11px;color:var(--ink2);}
 .stars{color:var(--gold);font-size:11px;letter-spacing:1px;}
 .chip{font-family:var(--mono);font-size:8.5px;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;border-radius:5px;font-weight:500;}
@@ -386,6 +383,10 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
 .link-btn{background:#fff;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:9px;
  padding:12px;text-decoration:none;color:var(--ink);font-family:var(--disp);font-weight:700;font-size:11.5px;height:70px;box-sizing:content-box;}
 .link-btn:active{opacity:.85;}
+/* Inert state for a link whose destination isn't configured yet (currently the
+   WhatsApp community button, see WA_COMMUNITY_URL). Dimmed and unclickable, so
+   it reads as "not ready" instead of silently doing the wrong thing. */
+.link-btn.is-disabled{opacity:.45;pointer-events:none;cursor:default;}
 .link-btn .lb-row{display:flex;align-items:center;gap:5px;}
 .link-btn .lb-ic{font-size:16px;line-height:1;display:flex;}
 .link-btn .lb-ic svg{display:block;}
@@ -470,17 +471,20 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
   <!-- Confirmed 2026-08-22 (mockup approved as-is): side by side, colorless,
        matching the .plogo partner-card style. -->
   <div class="ql-grid">
-    <a class="link-btn mtr-btn" href="http://www.the-ride.cc/2026-mijn-the-ride-dolomites" target="_blank">
+    <a class="link-btn" href="http://www.the-ride.cc/2026-mijn-the-ride-dolomites" target="_blank">
       <div class="lb-row">
         <span class="lb-txt">MIJN</span>
         <img class="lb-logo" src="logo-transparent.png" alt="The Ride" loading="lazy">
       </div>
     </a>
-    <!-- TODO: placeholder href -- real WhatsApp community invite link still needed before go-live. -->
     <!-- Confirmed 2026-08-22 (mockup approved as-is): WhatsApp icon to the
          left, with some space, of a centered logo+COMMUNITY stack -- was
-         icon+logo side by side on top, COMMUNITY centered below both. -->
-    <a class="link-btn wa-btn" href="#" target="_blank">
+         icon+logo side by side on top, COMMUNITY centered below both.
+         No href here on purpose: it is set at init from WA_COMMUNITY_URL,
+         and while that is null the button renders inert + dimmed. It used to
+         carry href="#" with target="_blank", which meant a tap opened a
+         second copy of the whole app in a new tab. -->
+    <a class="link-btn" id="waCommunity">
       <div class="lb-row-alt">
         <span class="lb-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="#25D366" xmlns="http://www.w3.org/2000/svg"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 5L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2m0 1.67a8.23 8.23 0 018.24 8.24c0 4.55-3.7 8.24-8.25 8.24a8.2 8.2 0 01-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 01-1.26-4.38c.01-4.55 3.7-8.24 8.25-8.24M8.53 7.33c-.16 0-.43.06-.66.31-.22.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.25 3.73.59.26 1.06.41 1.42.52.6.19 1.14.16 1.57.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.23-.16-.48-.28-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.24-.42.08-.17.04-.31-.02-.43-.06-.12-.55-1.36-.76-1.86-.2-.48-.4-.42-.56-.43h-.4z"/></svg></span>
         <div class="lb-stack">
@@ -548,14 +552,17 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="1.96";
-// APP_STATUS is release-readiness only (PRELIMINARY -> later LIVE), NOT a
-// test-vs-production switch -- kept genuinely independent of which repo
-// this file runs in. It has no visible rendering right now (no consumer
-// left once the footer line below moved to IS_TEST_URL); flip it to
-// "LIVE" whenever that becomes the real release state, purely for anyone
-// reading the source, or wire up a display for it later if wanted.
-var APP_STATUS="PRELIMINARY"; // bump APP_VERSION with every iteration
+var APP_VERSION="1.97"; // bump with every iteration
+// The real WhatsApp community invite link. While this is null the footer
+// button renders inert and dimmed rather than pretending to work -- setting
+// it to the invite URL is the only change needed to go live.
+var WA_COMMUNITY_URL=null;
+// APP_STATUS (PRELIMINARY/LIVE) was removed 2026-08-22: it had no consumer
+// left once the footer label moved to IS_TEST_URL, so it was a value that
+// could only ever be wrong, never right -- and a stale copy of exactly this
+// variable is what leaked the "Weer testen" button onto PROD twice. Whether
+// this build is test or production is now derived from the URL alone
+// (IS_TEST_URL below); there is no hand-set flag left to disagree with it.
 
 // IS_TEST_URL (2026-08-22): derived from the URL this file is actually running
 // on, not a hand-set flag -- this file is byte-identical in both the PROD
@@ -716,12 +723,24 @@ function updateSimBanner(){
 // network-first with no-store, so this just needs to ask again.
 function softRefresh(){
   fetch("data.js?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.text();}).then(function(text){
-    var eq=text.indexOf("=");
-    var body=text.slice(eq+1).trim();
-    if(body.charAt(body.length-1)===";")body=body.slice(0,-1);
+    // Located by the actual declaration rather than the first "=" in the file:
+    // indexOf("=") would grab a "=" inside a leading header comment (e.g.
+    // "// generated by fix_segments.py --mode=full") and feed JSON.parse a
+    // fragment, which the catch below would then swallow silently -- leaving
+    // the app showing stale data with no signal. Deliberately not anchored to
+    // the start of the file, so a header comment is tolerated rather than
+    // merely failing more loudly.
+    var d=text.match(/var\s+RIDE\s*=\s*/);
+    if(!d)throw new Error("data.js: could not find a 'var RIDE = ...' declaration");
+    var body=text.slice(d.index+d[0].length).trim().replace(/;\s*$/,"");
     RIDE=JSON.parse(body); // requires data.js to declare "var RIDE=", not "const", so this reassignment is legal
     renderAll(); // also re-fetches weather.json fresh, via loadWeather() inside renderRoute()
-  }).catch(function(){/* offline or fetch failed — keep showing whatever's currently loaded */});
+  }).catch(function(err){
+    // Offline/fetch failure is normal and silent; a parse failure is a real
+    // problem worth surfacing to whoever is looking at the console, since the
+    // screen itself just keeps showing the previously-loaded data either way.
+    if(err&&err.name!=="TypeError")console.error("softRefresh: data.js loaded but could not be parsed —",err.message);
+  });
 }
 document.addEventListener("visibilitychange",function(){
   if(document.visibilityState==="visible")softRefresh();
@@ -901,7 +920,14 @@ function segBlock(s){
   h+='</div></div>';
   return h;
 }
-function stageCard(s,expanded){
+// No `expanded` parameter: renderRoute() used to pass focus.indexOf(i)>=0 here
+// and this function never read it, while the other call site (the single-card
+// re-render in setAlt) passed nothing at all -- so the argument implied an
+// auto-expand behaviour that was never built. Dropped 2026-08-22 rather than
+// left in place implying a feature that isn't there. The focused stage is
+// still marked (section eyebrow + scroll-into-view in renderRoute); if
+// auto-expanding its panels is ever wanted, both call sites need it.
+function stageCard(s){
   var r=activeRoute(s);
   var state=stageState(s); // still used for weather-hiding — that 18:00 cutoff is intentional
   var isToday=isoToDate(s.iso).getTime()===nowD().getTime(); // card highlight: whole calendar day, no hour cutoff — "here's where we are"
@@ -975,7 +1001,7 @@ function renderRoute(){
     '</div></div>';
   RIDE.stages.forEach(function(s,i){
     if(info.label && focus.indexOf(i)===0){html+='<div class="section-eyebrow">'+info.label+'</div>';}
-    html+=stageCard(s,focus.indexOf(i)>=0);
+    html+=stageCard(s);
   });
   v.innerHTML=html;
   requestAnimationFrame(function(){
@@ -1137,14 +1163,37 @@ function climbOfDay(s){
   }
   var best=null,bestScore=-1;
   cols.forEach(function(c){
-    var m=c.desc.match(/(\d+),(\d+) km, (\d+),(\d+)%/);
-    if(!m)return;
-    var km=parseFloat(m[1]+"."+m[2]),grade=parseFloat(m[3]+"."+m[4]);
-    var sc=km*grade*grade;
+    var st=climbStats(c);
+    if(st.length==null||st.grade==null)return;
+    var sc=st.length*st.grade*st.grade;
     if(sc>bestScore){bestScore=sc;best=c;}
   });
   return best;
 }
+// Climb length/grade/CAT come from real fields on the waypoint (2026-08-22).
+// They used to be recovered by regex-parsing `desc`, the human-readable label
+// ("CAT 2 · 6,4 km, 5,7%") -- which meant `desc` was load-bearing data, not
+// just a caption: editing it by hand was required whenever the km fields
+// changed, and a label written without a decimal comma ("15 km, 6%") silently
+// produced length "—" and 0 hm. `desc` is now purely a label again.
+// The desc fallback below is only for data that predates those fields; it
+// returns nulls rather than zeros so a miss shows "—", never a wrong number.
+function climbStats(c){
+  if(c.length!=null&&c.grade!=null)return {length:c.length,grade:c.grade,cat:c.cat!=null?c.cat:null};
+  var m=(c.desc||"").match(/(\d+),(\d+) km, (\d+),(\d+)%/);
+  var cm=(c.desc||"").match(/CAT\s*(\S+)/);
+  return {
+    length:m?parseFloat(m[1]+"."+m[2]):null,
+    grade:m?parseFloat(m[3]+"."+m[4]):null,
+    cat:c.cat!=null?c.cat:(cm?cm[1]:null)
+  };
+}
+// Shared by the climb-of-day card; segments carry a stored `hm` instead.
+function climbHm(st){
+  return (st.length==null||st.grade==null)?null:Math.round(st.length*1000*st.grade/100);
+}
+// Dutch decimal display for a climb length/grade number.
+function nlNum(n,dec){return n==null?"—":n.toFixed(dec==null?1:dec).replace(".",",");}
 // Absolute safety clamp — the slider never renders outside 07:00–18:00 regardless of
 // what the per-stage calculation below produces.
 var RIDER_RANGE_MIN=7*60, RIDER_RANGE_MAX=18*60;
@@ -1444,7 +1493,11 @@ function todayPhase(){
   }
   return "post";
 }
-function todayImg(stageKey,cardNum,alt){
+// cardNum is kept as a parameter (currently only ever 2) so a card-1 image slot
+// can come back without reshaping this; the unused third `alt` param was
+// dropped 2026-08-22 -- it was never passed by the single call site, and the
+// rendered alt="" is intentional (decorative image, hidden from screen readers).
+function todayImg(stageKey,cardNum){
   return '<img src="today-'+stageKey+'-card'+cardNum+'.jpg" alt="" loading="lazy" '+
     'onerror="this.style.display=\'none\';this.parentElement.classList.add(\'img-fallback\')">';
 }
@@ -1569,16 +1622,14 @@ function renderToday(){
       '<div class="tc-eyebrow">ROUTE VANDAAG</div>'+
       '<div class="tc-stats-row"><div class="tc-stat"><b>'+r.dist+'</b><span>TOTAAL KM</span></div><div class="tc-stat"><b>'+r.gain.toLocaleString("nl")+'</b><span>TOTAAL HM</span></div></div>';
     if(climb){
-      var m=climb.desc.match(/(\d+),(\d+) km, (\d+),(\d+)%/);
-      var catM=climb.desc.match(/CAT\s*(\S+)/);
-      var climbKm=m?parseFloat(m[1]+"."+m[2]):0, climbGrade=m?parseFloat(m[3]+"."+m[4]):0;
-      var hmGained=Math.round(climbKm*1000*climbGrade/100);
+      var st=climbStats(climb);
+      var hmGained=climbHm(st);
       html+='<div class="tc-eyebrow" style="margin-top:12px">KLIM VAN DE DAG</div>'+
-        '<div class="tc-climb-name">'+climb.name+' <span class="tc-cat">CAT '+(catM?catM[1]:"?")+'</span></div>'+
+        '<div class="tc-climb-name">'+climb.name+' <span class="tc-cat">CAT '+(st.cat!=null?st.cat:"?")+'</span></div>'+
         '<div class="tc-stats-row"><div class="tc-stat"><b>'+climb.kmStart+'</b><span>START KM</span></div>'+
-        '<div class="tc-stat"><b>'+(m?m[1]+","+m[2]:"—")+'</b><span>LENGTE KM</span></div>'+
-        '<div class="tc-stat"><b>'+(m?m[3]+","+m[4]+"%":"—")+'</b><span>GEM.</span></div>'+
-        '<div class="tc-stat"><b>'+hmGained+'</b><span>HM</span></div></div>';
+        '<div class="tc-stat"><b>'+nlNum(st.length)+'</b><span>LENGTE KM</span></div>'+
+        '<div class="tc-stat"><b>'+(st.grade==null?"—":nlNum(st.grade)+"%")+'</b><span>GEM.</span></div>'+
+        '<div class="tc-stat"><b>'+(hmGained==null?"—":hmGained)+'</b><span>HM</span></div></div>';
     }
     html+='<div id="tcwxwrap-'+s.num+'">'+
       '<div class="tc-eyebrow" id="tcwxeyebrow-'+s.num+'" style="margin-top:12px;'+(hasRiderOverride(s)?"":"display:none;")+'">WEER OP JOUW TIJDEN</div><div class="tc-wxlines">';
@@ -1944,6 +1995,9 @@ function renderAll(){
   document.getElementById("hdTitle").textContent=RIDE.event.shortName;
   document.getElementById("spotifyLink").href=RIDE.event.playlistUrl;
   document.getElementById("spotifyLbl").textContent=RIDE.event.name+" · Playlist";
+  var wa=document.getElementById("waCommunity");
+  if(WA_COMMUNITY_URL){wa.href=WA_COMMUNITY_URL;wa.target="_blank";wa.classList.remove("is-disabled");}
+  else{wa.removeAttribute("href");wa.removeAttribute("target");wa.classList.add("is-disabled");}
   document.getElementById("footLogos").innerHTML=RIDE.sponsors.map(function(sp){
     var img='<img src="'+sp.logo+'" alt="'+sp.name+'" loading="lazy"'+(sp.logoH?' style="max-height:'+sp.logoH+'px"':'')+'>';
     return sp.url?('<a class="plogo" href="'+sp.url+'" target="_blank">'+img+'</a>'):('<div class="plogo dummy">'+img+'</div>');
