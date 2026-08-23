@@ -89,7 +89,7 @@ a{color:inherit;}
 
 /* ---------- Stage / day cards ---------- */
 .card{background:var(--card);border:1px solid var(--line2);border-radius:15px;overflow:hidden;margin-bottom:14px;
- box-shadow:0 1px 2px rgba(26,21,18,.03);}
+ box-shadow:0 1px 2px rgba(26,21,18,.03);scroll-margin-top:72px;/* keeps a scrolled-to card's own header clear of .hd-top (sticky) */}
 .card.today{border-color:var(--rose-line);box-shadow:0 4px 18px rgba(245,155,176,.18);}
 /* Simplified header (2026-08-22): one clean line (stage name + date), no
    boxed number badge, no separate .s-nl tagline underneath -- the old
@@ -552,7 +552,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="1.97"; // bump with every iteration
+var APP_VERSION="1.98"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
@@ -761,15 +761,18 @@ function activeIndex(){
 // Decides what the Route tab's top section should show and how it's labeled:
 // before the Proloog and after the final stage, "vandaag" doesn't apply to any real stage,
 // so those get their own labels instead of a misleading "Vandaag & morgen".
+// Route tab always focuses/auto-scrolls to today's stage only (2026-08-23:
+// used to also pull in tomorrow's stage + a "Vandaag & morgen" label once
+// today wasn't the last stage of the event -- dropped per Jacco: the Today
+// tab already links straight into today's route, so the Route tab itself
+// should land on just that one stage, every day, no label needed).
 function routeFocusInfo(){
   var t=nowD().getTime();
   var first=isoToDate(RIDE.stages[0].iso).getTime();
   var last=isoToDate(RIDE.stages[RIDE.stages.length-1].iso).getTime();
-  if(t<first)return{label:"",focus:[0,1].filter(function(i){return i<RIDE.stages.length;})};
-  if(t>last)return{label:"",focus:[RIDE.stages.length-1]};
-  var ai=activeIndex();
-  if(ai>=RIDE.stages.length-1)return{label:"Vandaag",focus:[ai]};
-  return{label:"Vandaag & morgen",focus:[ai,ai+1]};
+  if(t<first)return{focus:[0,1].filter(function(i){return i<RIDE.stages.length;})};
+  if(t>last)return{focus:[RIDE.stages.length-1]};
+  return{focus:[activeIndex()]};
 }
 function stageState(s){ // 'done' | 'today' | 'future'
   var t=nowD().getTime();var st=isoToDate(s.iso).getTime();
@@ -999,8 +1002,7 @@ function renderRoute(){
     '<div class="tot"><div class="l">Hoogtemeters</div><div class="v">'+totGain.toLocaleString("nl")+'<span class="u"> m</span></div></div>'+
     '<div class="tot k2"><div class="l">KM tot finish</div><div class="v">'+kmLeft().toLocaleString("nl")+'</div></div>'+
     '</div></div>';
-  RIDE.stages.forEach(function(s,i){
-    if(info.label && focus.indexOf(i)===0){html+='<div class="section-eyebrow">'+info.label+'</div>';}
+  RIDE.stages.forEach(function(s){
     html+=stageCard(s);
   });
   v.innerHTML=html;
@@ -1008,7 +1010,11 @@ function renderRoute(){
     RIDE.stages.forEach(function(s){if(document.getElementById("pc-"+s.num)){buildProfile(s);hover(s);}if(document.getElementById("rtstart-"+s.num)){wireRiderSlider(s);}});
     if(!routeScrolled && focus.length){
       var el=document.getElementById("card-"+RIDE.stages[focus[0]].num);
-      if(el){el.scrollIntoView({block:"center",behavior:"instant"});}
+      // block:"start" (not "center") so the card's own header lands at the top of
+      // the viewport instead of somewhere mid-card -- stage cards are taller than
+      // the viewport, so "center" could scroll the header itself out of view.
+      // .card's scroll-margin-top (see CSS) keeps it clear of the sticky top bar.
+      if(el){el.scrollIntoView({block:"start",behavior:"instant"});}
       routeScrolled=true;
     }
   });
@@ -1119,6 +1125,35 @@ function addTapMarker(m,latlng,visibleOpts,popupText){
   L.circleMarker(latlng,{radius:18,stroke:false,fillOpacity:0.01}).addTo(m).bindPopup(popupText);
   return L.circleMarker(latlng,visibleOpts).addTo(m).bindPopup(popupText);
 }
+// 2026-08-23: some climb summits sit practically on top of a VP marker, and every
+// loop stage's start and finish are the same (or near-same) real-world point -- left
+// as-is, either pair renders as one indistinguishable blob. Rather than merging such
+// pairs into a single marker (which would blur two genuinely different things -- a
+// climb and a feed stop, or a start and a finish), each marker keeps its own dot and
+// popup, just nudged apart a little so both stay visible and tappable. Real
+// coordinates are untouched everywhere else (GPX, elevation charts, distances) --
+// this only offsets the tiny map dot itself.
+var MARKER_OVERLAP_M=60; // pairs closer than this get nudged apart
+var MARKER_NUDGE_DEG=0.00035; // ~35-40m total separation at these latitudes
+function markerDistM(a,b){
+  var R=6371000,toRad=Math.PI/180;
+  var dLat=(b.lat-a.lat)*toRad,dLon=(b.lon-a.lon)*toRad;
+  var la1=a.lat*toRad,la2=b.lat*toRad;
+  var x=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return 2*R*Math.asin(Math.sqrt(x));
+}
+function nudgeOverlappingMarkers(points){
+  for(var i=0;i<points.length;i++){
+    for(var j=i+1;j<points.length;j++){
+      var a=points[i],b=points[j];
+      if(markerDistM(a,b)>=MARKER_OVERLAP_M)continue;
+      var dx=b.lon-a.lon,dy=b.lat-a.lat,len=Math.sqrt(dx*dx+dy*dy);
+      var ux=len>1e-9?dx/len:0.7071,uy=len>1e-9?dy/len:0.7071; // fixed diagonal if truly coincident
+      a.lat-=uy*MARKER_NUDGE_DEG/2;a.lon-=ux*MARKER_NUDGE_DEG/2;
+      b.lat+=uy*MARKER_NUDGE_DEG/2;b.lon+=ux*MARKER_NUDGE_DEG/2;
+    }
+  }
+}
 function toggleMap(num){
   var w=document.getElementById("mapw-"+num),b=document.getElementById("mapbtn-"+num);
   var open=w.classList.toggle("open");b.classList.toggle("open");
@@ -1130,14 +1165,17 @@ function toggleMap(num){
   L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:17}).addTo(m);
   var line=L.polyline(r.mapCoords,{color:cssVar("--rose-deep"),weight:3.5,opacity:.95}).addTo(m);
   m.fitBounds(line.getBounds(),{padding:[18,18]});
-  addTapMarker(m,r.mapCoords[0],{radius:6,color:"#1f9d6b",fillColor:"#1f9d6b",fillOpacity:1,weight:2},"Start: "+s.startName);
-  addTapMarker(m,r.mapCoords[r.mapCoords.length-1],{radius:6,color:cssVar("--rose-deep"),fillColor:cssVar("--rose-deep"),fillOpacity:1,weight:2},(s.loop?"Finish ↺ ":"Finish: ")+s.endName);
+  var pts=[];
+  pts.push({lat:r.mapCoords[0][0],lon:r.mapCoords[0][1],opts:{radius:6,color:"#1f9d6b",fillColor:"#1f9d6b",fillOpacity:1,weight:2},popup:"Start: "+s.startName});
+  pts.push({lat:r.mapCoords[r.mapCoords.length-1][0],lon:r.mapCoords[r.mapCoords.length-1][1],opts:{radius:6,color:cssVar("--rose-deep"),fillColor:cssVar("--rose-deep"),fillOpacity:1,weight:2},popup:(s.loop?"Finish ↺ ":"Finish: ")+s.endName});
   r.waypoints.filter(function(w2){return w2.type==="col";}).forEach(function(c){
-    addTapMarker(m,[c.lat,c.lon],{radius:4.5,color:cssVar("--rose-deep"),fillColor:"#fff",fillOpacity:1,weight:2},c.name+" ("+c.ele+" m)");
+    pts.push({lat:c.lat,lon:c.lon,opts:{radius:4.5,color:cssVar("--rose-deep"),fillColor:"#fff",fillOpacity:1,weight:2},popup:c.name+" ("+c.ele+" m)"});
   });
   r.waypoints.filter(function(w2){return w2.type==="vp";}).forEach(function(v){
-    addTapMarker(m,[v.lat,v.lon],{radius:4.5,color:"#cf8412",fillColor:"#fff",fillOpacity:1,weight:2},v.name);
+    pts.push({lat:v.lat,lon:v.lon,opts:{radius:4.5,color:"#cf8412",fillColor:"#fff",fillOpacity:1,weight:2},popup:v.name});
   });
+  nudgeOverlappingMarkers(pts);
+  pts.forEach(function(p){addTapMarker(m,[p.lat,p.lon],p.opts,p.popup);});
   maps[num]=m;setTimeout(function(){m.invalidateSize();},250);
 }
 
@@ -1914,7 +1952,7 @@ function renderEvent(){
   var curId=slot?slot.camp:null;
   var order=["duelaghi","nevegal","campitello","caldonazzo"];
   var sorted=curId?order.slice().sort(function(a,b){return (a===curId?-1:0)-(b===curId?-1:0);}):order;
-  var h='<div class="section-eyebrow">Camping</div>';
+  var h='';
   if(!slot)h+='<div class="wx-done">Het officiële programma is afgelopen.</div>';
   sorted.forEach(function(id){var camp=campById(id);if(camp)h+=campCard(camp,id===curId,slot);});
   v.innerHTML=h;
@@ -1930,7 +1968,11 @@ function renderPrep(){
   var orgSaved=!!st[ORG_KEY];
   var total=1;var done=orgSaved?1:0; // +1 for the org-number button row, counted alongside the checklist
   RIDE.pack.forEach(function(c){c[1].forEach(function(it){total++;if(st[c[0]+"|"+it])done++;});});
-  var h='<div class="section-eyebrow">Paklijst</div>';
+  // Single card, rose header, matching the Camping tab's .ev/.ev-h pattern (2026-08-23).
+  // Reuses the "now" modifier that camp cards only get while active -- Paklijst has no
+  // active/inactive state of its own (there's only ever the one card on this tab), so
+  // its rose header is simply always on, not conditional.
+  var h='<div class="ev now"><div class="ev-h"><div class="ttl">Paklijst</div></div><div class="ev-b">';
   h+='<div class="pack-head"><span class="pack-prog" id="packProg">'+done+' / '+total+' ingepakt</span><button class="pack-reset" onclick="resetPack()">Alles wissen</button></div>';
   RIDE.pack.forEach(function(c,ci){
     h+='<div class="pcat"><button class="pcat-head" onclick="togglePcat('+ci+')"><span>'+c[0]+'</span><span class="cv">▼</span></button><div class="pcat-body" id="pcat-'+ci+'">';
@@ -1946,6 +1988,7 @@ function renderPrep(){
     });
     h+='</div></div>';
   });
+  h+='</div></div>';
   v.innerHTML=h;
 }
 function saveOrgNumber(e){
