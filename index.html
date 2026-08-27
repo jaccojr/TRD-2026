@@ -382,8 +382,24 @@ a{color:inherit;}
    aspect-ratio box (247/140, "option B"), neutral --line border matching
    the quick-link/Spotify cards below. Per-logo max-height/max-width % are
    the tunable knobs -- see the spec doc's "how to resize a logo later". */
+/* 2026-08-27, second rebuild: dropped `aspect-ratio` entirely after it kept
+   producing oversized/inconsistent tiles on a real iPhone that a 160-case
+   headless Chromium sweep could never reproduce -- strongly pointing at a
+   Safari-specific aspect-ratio-on-a-grid-item quirk this sandbox has no way
+   to test directly (WebKit isn't installable here, network-blocked). Rather
+   than guess at another aspect-ratio patch, switched to the old
+   padding-top-percentage box technique, which has no dependency on
+   `aspect-ratio` support or grid intrinsic-sizing edge cases at all: `.plogo`
+   is a plain block-level grid item (grid's own default stretch behavior
+   already fills it to 100% of its column, no special-casing needed), its
+   height comes purely from `::before`'s padding-top (always resolved against
+   the box's own WIDTH, a rule with no cross-browser ambiguity going back to
+   IE-era CSS), and the logo is centered in an absolutely-positioned inner
+   wrapper fully decoupled from the box's own sizing. */
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.plogo{background:#fff;border:1px solid var(--line);border-radius:13px;aspect-ratio:247/140;width:100%;min-width:0;max-width:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:8px 12px;box-shadow:0 1px 2px rgba(0,0,0,.04);overflow:hidden;}
+.plogo{position:relative;display:block;background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:0 1px 2px rgba(0,0,0,.04);overflow:hidden;}
+.plogo::before{content:"";display:block;padding-top:56.68%;} /* 140/247, the spec's box ratio */
+.plogo .pl-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:8px 12px;box-sizing:border-box;}
 .plogo img{object-fit:contain;max-width:70%;max-height:72%;}
 .plogo img.kwaremont{max-height:92%;max-width:90%;}
 .plogo img.usport{max-height:94%;max-width:66%;}
@@ -675,7 +691,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="2.01"; // bump with every iteration
+var APP_VERSION="2.02"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
@@ -2110,7 +2126,7 @@ function partnerGridHtml(tabKey){
   if(!list.length)return"";
   var tiles=list.map(function(sp){
     var img='<img class="'+sp.cls+'" src="'+sp.logo+'" alt="'+sp.name+'" loading="lazy">';
-    return '<a class="plogo" href="'+sp.url+'" target="_blank">'+img+'</a>';
+    return '<a class="plogo" href="'+sp.url+'" target="_blank"><div class="pl-inner">'+img+'</div></a>';
   }).join("");
   return '<div class="foot-spon">Partners</div><div class="pgrid">'+tiles+'</div>';
 }
