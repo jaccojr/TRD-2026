@@ -899,7 +899,32 @@ a{color:inherit;}
 .wh-title{font-weight:700;font-size:13px;color:var(--amber);}
 .wh-sub{font-size:11.5px;color:var(--ink2);margin-top:2px;}
 .wlist .wd{color:var(--amber);flex-shrink:0;}
-.map-wrap{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+/* 2026-08-27: Jacco reported the open map rendering OVER the sticky header and the
+   fixed footer nav on his real iPhone -- confirmed via structural CSS audit (not
+   reproducible in this sandbox's Chromium, which has no real WebKit to test against):
+   Leaflet's own CSS gives its corner control layer (.leaflet-top/.leaflet-bottom, the
+   box the zoom +/- buttons sit in) z-index:1000. .map-c only gets position:relative
+   from Leaflet's own init code, with no z-index of its own, so it never establishes a
+   real stacking context -- meaning that z-index:1000 box is compared directly against
+   the app's own chrome (.hd-top at z-index:50, .tabs at z-index:60) in the SAME global
+   stack. In plain CSS clipping terms (Chromium here), .map-wrap's overflow:hidden still
+   contains it correctly. But Leaflet drives its pan/zoom animations with CSS
+   transforms, and iOS Safari has a well-documented bug where a transformed/GPU-
+   composited descendant can escape an overflow:hidden ancestor that itself isn't
+   promoted to its own compositing layer -- exactly this shape, and it matches Jacco's
+   screenshots (a Leaflet zoom control rendered where the header should be) far better
+   than a plain CSS mistake would. This was dormant since before v1.99: the map was
+   blank (CDN failure) until the 2026-08-27 fix made it actually render for the first
+   time, which is what exposed it -- not something the partner-tile work introduced.
+   Fix, applied in the standard order for this exact class of bug: isolation:isolate
+   gives .map-wrap its own real stacking context (nothing inside it can ever compete
+   against page-level z-index again, regardless of Leaflet's own values); contain:paint
+   is the modern, spec-guaranteed version of "nothing paints outside this box" (stronger
+   than overflow:hidden, holds even for composited content); translateZ(0) forces
+   .map-wrap itself onto its own compositing layer, which is the specific documented fix
+   for the Safari clipping bug (it fails when the CLIPPING element isn't composited but
+   its content is -- promoting the clipper closes that gap). */
+.map-wrap{max-height:0;overflow:hidden;transition:max-height .35s ease;position:relative;isolation:isolate;contain:paint;transform:translateZ(0);z-index:0;}
 .map-wrap.open{max-height:330px;}
 .map-c{height:300px;background:var(--paper);}
 .wx{display:flex;flex-direction:column;}
@@ -1222,7 +1247,6 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
 <section class="view" id="v-route"></section>
 <section class="view" id="v-event"></section>
 <section class="view" id="v-prep"></section>
-<section class="view" id="v-klassement"></section>
 
 <!-- Promoted out of <footer> 2026-08-22, per Jacco's feedback: these two
      read as core app content, not minor footer links, so they now sit
@@ -1362,7 +1386,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="2.05"; // bump with every iteration
+var APP_VERSION="2.06"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
@@ -1610,8 +1634,7 @@ var TAB_DEF={
   today:{ic:"sun",label:"Vandaag"},
   route:{ic:"terrain",label:"Route"},
   event:{ic:"tent",label:"Camping"},
-  prep:{ic:"bag",label:"Prep"},
-  klassement:{ic:"trophy",label:"Klassement"}
+  prep:{ic:"bag",label:"Prep"}
 };
 var TAB_ORDER={
   preview:["today","route","event","prep"],
@@ -1626,9 +1649,10 @@ function renderTabContent(t){
   else if(t==="route")renderRoute();
   else if(t==="event")renderEvent();
   else if(t==="prep")renderPrep();
-  // "klassement" intentionally excluded here: it is unreachable via any showTab() call --
-  // TAB_ORDER never lists it, the Klassement link in the UI goes straight to
-  // challenges.the-ride.cc instead -- so it no longer costs anything to build on every render.
+  // No "klassement" branch: that tab was dead code (unreachable via any showTab() call --
+  // the Klassement link in the UI goes straight to challenges.the-ride.cc instead) and has
+  // been removed entirely as of 2026-08-27 -- renderKlass()/#v-klassement/setCat()/setMode()/
+  // curCat/curMode/the TAB_DEF entry are all gone, not just uncalled.
   tabRendered[t]=true;
 }
 function renderNav(){
@@ -2614,28 +2638,6 @@ function loadWeather(){
   }).catch(function(){lastWxData=null;paintTodayWx();
     RIDE.stages.forEach(function(s){paintRiderWx(s);paintTodayRouteWx(s);paintHazardBanner(s);paintTodayHazardBanner(s);});});
 }
-/* ============ KLASSEMENT ============ */
-var curCat=RIDE.cats[0][0],curMode="dag";
-function renderKlass(){
-  var v=document.getElementById("v-klassement");
-  if(eventPhase()!=="live")return; // tab is hidden in preview; guard for safety
-  var h='<div class="note">Elke dag telt één <b>competitief segment</b>. Iedere deelnemer in de Strava-club is automatisch ingeschreven. Hieronder een <b>voorbeeldklassement</b> — de live standen komen van <b>challenges.the-ride.cc</b>.</div>';
-  h+='<div class="seg-toggle"><button id="m-dag" class="'+(curMode==="dag"?"on":"")+'" onclick="setMode(\'dag\')">Dagklassement</button><button id="m-alg" class="'+(curMode==="algemeen"?"on":"")+'" onclick="setMode(\'algemeen\')">Algemeen</button></div>';
-  h+='<div class="cats">';
-  RIDE.cats.forEach(function(c){h+='<button class="catchip'+(c[0]===curCat?" on":"")+'" onclick="setCat(\''+c[0]+'\')">'+c[1]+'</button>';});
-  h+='</div>';
-  var rows=RIDE.standings[curCat][curMode];
-  h+='<div class="lb">';
-  rows.forEach(function(r){
-    h+='<div class="lbrow p'+r.pos+'"><div class="pos">'+r.pos+'</div><div class="rn">'+r.name+'</div><div class="gap'+(r.pos===1?" lead":"")+'">'+r.gap+'</div></div>';
-  });
-  h+='</div>';
-  h+='<a class="ext-btn" href="https://challenges.the-ride.cc/" target="_blank">⚡ Open live klassement</a>';
-  v.innerHTML=h;
-}
-function setCat(c){curCat=c;renderKlass();}
-function setMode(m){curMode=m;renderKlass();}
-
 /* ============ EVENT ============ */
 function campById(id){return RIDE.event.camps.find(function(c){return c.id===id;});}
 
