@@ -1362,7 +1362,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="2.03"; // bump with every iteration
+var APP_VERSION="2.05"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
@@ -1620,6 +1620,17 @@ var TAB_ORDER={
 
 /* ============ tabs ============ */
 var curTab=null;
+var tabRendered={}; // 2026-08-27 perf fix: which tabs currently have up-to-date DOM content
+function renderTabContent(t){
+  if(t==="today")renderToday();
+  else if(t==="route")renderRoute();
+  else if(t==="event")renderEvent();
+  else if(t==="prep")renderPrep();
+  // "klassement" intentionally excluded here: it is unreachable via any showTab() call --
+  // TAB_ORDER never lists it, the Klassement link in the UI goes straight to
+  // challenges.the-ride.cc instead -- so it no longer costs anything to build on every render.
+  tabRendered[t]=true;
+}
 function renderNav(){
   var phase=eventPhase();var order=TAB_ORDER[phase];
   var nav=document.getElementById("tabs");
@@ -1637,6 +1648,7 @@ function showTab(v){
   curTab=v;
   document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("active",t.dataset.v===v);});
   document.querySelectorAll(".view").forEach(function(el){el.classList.toggle("active",el.id==="v-"+v);});
+  if(!tabRendered[v])renderTabContent(v); // lazy fallback if the background pre-render (see renderAll) hasn't reached this tab yet
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -1791,6 +1803,21 @@ function stageCard(s){
 var routeScrolled=false; // only auto-scroll to today once per app session, not on every re-render
 function renderRoute(){
   var v=document.getElementById("v-route");
+  // 2026-08-27: this function rebuilds EVERY stage card's HTML (v.innerHTML=... below), which
+  // destroys and recreates each "map-N" container. Any Leaflet map already created for one of those
+  // containers (maps[num], see toggleMap()) would otherwise be left dangling -- a live map object
+  // bound to a DOM node that no longer exists. toggleMap() checks maps[num] first and, if present,
+  // just calls .invalidateSize() on it and returns -- so a stage the user had already opened before
+  // this render would never get a fresh map on its new container: it reopens visually (the chevron
+  // flips, the panel expands) but stays permanently blank.
+  // This isn't hypothetical: renderRoute() runs on every softRefresh() (fired by the
+  // "visibilitychange" listener -- i.e. every phone lock/unlock, every app-switch away and back)
+  // whenever the user happens to be on the Route tab, which on a 6-day event is constant. Confirmed
+  // via a headless repro: open a stage's map, call renderAll(), reopen the same stage -> 0 leaflet
+  // panes, 0 tiles, permanently blank -- matching Jacco's report of maps failing progressively
+  // ("first one, eventually all") with no network involved. Tear every live map down the same way
+  // setAlt() already does for its own single-stage replacement, before the DOM under them is wiped.
+  Object.keys(maps).forEach(function(k){maps[k].remove();delete maps[k];});
   var info=routeFocusInfo();
   var focus=info.focus;
   var totDist=RIDE.stages.reduce(function(sum,s){return sum+s.dist;},0);
@@ -2945,7 +2972,37 @@ function renderAll(){
   document.getElementById("hdActions").style.display=liveActions?"flex":"none";
   document.getElementById("locout").style.display=liveActions?"":"none";
   document.getElementById("footMeta").textContent="Routedata: GPX · Weer: Open-Meteo · "+(IS_TEST_URL?"TEST":"production")+" · v"+APP_VERSION;
-  renderToday();renderRoute();renderKlass();renderEvent();renderPrep();
+  // 2026-08-27 perf fix: this used to be renderToday();renderRoute();renderKlass();renderEvent();
+  // renderPrep(); unconditionally -- building ALL FIVE tabs synchronously on every renderAll() call,
+  // including the dead/unreachable Klassement tab -- measured at ~105ms of blocking time right as the
+  // app loads.
+  //
+  // Two other shapes were tried and measured (median of 5 runs, real in-page click dispatch, 4x CPU
+  // throttle, click landing ~700ms after boot) before landing here:
+  //   1. requestIdleCallback background prewarm of the other tabs: WORSE -- idle callbacks under
+  //      throttling landed right on top of the test tap, pushing tap-to-paint from ~134ms to ~203ms.
+  //   2. Pure on-demand (only ever render a tab the first time showTab() opens it, nothing prewarmed):
+  //      also WORSE for that first visit -- ~166ms handler / ~203ms paint -- because the ~35-70ms
+  //      cost of building that tab, previously already finished during boot, now lands inside the
+  //      tap itself instead.
+  // What actually won: build curTab synchronously (so the very first paint is fast: ~7ms here vs the
+  // old ~105ms), then prewarm the remaining tabs one at a time via chained setTimeout(fn,0) calls
+  // instead of one big synchronous block. Each tick is short enough to let the browser paint and
+  // handle input in between, so a real tap either lands after the relevant tab is already prewarmed
+  // (the common case -- a human tap always comes well after boot) or, worst case, falls back to
+  // rendering that one tab on demand in showTab() (see the tabRendered guard there) -- never blocked
+  // behind the OTHER three tabs' render cost the way the original all-eager version was.
+  tabRendered={};
+  renderTabContent(curTab);
+  var pending=(TAB_ORDER[eventPhase()]||[]).filter(function(t){return t!==curTab;});
+  (function prewarmNext(){
+    if(!pending.length)return;
+    var t=pending.shift();
+    setTimeout(function(){
+      if(!tabRendered[t])renderTabContent(t);
+      prewarmNext();
+    },0);
+  })();
 }
 renderAll();
 updateSimBanner();
