@@ -378,9 +378,20 @@ a{color:inherit;}
 .row .rv b{font-weight:700;}
 .row .rv .od{display:inline-block;font-family:var(--mono);font-size:9px;color:var(--rose-deep);background:var(--rose-soft);padding:1px 6px;border-radius:5px;margin-left:6px;letter-spacing:.05em;}
 .maplink{display:inline-block;margin-left:6px;font-family:var(--mono);font-size:10.5px;color:var(--rose-deep);font-weight:700;text-decoration:none;white-space:nowrap;}
-.plogo{background:#fff;border:1.5px solid var(--rose);border-radius:9px;padding:12px;text-align:center;display:flex;align-items:center;justify-content:center;height:70px;box-sizing:content-box;}
-.plogo img{max-width:100%;max-height:28px;object-fit:contain;}
-.plogo.dummy{opacity:.6;cursor:default;border-color:var(--line);}
+/* Partner grid -- rebuilt 2026-08-27 per TRD2026-partners-build-spec.md:
+   aspect-ratio box (247/140, "option B"), neutral --line border matching
+   the quick-link/Spotify cards below. Per-logo max-height/max-width % are
+   the tunable knobs -- see the spec doc's "how to resize a logo later". */
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.plogo{background:#fff;border:1px solid var(--line);border-radius:13px;aspect-ratio:247/140;display:flex;align-items:center;justify-content:center;padding:8px 12px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.plogo img{object-fit:contain;max-width:70%;max-height:72%;}
+.plogo img.kwaremont{max-height:92%;max-width:90%;}
+.plogo img.usport{max-height:94%;max-width:66%;}
+.plogo img.sockeloen{max-height:90%;max-width:82%;}
+.plogo img.join{max-height:82%;max-width:66%;}
+.plogo img.cocacola{max-height:74%;max-width:64%;}
+.plogo img.rogelli{max-height:64%;max-width:66%;}
+.plogo img.fizik{max-height:64%;max-width:66%;}
 
 /* ---------- Prep ---------- */
 .pack-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
@@ -415,14 +426,12 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
 /* Confirmed 2026-08-22 (mockup approved as-is): side-by-side, matching
    the .plogo partner-card style exactly -- same white/70px-tall
    card, just a 2-up grid instead of the old full-width stacked buttons.
-   Border updated 2026-08-26 (option C of a 4-way mockup, Jacco's pick):
-   colored rose border instead of the neutral --line hairline -- was
-   reading as too subtle/not clearly tappable. Reuses the header's own
-   .hbtn.loc/.hbtn.sos pattern (colored 1.5px border, white bg = "this is
-   a button" in this app's existing visual language) rather than
-   inventing a new treatment. */
+   Border: rose (2026-08-26) reverted back to the neutral --line hairline
+   2026-08-27, so it matches the .plogo partner cards and the Spotify
+   card below -- one consistent border treatment across all 7 blocks
+   (MIJN, WhatsApp, Spotify, partner grid). */
 .ql-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px;}
-.link-btn{background:#fff;border:1.5px solid var(--rose);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:9px;
+.link-btn{background:#fff;border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:9px;
  padding:12px;text-decoration:none;color:var(--ink);font-family:var(--disp);font-weight:700;font-size:11.5px;height:70px;box-sizing:content-box;}
 .link-btn:active{opacity:.85;}
 /* Inert state for a link whose destination isn't configured yet (currently the
@@ -434,10 +443,6 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
 .link-btn .lb-ic svg{display:block;}
 .link-btn .lb-logo{height:16px;width:auto;display:block;}
 .link-btn .lb-txt{font-family:var(--disp);font-weight:800;font-size:11.5px;letter-spacing:.04em;}
-/* Confirmed 2026-08-22 (mockup approved as-is): WhatsApp icon to the left
-   (with room to breathe) of a centered logo+COMMUNITY stack. */
-.link-btn .lb-row-alt{display:flex;align-items:center;gap:12px;}
-.link-btn .lb-stack{display:flex;flex-direction:column;align-items:center;gap:4px;}
 /* Confirmed 2026-08-22 (mockup approved as-is): colorless, per Jacco's request -- both cards
    just use the plain white .link-btn card style above, no per-button tint.
    WhatsApp identity now comes from the icon itself (colored green, see the
@@ -445,12 +450,12 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
 /* Confirmed 2026-08-22 (mockup approved as-is): matching the same
    card style as the MIJN/WhatsApp buttons and partner
    cards -- logo inverted from white-on-green to Spotify-green-on-white.
-   Border updated 2026-08-26, same rose-border pass as .link-btn above. */
-.spotify-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1.5px solid var(--rose);border-radius:11px;
+   Border: rose (2026-08-26) reverted to neutral 2026-08-27, same pass as
+   .link-btn above. */
+.spotify-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:11px;
  padding:13px 20px;text-decoration:none;color:var(--ink);font-family:var(--disp);font-weight:700;font-size:13px;margin-bottom:18px;}
 .spotify-btn:active{opacity:.9;}
 .foot-spon{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
-.foot-logos{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
 .foot-meta{font-family:var(--mono);font-size:9.5px;color:var(--muted);letter-spacing:.04em;}
 .leaflet-container{font-family:var(--body);}
 /* 2026-08-26: restored verbatim from the pre-v1.81 build Jacco supplied --
@@ -547,34 +552,30 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
         <img class="lb-logo" src="logo-transparent.png" alt="The Ride" loading="lazy">
       </div>
     </a>
-    <!-- Confirmed 2026-08-22 (mockup approved as-is): WhatsApp icon to the
-         left, with some space, of a centered logo+COMMUNITY stack -- was
-         icon+logo side by side on top, COMMUNITY centered below both.
+    <!-- Simplified 2026-08-27: icon + logo only (COMMUNITY text dropped, per
+         Jacco), reusing the same .lb-row layout as the MIJN button above --
+         .lb-row-alt/.lb-stack (the old icon-left-of-stacked-logo+text
+         layout) are gone with it.
          No href here on purpose: it is set at init from WA_COMMUNITY_URL,
          and while that is null the button renders inert + dimmed. It used to
          carry href="#" with target="_blank", which meant a tap opened a
          second copy of the whole app in a new tab. -->
     <a class="link-btn" id="waCommunity">
-      <div class="lb-row-alt">
+      <div class="lb-row">
         <span class="lb-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="#25D366" xmlns="http://www.w3.org/2000/svg"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 5L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2m0 1.67a8.23 8.23 0 018.24 8.24c0 4.55-3.7 8.24-8.25 8.24a8.2 8.2 0 01-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 01-1.26-4.38c.01-4.55 3.7-8.24 8.25-8.24M8.53 7.33c-.16 0-.43.06-.66.31-.22.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.25 3.73.59.26 1.06.41 1.42.52.6.19 1.14.16 1.57.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.23-.16-.48-.28-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.24-.42.08-.17.04-.31-.02-.43-.06-.12-.55-1.36-.76-1.86-.2-.48-.4-.42-.56-.43h-.4z"/></svg></span>
-        <div class="lb-stack">
-          <img class="lb-logo" src="logo-transparent.png" alt="The Ride" loading="lazy">
-          <span class="lb-txt">COMMUNITY</span>
-        </div>
+        <img class="lb-logo" src="logo-transparent.png" alt="The Ride" loading="lazy">
       </div>
     </a>
   </div>
 </div>
 
 <footer>
-  <a class="spotify-btn" id="spotifyLink" href="https://open.spotify.com/playlist/06I3CJeX295bVcJTp512P9" target="_blank">
+  <a class="spotify-btn" id="spotifyLink" href="https://open.spotify.com/playlist/1dOhnSWWgLyStp3DNXXWw5" target="_blank">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="#1DB954" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
     </svg>
     <span id="spotifyLbl">The Ride Dolomites · Playlist</span>
   </a>
-  <div class="foot-spon">Partners</div>
-  <div class="foot-logos" id="footLogos"></div>
   <div class="foot-meta" id="footMeta">Routedata: GPX · Weer: Open-Meteo</div>
   <div class="foot-copy" style="text-align:center;color:#9a918a;font-size:11px;margin-top:6px;">© 2026 JR_c-137 — All rights reserved</div>
   <button id="btnWeerTest" onclick="showWeatherCheck()" style="display:none;margin:10px auto 0;padding:10px 16px;background:#E51F4D;color:#fff;border:none;border-radius:10px;font-family:var(--disp);font-weight:800;font-size:12px;cursor:pointer;">🌦 Weer testen</button>
@@ -674,11 +675,11 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="1.99"; // bump with every iteration
+var APP_VERSION="2.00"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
-var WA_COMMUNITY_URL=null;
+var WA_COMMUNITY_URL="https://whatsapp.com/channel/0029Vb8K51oLNSa0pwHwWv3k";
 // APP_STATUS (PRELIMINARY/LIVE) was removed 2026-08-22: it had no consumer
 // left once the footer label moved to IS_TEST_URL, so it was a value that
 // could only ever be wrong, never right -- and a stale copy of exactly this
@@ -1115,6 +1116,7 @@ function renderRoute(){
   RIDE.stages.forEach(function(s){
     html+=stageCard(s);
   });
+  html+=partnerGridHtml("route");
   v.innerHTML=html;
   requestAnimationFrame(function(){
     RIDE.stages.forEach(function(s){if(document.getElementById("pc-"+s.num)){buildProfile(s);hover(s);}if(document.getElementById("rtstart-"+s.num)){wireRiderSlider(s);}});
@@ -1271,8 +1273,8 @@ function toggleMap(num){
   if(maps[num]){maps[num].invalidateSize();return;}
   var s=RIDE.stages.find(function(x){return x.num===num;});
   var r=activeRoute(s);
-  var m=L.map("map-"+num,{zoomControl:true,attributionControl:false});
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:17}).addTo(m);
+  var m=L.map("map-"+num,{zoomControl:true,attributionControl:true});
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=cb1_2d2f_1_64ea7e9b889fad4ae8d1f0c4",{maxZoom:17,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(m);
   var line=L.polyline(r.mapCoords,{color:cssVar("--rose-deep"),weight:3.5,opacity:.95}).addTo(m);
   m.fitBounds(line.getBounds(),{padding:[18,18]});
   var pts=[];
@@ -1677,6 +1679,7 @@ function renderToday(){
       '<div class="tc-title">De Dolomieten wachten</div>'+
       '<div class="tc-sub">Tot de start: <span id="todayCountdown">—</span></div>'+
       '</div></div>';
+    html+=partnerGridHtml("today");
     v.innerHTML=html;
     var diff=isoToDate(RIDE.stages[0].iso).getTime()-nowD().getTime();
     var days=Math.round(diff/86400000);
@@ -1714,6 +1717,7 @@ function renderToday(){
       '<div class="tc-menu-row"><span class="tc-menu-label">Ontbijt'+(ontbijtW.morgen?' (morgen)':'')+'</span><span class="tc-menu-time">'+(ontbijtW.text||"—")+'</span></div>'+
       '<div class="tc-menu-row"><span class="tc-menu-label">Start'+(startW.morgen?' (morgen)':'')+'</span><span class="tc-menu-time">'+(startW.text||"—")+'</span></div>'+
       '</div>';
+    html+=partnerGridHtml("today");
     v.innerHTML=html;
     paintTodayWx();
     return;
@@ -1727,6 +1731,7 @@ function renderToday(){
       '<div class="tc-title">Bedankt voor het meerijden!</div>'+
       '<div class="tc-sub">Namens het The Ride team: bedankt! Veilige reis terug.</div>'+
       '</div></div>';
+    html+=partnerGridHtml("today");
     v.innerHTML=html;
     return;
   }
@@ -1822,6 +1827,7 @@ function renderToday(){
       '</div>';
   }
 
+  html+=partnerGridHtml("today");
   v.innerHTML=html;
   paintTodayWx();
   if(typeof phase==="number")paintTodayRouteWx(s);
@@ -2058,6 +2064,56 @@ function mzDist(t0,t1){var dx=t1.clientX-t0.clientX,dy=t1.clientY-t0.clientY;ret
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
 
+/* ============ Partner rotation ============
+   2026-08-27, settled with Jacco: 7 real partners, one guaranteed slot each
+   per app load, round-robin'd across whichever tabs are currently visible
+   (TAB_ORDER[eventPhase()]). Every visible tab always shows BLOCKS_PER_TAB
+   (4) blocks total, so once every partner has its one guaranteed slot, each
+   tab is topped up to 4 with a weighted-random draw from the remaining
+   partners (never repeating a partner already placed on that same tab).
+   fi'zi:k and U Sport carry weight:2 in data.js (Jacco's two "double weight"
+   partners); everyone else is weight:1.
+   Computed once per real page load and cached in partnerAssignment -- NOT
+   recomputed on every renderAll() (which also fires on simulator/softRefresh
+   changes), so a partner's placement doesn't reshuffle under a rider mid-
+   session, even if the simulator flips preview/live phase. */
+var BLOCKS_PER_TAB=4;
+var partnerAssignment=null;
+function buildPartnerAssignment(){
+  var order=TAB_ORDER[eventPhase()];
+  var sponsors=RIDE.sponsors;
+  var out={};
+  order.forEach(function(t){out[t]=[];});
+  sponsors.forEach(function(sp,i){
+    out[order[i%order.length]].push(sp);
+  });
+  order.forEach(function(t){
+    while(out[t].length<BLOCKS_PER_TAB){
+      var pool=sponsors.filter(function(sp){return out[t].indexOf(sp)<0;});
+      if(!pool.length)break; // fewer distinct partners than blocks -- not expected with 7 partners/4 blocks
+      var totalW=pool.reduce(function(sum,sp){return sum+(sp.weight||1);},0);
+      var r=Math.random()*totalW;
+      for(var i=0;i<pool.length;i++){
+        r-=(pool[i].weight||1);
+        if(r<=0){out[t].push(pool[i]);break;}
+      }
+    }
+  });
+  return out;
+}
+function ensurePartnerAssignment(){
+  if(!partnerAssignment)partnerAssignment=buildPartnerAssignment();
+  return partnerAssignment;
+}
+function partnerGridHtml(tabKey){
+  var list=ensurePartnerAssignment()[tabKey]||[];
+  if(!list.length)return"";
+  var tiles=list.map(function(sp){
+    var img='<img class="'+sp.cls+'" src="'+sp.logo+'" alt="'+sp.name+'" loading="lazy">';
+    return '<a class="plogo" href="'+sp.url+'" target="_blank">'+img+'</a>';
+  }).join("");
+  return '<div class="foot-spon">Partners</div><div class="pgrid">'+tiles+'</div>';
+}
 // 2026-08-26: one row per night (date -> which camp you sleep at), derived
 // live from campSchedule's own camp/pm/iso fields -- not a hand-maintained
 // list. For each active date, the pm:true (evening) row wins since that's
@@ -2091,7 +2147,7 @@ function campSchedCard(){
     var label=CAMP_SHORT_NAME[n.camp]||camp.name;
     return '<div class="r'+(cls?" "+cls:"")+'"><span class="d">'+dl+'</span><span class="a">▸</span><span class="c">'+label+'</span></div>';
   }).join("");
-  return '<div class="today-card tc-menu-card" style="margin:0 0 14px;">'+
+  return '<div class="today-card tc-menu-card">'+
     '<div class="tc-menu-eyebrow">Campingschema</div>'+
     '<div class="tc-menu-rule"></div>'+
     '<div class="cs-rows">'+rows+'</div>'+
@@ -2106,6 +2162,7 @@ function renderEvent(){
   var h=campSchedCard();
   if(!slot)h+='<div class="wx-done">Het officiële programma is afgelopen.</div>';
   sorted.forEach(function(id){var camp=campById(id);if(camp)h+=campCard(camp,id===curId,slot);});
+  h+=partnerGridHtml("event");
   v.innerHTML=h;
 }
 
@@ -2140,6 +2197,7 @@ function renderPrep(){
     h+='</div></div>';
   });
   h+='</div></div>';
+  h+=partnerGridHtml("prep");
   v.innerHTML=h;
 }
 function saveOrgNumber(e){
@@ -2192,10 +2250,6 @@ function renderAll(){
   var wa=document.getElementById("waCommunity");
   if(WA_COMMUNITY_URL){wa.href=WA_COMMUNITY_URL;wa.target="_blank";wa.classList.remove("is-disabled");}
   else{wa.removeAttribute("href");wa.removeAttribute("target");wa.classList.add("is-disabled");}
-  document.getElementById("footLogos").innerHTML=RIDE.sponsors.map(function(sp){
-    var img='<img src="'+sp.logo+'" alt="'+sp.name+'" loading="lazy"'+(sp.logoH?' style="max-height:'+sp.logoH+'px"':'')+'>';
-    return sp.url?('<a class="plogo" href="'+sp.url+'" target="_blank">'+img+'</a>'):('<div class="plogo dummy">'+img+'</div>');
-  }).join("");
   // hdSos is a button now (opens the two-choice screen, see openSosChoice()) --
   // the real number goes on the choice screen's own "Bel The Ride noodnummer" link.
   document.getElementById("sosOrgCall").href="tel:"+RIDE.event.emergency;

@@ -329,7 +329,7 @@ var RIDE={
    }
   ],
   "shortName": "DOLOMITES 2026",
-  "playlistUrl": "https://open.spotify.com/playlist/06I3CJeX295bVcJTp512P9",
+  "playlistUrl": "https://open.spotify.com/playlist/1dOhnSWWgLyStp3DNXXWw5",
   "gatePassword": "fedaia",
   "quotePre": {
    "it": "Il conto alla rovescia è già una salita.",
@@ -19771,27 +19771,52 @@ var RIDE={
  "sponsors": [
   {
    "name": "fi'zi:k",
-   "logo": "sponsor-fizik.png",
+   "cls": "fizik",
+   "logo": "partners/fizik.png",
    "url": "https://www.fizik.com/nl-nl",
-   "logoH": 34
-  },
-  {
-   "name": "SiS",
-   "logo": "sponsor-sis.png",
-   "url": "https://www.scienceinsport.com/eu/",
-   "logoH": 40
+   "weight": 2
   },
   {
    "name": "JOIN",
-   "logo": "sponsor-join.png",
+   "cls": "join",
+   "logo": "partners/join.png",
    "url": "https://join.cc/",
-   "logoH": 34
+   "weight": 1
   },
   {
    "name": "Kwaremont",
-   "logo": "sponsor-kwaremont.png",
+   "cls": "kwaremont",
+   "logo": "partners/kwaremont.png",
    "url": "https://kwaremont.be/",
-   "logoH": 70
+   "weight": 1
+  },
+  {
+   "name": "Rogelli",
+   "cls": "rogelli",
+   "logo": "partners/rogelli.png",
+   "url": "https://rogelli.com/",
+   "weight": 1
+  },
+  {
+   "name": "Coca-Cola",
+   "cls": "cocacola",
+   "logo": "partners/cocacola.png",
+   "url": "https://www.coca-cola.com/nl/nl",
+   "weight": 1
+  },
+  {
+   "name": "Sockeloen",
+   "cls": "sockeloen",
+   "logo": "partners/sockeloen.png",
+   "url": "https://sockeloen.com/nl",
+   "weight": 1
+  },
+  {
+   "name": "U Sport",
+   "cls": "usport",
+   "logo": "partners/usport.png",
+   "url": "https://www.u-sport.com/",
+   "weight": 2
   }
  ],
  "pack": [
