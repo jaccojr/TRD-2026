@@ -383,7 +383,7 @@ a{color:inherit;}
    the quick-link/Spotify cards below. Per-logo max-height/max-width % are
    the tunable knobs -- see the spec doc's "how to resize a logo later". */
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.plogo{background:#fff;border:1px solid var(--line);border-radius:13px;aspect-ratio:247/140;display:flex;align-items:center;justify-content:center;padding:8px 12px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.plogo{background:#fff;border:1px solid var(--line);border-radius:13px;aspect-ratio:247/140;display:flex;align-items:center;justify-content:center;padding:8px 12px;box-shadow:0 1px 2px rgba(0,0,0,.04);min-width:0;overflow:hidden;}
 .plogo img{object-fit:contain;max-width:70%;max-height:72%;}
 .plogo img.kwaremont{max-height:92%;max-width:90%;}
 .plogo img.usport{max-height:94%;max-width:66%;}
