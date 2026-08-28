@@ -1176,7 +1176,10 @@ a{color:inherit;}
 .plogo img{object-fit:contain;max-width:70%;max-height:72%;}
 .plogo img.kwaremont{max-height:92%;max-width:90%;}
 .plogo img.usport{max-height:94%;max-width:66%;}
-.plogo img.sockeloen{max-height:90%;max-width:82%;}
+/* 2026-08-28: Sockeloen's own 90%/82% override removed -- Jacco picked "Option C" from the
+   size mockup (sockeloen-size-options.png): no override at all, same 70%/72% default every
+   other unlisted partner tile already uses. It was the 2nd-largest of all 7 partners, behind
+   only Kwaremont, and read as disproportionate next to the others. */
 .plogo img.join{max-height:82%;max-width:66%;}
 .plogo img.cocacola{max-height:74%;max-width:64%;}
 .plogo img.rogelli{max-height:64%;max-width:66%;}
@@ -1538,7 +1541,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="2.13"; // bump with every iteration
+var APP_VERSION="2.15"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
@@ -1563,7 +1566,17 @@ document.addEventListener("DOMContentLoaded",function(){
     var sb=document.getElementById("simBanner"); if(sb)sb.style.display="none";
     var wt=document.getElementById("btnWeerTest"); if(wt)wt.style.display="none";
   }else{
-    var wt2=document.getElementById("btnWeerTest"); if(wt2)wt2.style.display="block";
+    // 2026-08-28: was an unconditional display="block" here, regardless of the demo
+    // banner's own collapsed state -- Jacco: "weer testen button should collapse with
+    // the demo banner." setSimCollapsed() is now the single source of truth for this
+    // button's visibility on TEST (see its comment below); this just syncs the very
+    // first paint to whatever collapsed state the sessionStorage-restore IIFE (which
+    // runs earlier in this same script, before DOMContentLoaded fires) already applied
+    // to #simBanner -- so a reload while collapsed stays collapsed, button included,
+    // instead of the button snapping back to visible every time.
+    var wt2=document.getElementById("btnWeerTest");
+    var sbCollapsed=document.getElementById("simBanner")?.classList.contains("collapsed");
+    if(wt2)wt2.style.display=sbCollapsed?"none":"block";
   }
 });
 
@@ -1681,10 +1694,20 @@ function simReset(){SIM_DATE=null;SIM_MIN=null;renderAll();updateSimBanner();}
 // on every call, since it's the only way back in once the banner itself is display:none.
 // Persisted in sessionStorage so it stays collapsed across a soft-refresh/reload within
 // the same screenshot session, same pattern as #cover's "seen this session" flag.
+// 2026-08-28: also the single source of truth for #btnWeerTest's visibility on TEST --
+// Jacco: "weer testen button should collapse with the demo banner." Previously that
+// button's display was set once on load from IS_TEST_URL alone and never touched again,
+// so it stayed pinned on screen regardless of the banner's own collapsed state. Still
+// gated by IS_TEST_URL here too, so it's a no-op (and never reveals the button) on
+// production.
 function setSimCollapsed(collapsed){
   var b=document.getElementById("simBanner"),f=document.getElementById("simFabDock");
   if(b)b.classList.toggle("collapsed",collapsed);
   if(f)f.classList.toggle("shown",collapsed);
+  if(IS_TEST_URL){
+    var wt=document.getElementById("btnWeerTest");
+    if(wt)wt.style.display=collapsed?"none":"block";
+  }
   sessionStorage.setItem("trd_sim_collapsed",collapsed?"1":"0");
 }
 function toggleSimBanner(){
@@ -1966,10 +1989,10 @@ function stageCard(s){
      '<div class="m"><div class="l">Daling</div><div class="v">−'+r.loss.toLocaleString("nl")+'<span class="u"> m</span></div></div></div>';
   h+='<div class="loadbar"><div class="ll"><span>Klimmen t.o.v. zwaarste dag</span><span>'+loadPct+'%</span></div><div class="track"><div class="fill" style="width:'+loadPct+'%"></div></div></div>';
   h+='<div class="prof-wrap"><div class="prof-c" id="pw-'+s.num+'"><canvas id="pc-'+s.num+'"></canvas><div class="cursor" id="cur-'+s.num+'"></div><div class="tip" id="tip-'+s.num+'"></div></div></div>';
-  h+='<button class="exp-btn" onclick="togglePanel('+s.num+',\'d\',this)">'+icon("terrain")+'<span class="lbl">Route, cols & segment</span><span class="cv">▼</span></button>';
+  h+='<button class="exp-btn" id="expbtn-d-'+s.num+'" onclick="togglePanel('+s.num+',\'d\',this)">'+icon("terrain")+'<span class="lbl">Route, cols & segment</span><span class="cv">▼</span></button>';
   h+='<div class="panel" id="panel-d-'+s.num+'"><div class="panel-in"><div>'+wpRows(s)+'</div>'+segBlock(s)+'</div></div>';
   if(r.warnings&&r.warnings.length){
-    h+='<button class="exp-btn warn" onclick="togglePanel('+s.num+',\'w\',this)">'+icon("alert")+'<span class="lbl">Let op & onderweg ('+r.warnings.length+')</span><span class="cv">▼</span></button>';
+    h+='<button class="exp-btn warn" id="expbtn-w-'+s.num+'" onclick="togglePanel('+s.num+',\'w\',this)">'+icon("alert")+'<span class="lbl">Let op & onderweg ('+r.warnings.length+')</span><span class="cv">▼</span></button>';
     h+='<div class="panel" id="panel-w-'+s.num+'"><div class="panel-in wlist">';
     // r.warnings holds both route hazards and water points, one merged/sorted-by-km list
     // (POIs "added together with warnings" per the 2026 GPX pass) — icon differs by type,
@@ -1994,7 +2017,7 @@ function stageCard(s){
     h+='<div class="wx-done">✓ Etappe afgerond — weersdata verborgen</div>';
   }else{
     h+='<div id="wxhazard-'+s.num+'"></div>';
-    h+='<div class="wx wx-tap" onclick="togglePanel('+s.num+',\'t\',this)">';
+    h+='<div class="wx wx-tap" id="expbtn-t-'+s.num+'" onclick="togglePanel('+s.num+',\'t\',this)">';
     var mainTimes=routePointTimes(s);
     r.wxPoints.forEach(function(p,pi){
       var nm=p.label==="Start"?s.startName:(p.label==="Finish"?(s.loop?s.startName:s.endName):"");
@@ -2025,6 +2048,11 @@ function renderRoute(){
   // ("first one, eventually all") with no network involved. Tear every live map down the same way
   // setAlt() already does for its own single-stage replacement, before the DOM under them is wiped.
   Object.keys(maps).forEach(function(k){maps[k].remove();delete maps[k];});
+  // 2026-08-28: the full innerHTML rebuild below recreates every panel/button closed,
+  // regardless of what openRoutePanel (see togglePanel()/toggleMap() above) was still
+  // pointing to -- reset it so a later open/close doesn't try to force-close a stage that
+  // was never actually reopened by this render.
+  openRoutePanel=null;
   var info=routeFocusInfo();
   var focus=info.focus;
   var totDist=RIDE.stages.reduce(function(sum,s){return sum+s.dist;},0);
@@ -2076,10 +2104,44 @@ function downloadGpx(filename){
 //
 // After opening completes, max-height is released to "none" so a panel whose content grows
 // later (e.g. rebuilt markup) can't be clipped by a stale pinned height.
+//
+// 2026-08-28: Route tab is now a GLOBAL accordion, not a per-stage one — Jacco: "only able
+// to open multiple windows (let op/map/etc) in a single stage [should be allowed]. right
+// now you can open every window in any stage [at once, across stages]." Previously each of
+// the 4 expandables per stage (this 'd'/'w'/'t' panel toggle, plus toggleMap() below) only
+// ever knew about its own single element — nothing tracked what else might be open
+// elsewhere, so any combination across any stages could be open simultaneously.
+// openRoutePanel is the one shared tracker: whichever panel/map is open anywhere on the
+// tab, or null. Opening a new one first force-closes whatever openRoutePanel points to
+// (any stage, any kind) via closeRoutePanel(), THEN proceeds with this panel's own
+// open/close exactly as before. Reset to null in renderRoute() (see there) since a full
+// tab rebuild recreates every panel closed regardless of what this was still pointing to.
+var openRoutePanel=null; // {kind,num} of the one open Route-tab expandable, or null
+function closeRoutePanel(kind,num){
+  if(kind==="map"){
+    var w=document.getElementById("mapw-"+num),b=document.getElementById("mapbtn-"+num);
+    if(w)w.classList.remove("open");
+    if(b)b.classList.remove("open");
+    return;
+  }
+  var panel=document.getElementById("panel-"+kind+"-"+num);
+  var btn=document.getElementById("expbtn-"+kind+"-"+num);
+  if(panel&&panel.classList.contains("open")){
+    panel.style.maxHeight=panel.scrollHeight+"px";
+    panel.offsetHeight;
+    panel.classList.remove("open");
+    panel.style.maxHeight="0px";
+  }
+  if(btn)btn.classList.remove("open");
+}
 function togglePanel(num,k,el){
   var panel=document.getElementById("panel-"+k+"-"+num);
   if(!panel)return;
   var btn=el||(typeof window!=="undefined"&&window.event?window.event.currentTarget:null);
+  var willOpen=!panel.classList.contains("open");
+  if(willOpen&&openRoutePanel&&(openRoutePanel.kind!==k||openRoutePanel.num!==num)){
+    closeRoutePanel(openRoutePanel.kind,openRoutePanel.num);
+  }
   if(panel.classList.contains("open")){
     panel.style.maxHeight=panel.scrollHeight+"px"; // pin the real height...
     panel.offsetHeight;                            // ...force reflow so 0 animates from it
@@ -2095,6 +2157,7 @@ function togglePanel(num,k,el){
     });
   }
   if(btn)btn.classList.toggle("open");
+  openRoutePanel=willOpen?{kind:k,num:num}:null;
 }
 function togglePcat(i){
   document.getElementById("pcat-"+i).classList.toggle("open");
@@ -2189,7 +2252,14 @@ function nudgeOverlappingMarkers(points){
 }
 function toggleMap(num){
   var w=document.getElementById("mapw-"+num),b=document.getElementById("mapbtn-"+num);
+  // 2026-08-28: same global single-open accordion as togglePanel() above -- the map is
+  // one of the 4 expandables sharing openRoutePanel, key "map".
+  var willOpen=!w.classList.contains("open");
+  if(willOpen&&openRoutePanel&&(openRoutePanel.kind!=="map"||openRoutePanel.num!==num)){
+    closeRoutePanel(openRoutePanel.kind,openRoutePanel.num);
+  }
   var open=w.classList.toggle("open");b.classList.toggle("open");
+  openRoutePanel=open?{kind:"map",num:num}:null;
   if(!open)return;
   if(maps[num]){maps[num].invalidateSize();return;}
   var s=RIDE.stages.find(function(x){return x.num===num;});
@@ -3142,7 +3212,14 @@ function renderAll(){
   // not "+31 6 18418240" or similar). Flag if a separate, dedicated WhatsApp number
   // should be used instead of reusing RIDE.event.emergency.
   document.getElementById("waNoodnummer").href="https://wa.me/"+RIDE.event.emergency.replace(/\D/g,"");
-  var liveActions=eventPhase()==="live"&&nowD().getTime()<=isoToDate(RIDE.stages[RIDE.stages.length-1].iso).getTime();
+  // 2026-08-28: was gated on eventPhase()==="live", which only flips on RIDE.stages[0].iso
+  // (13/9, the Proloog) -- but Jacco: "people will arrive 12/9 and will start biking that
+  // day. the noodnummer whatsapp/call buttons should be visible from then." Riders are
+  // on-site and already active a day before the Proloog, so this now has its own explicit
+  // start date instead of piggybacking on eventPhase() (which still governs the
+  // preview/live TAB_ORDER split separately and is untouched here).
+  var NOODNUMMER_FROM_ISO="2026-09-12";
+  var liveActions=nowD().getTime()>=isoToDate(NOODNUMMER_FROM_ISO).getTime()&&nowD().getTime()<=isoToDate(RIDE.stages[RIDE.stages.length-1].iso).getTime();
   document.getElementById("hdActions").style.display=liveActions?"flex":"none";
   document.getElementById("footMeta").textContent="Routedata: GPX · Weer: Open-Meteo · "+(IS_TEST_URL?"TEST":"production")+" · v"+APP_VERSION;
   // 2026-08-27 perf fix: this used to be renderToday();renderRoute();renderKlass();renderEvent();
@@ -3206,18 +3283,36 @@ async function showWeatherCheck(){
         rowsHtml+="<tr><td style='padding:6px'>"+p.key+"</td><td style='padding:6px;color:#9a918a'>"+p.lat+", "+p.lon+"</td><td style='padding:6px'>"+p.date+"</td><td style='padding:6px'>"+p.hour+":00</td><td style='padding:6px'>(missing)</td><td style='padding:6px'>—</td><td style='padding:6px;color:var(--rose-deep);font-weight:700'>⚠</td></tr>";
         continue;
       }
+      // 2026-08-28: previously a bare fetch().json() with no response.ok / error-shape
+      // check before parsing -- ANY rejection (wrong HTTP status, or a 200 whose body is
+      // Open-Meteo's own {"error":true,"reason":"..."} shape, e.g. a date past its ~16-day
+      // forecast horizon) fell straight into the catch below and printed the same flat
+      // "error" string for every row, with zero detail about why. Jacco: "it was working,
+      // we changed stuff around and it is not. dig deeper." -- the real change was
+      // restoring TEST's actual Sept dates (was: shift_dates.py keeping them a few days
+      // out), which pushed every point's request date to 16-21 days from today, right at
+      // or past that horizon. Now surfaces the API's own reason (or the HTTP status as a
+      // fallback) per row instead of guessing.
       try{
         var lurl="https://api.open-meteo.com/v1/forecast?latitude="+p.lat+"&longitude="+p.lon+"&hourly=temperature_2m&start_date="+p.date+"&end_date="+p.date+"&timezone=auto";
-        var ld=await (await fetch(lurl)).json();
-        var target=p.date+"T"+String(p.hour).padStart(2,"0")+":00";
-        var idx=ld.hourly.time.indexOf(target);
-        var liveTemp=idx>=0?ld.hourly.temperature_2m[idx]:null;
-        var diff=(liveTemp!=null)?Math.abs(liveTemp-stored.temp):null;
-        var ok=diff!=null&&diff<=1.5;
-        rowsHtml+="<tr><td style='padding:6px'>"+p.key+"</td><td style='padding:6px;color:#9a918a'>"+p.lat+", "+p.lon+"</td><td style='padding:6px'>"+p.date+"</td><td style='padding:6px'>"+p.hour+":00</td><td style='padding:6px'>"+stored.temp+"</td><td style='padding:6px'>"+liveTemp+"</td>"+
-          "<td style='padding:6px;font-weight:700;color:"+(ok?"#1f9d6b":"var(--rose-deep)")+"'>"+(diff!=null?diff.toFixed(1)+"°"+(ok?" ✓":" ⚠"):"—")+"</td></tr>";
+        var lres=await fetch(lurl);
+        var ld=await lres.json().catch(function(){return null;});
+        if(!lres.ok||!ld||ld.error){
+          var reason=(ld&&ld.reason)?ld.reason:("HTTP "+lres.status+" "+lres.statusText);
+          var safeReason=String(reason).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+          rowsHtml+="<tr><td style='padding:6px'>"+p.key+"</td><td style='padding:6px;color:#9a918a'>"+p.lat+", "+p.lon+"</td><td style='padding:6px'>"+p.date+"</td><td style='padding:6px'>"+p.hour+":00</td><td style='padding:6px'>"+stored.temp+"</td><td style='padding:6px;color:var(--rose-deep)' title=\""+safeReason+"\">"+safeReason+"</td><td style='padding:6px;color:var(--rose-deep);font-weight:700'>⚠</td></tr>";
+        }else{
+          var target=p.date+"T"+String(p.hour).padStart(2,"0")+":00";
+          var idx=ld.hourly.time.indexOf(target);
+          var liveTemp=idx>=0?ld.hourly.temperature_2m[idx]:null;
+          var diff=(liveTemp!=null)?Math.abs(liveTemp-stored.temp):null;
+          var ok=diff!=null&&diff<=1.5;
+          rowsHtml+="<tr><td style='padding:6px'>"+p.key+"</td><td style='padding:6px;color:#9a918a'>"+p.lat+", "+p.lon+"</td><td style='padding:6px'>"+p.date+"</td><td style='padding:6px'>"+p.hour+":00</td><td style='padding:6px'>"+stored.temp+"</td><td style='padding:6px'>"+liveTemp+"</td>"+
+            "<td style='padding:6px;font-weight:700;color:"+(ok?"#1f9d6b":"var(--rose-deep)")+"'>"+(diff!=null?diff.toFixed(1)+"°"+(ok?" ✓":" ⚠"):"—")+"</td></tr>";
+        }
       }catch(e){
-        rowsHtml+="<tr><td style='padding:6px'>"+p.key+"</td><td style='padding:6px;color:#9a918a'>"+p.lat+", "+p.lon+"</td><td style='padding:6px'>"+p.date+"</td><td style='padding:6px'>"+p.hour+":00</td><td style='padding:6px'>"+stored.temp+"</td><td style='padding:6px'>error</td><td style='padding:6px;color:var(--rose-deep);font-weight:700'>⚠</td></tr>";
+        var errMsg=String((e&&e.message)||e).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+        rowsHtml+="<tr><td style='padding:6px'>"+p.key+"</td><td style='padding:6px;color:#9a918a'>"+p.lat+", "+p.lon+"</td><td style='padding:6px'>"+p.date+"</td><td style='padding:6px'>"+p.hour+":00</td><td style='padding:6px'>"+stored.temp+"</td><td style='padding:6px;color:var(--rose-deep)' title=\""+errMsg+"\">"+errMsg+"</td><td style='padding:6px;color:var(--rose-deep);font-weight:700'>⚠</td></tr>";
       }
       wcOut.innerHTML=html+"<table style='width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden'>"+headerRow+rowsHtml+"</table>";
     }
