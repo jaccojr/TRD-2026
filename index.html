@@ -792,12 +792,22 @@ a{color:inherit;}
    alongside .sim-banner's own class, see toggleSimBanner()). Sits above the fixed bottom
    tab bar (.tabs, z-index:60) with clearance for its own height + safe-area inset, and
    below every modal overlay (.sos-choice 1001, #gate/#cover 9999/10000) so it never blocks
-   or gets blocked by anything else fixed on screen. */
-.sim-fab{display:none;position:fixed;right:12px;bottom:calc(74px + env(safe-area-inset-bottom,0px));z-index:70;
- width:30px;height:30px;border-radius:50%;border:1px solid var(--rose-line);background:var(--rose-soft);
- color:var(--rose-deep);font-size:12px;cursor:pointer;align-items:center;justify-content:center;
- box-shadow:0 2px 8px rgba(0,0,0,.12);}
-.sim-fab.shown{display:flex;}
+   or gets blocked by anything else fixed on screen.
+   2026-08-28 fix: first cut positioned the button itself with `right:12px`, pinned to the
+   actual browser viewport edge -- fine on a phone-width screen, but the app's content
+   column is capped at max-width:540px and centered (.wrap/.tabs both do this via
+   left:0;right:0;margin:0 auto;max-width:540px). On anything wider (an iPad, which is
+   exactly what Jacco tests on) the button landed in the empty margin outside the visible
+   app -- "nowhere to be seen" was a real bug, not a visibility/contrast issue. Fixed by
+   wrapping the button in a .sim-fab-dock that's centered the same way .tabs is, so the
+   button always sits at the actual content column's bottom-right corner regardless of
+   viewport width. */
+.sim-fab-dock{display:none;position:fixed;left:0;right:0;bottom:calc(74px + env(safe-area-inset-bottom,0px));
+ max-width:540px;margin:0 auto;z-index:70;justify-content:flex-end;padding:0 12px;pointer-events:none;}
+.sim-fab-dock.shown{display:flex;}
+.sim-fab{width:30px;height:30px;border-radius:50%;border:1px solid var(--rose-line);background:var(--rose-soft);
+ color:var(--rose-deep);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+ box-shadow:0 2px 8px rgba(0,0,0,.12);pointer-events:auto;}
 .sim-row{display:flex;align-items:center;gap:8px;}
 .sim-lab{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--rose-deep);}
 .sim-row button{border:1px solid var(--rose-line);background:#fff;color:var(--rose-deep);border-radius:7px;width:26px;height:22px;font-size:13px;cursor:pointer;line-height:1;}
@@ -1355,8 +1365,13 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
   </div>
 </div>
 <!-- 2026-08-28: only shown while .sim-banner is collapsed (zero-footprint hide) -- this is
-     the sole way back in once the banner itself is display:none. See toggleSimBanner(). -->
-<button class="sim-fab" id="simFab" onclick="toggleSimBanner()" aria-label="demo simulator tonen">▸</button>
+     the sole way back in once the banner itself is display:none. See toggleSimBanner().
+     Wrapped in .sim-fab-dock so it stays pinned to the app's actual (centered,
+     max-width:540px) content column instead of the raw viewport edge -- see that class's
+     CSS comment above. -->
+<div class="sim-fab-dock" id="simFabDock">
+  <button class="sim-fab" id="simFab" onclick="toggleSimBanner()" aria-label="demo simulator tonen">▸</button>
+</div>
 
 <section class="view active" id="v-today"></section>
 <section class="view" id="v-route"></section>
@@ -1523,7 +1538,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="2.12"; // bump with every iteration
+var APP_VERSION="2.13"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
@@ -1667,7 +1682,7 @@ function simReset(){SIM_DATE=null;SIM_MIN=null;renderAll();updateSimBanner();}
 // Persisted in sessionStorage so it stays collapsed across a soft-refresh/reload within
 // the same screenshot session, same pattern as #cover's "seen this session" flag.
 function setSimCollapsed(collapsed){
-  var b=document.getElementById("simBanner"),f=document.getElementById("simFab");
+  var b=document.getElementById("simBanner"),f=document.getElementById("simFabDock");
   if(b)b.classList.toggle("collapsed",collapsed);
   if(f)f.classList.toggle("shown",collapsed);
   sessionStorage.setItem("trd_sim_collapsed",collapsed?"1":"0");
