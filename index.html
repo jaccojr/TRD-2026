@@ -926,6 +926,13 @@ a{color:inherit;}
 .tc-wxline .wl2{flex:1;min-width:0;font-size:11.5px;color:var(--muted);}
 .tc-wxline .wl2 .wtime{color:var(--ink);font-weight:600;font-family:var(--mono);font-size:11px;}
 .tc-wxline .wv{font-family:var(--mono);font-weight:700;font-size:12.5px;white-space:nowrap;}
+/* 2026-08-28: wind addition, mockup approved 2026-08-27 ("this is good"). .wv used to be
+   the value cell's only element (a single right-aligned line); now it sits in a small
+   flex column with a wind .wpill stacked directly under it, still right-aligned as a
+   unit -- reuses the existing global .wpill class verbatim (same badge the Route tab's
+   own per-stage weather cards already use), not a new style. */
+.tc-wxline .wvcol{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
+.tc-wxline .wvcol .wpill{white-space:nowrap;}
 .exp-btn.warn{color:var(--amber);}
 .exp-btn.dummy{cursor:default;opacity:.6;}
 .exp-btn.dummy .ic-svg{fill:var(--muted);}
@@ -1541,7 +1548,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="2.15"; // bump with every iteration
+var APP_VERSION="2.17"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
@@ -1875,11 +1882,22 @@ function renderNav(){
   document.querySelectorAll(".view").forEach(function(el){el.classList.toggle("active",el.id==="v-"+curTab);});
 }
 function showTab(v){
+  // 2026-08-28: tabs are rendered once and just shown/hidden (see tabRendered above), not
+  // rebuilt on every switch -- so anything left open on a tab used to just sit there,
+  // exactly as found, whenever you came back. Jacco, re: the Paklijst categories: "i dont
+  // mind more windows open on this tab but i want them to close if another tab is opened.
+  // so switch to route and back; all windows closed." Multiple categories can still be open
+  // together WHILE on Prep (unchanged) -- this only fires the moment you actually leave it.
+  if(curTab==="prep"&&v!=="prep")closeAllPackCats();
   curTab=v;
   document.querySelectorAll(".tab").forEach(function(t){t.classList.toggle("active",t.dataset.v===v);});
   document.querySelectorAll(".view").forEach(function(el){el.classList.toggle("active",el.id==="v-"+v);});
   if(!tabRendered[v])renderTabContent(v); // lazy fallback if the background pre-render (see renderAll) hasn't reached this tab yet
   window.scrollTo({top:0,behavior:"smooth"});
+}
+function closeAllPackCats(){
+  document.querySelectorAll(".pcat-body.open").forEach(function(b){b.classList.remove("open");});
+  document.querySelectorAll(".pcat-head.open").forEach(function(b){b.classList.remove("open");});
 }
 
 /* ============ ROUTE ============ */
@@ -2549,16 +2567,26 @@ function paintTodayRouteWx(s,override){
   times.forEach(function(t,pi){
     var el=document.getElementById("tcwx-"+s.num+"-"+pi);
     if(!el)return;
-    var timeEl=el.querySelector(".wtime"),iconEl=el.querySelector(".wi"),valEl=el.querySelector(".wv");
+    var timeEl=el.querySelector(".wtime"),iconEl=el.querySelector(".wi"),valEl=el.querySelector(".wv"),
+        pillEl=el.querySelector(".wpill");
     if(timeEl)timeEl.textContent=fmtHHMM(t.min);
-    if(t.point.tbd){if(iconEl)iconEl.textContent="❓";if(valEl)valEl.textContent="Locatie volgt";return;}
+    if(t.point.tbd){if(iconEl)iconEl.textContent="❓";if(valEl)valEl.textContent="Locatie volgt";if(pillEl)pillEl.style.display="none";return;}
     var hr=Math.round(t.min/60);
     var key=wxHourKeyForPoint(s,t.point);
     var point=(lastWxData&&lastWxData[key])?lastWxData[key]:null;
     var wx=point?(point.hourly&&point.hourly[String(hr)]?point.hourly[String(hr)]:point):null;
-    if(!wx){if(iconEl)iconEl.textContent="⏳";if(valEl)valEl.textContent="Weer volgt";return;}
+    if(!wx){if(iconEl)iconEl.textContent="⏳";if(valEl)valEl.textContent="Weer volgt";if(pillEl)pillEl.style.display="none";return;}
     if(iconEl)iconEl.textContent=WX_ICON[wx.code]||"🌡️";
     if(valEl)valEl.textContent=wx.temp+"° "+(WX_DESC[wx.code]||"");
+    // 2026-08-28: wind addition, mockup approved 2026-08-27. Same raw format the Route
+    // tab's own per-stage weather cards already use (💨 speed + windDir()'s Dutch compass
+    // letter) -- not a new Beaufort conversion, per Jacco. Hidden (not just left at "…")
+    // when wind is missing from this point's data, same graceful-degradation convention
+    // as the icon/value fallbacks above -- never shows a stale or blank pill.
+    if(pillEl){
+      if(wx.wind!=null){pillEl.textContent="💨 "+wx.wind+" "+windDir(wx.windDeg);pillEl.style.display="";}
+      else{pillEl.style.display="none";}
+    }
   });
 }
 // Card 3's "Verwachte finish" range — kept in sync with the slider the same way Card 2's
@@ -2779,7 +2807,7 @@ function renderToday(){
     html+='<div id="tcwxwrap-'+s.num+'">'+
       '<div class="tc-eyebrow" id="tcwxeyebrow-'+s.num+'" style="margin-top:12px;'+(hasRiderOverride(s)?"":"display:none;")+'">WEER OP JOUW TIJDEN</div><div class="tc-wxlines">';
     r.wxPoints.forEach(function(p,pi){
-      html+='<div class="tc-wxline" id="tcwx-'+s.num+'-'+pi+'"><span class="wi">⏳</span><span class="wl2">'+p.label+' · <span class="wtime">--:--</span></span><span class="wv">…</span></div>';
+      html+='<div class="tc-wxline" id="tcwx-'+s.num+'-'+pi+'"><span class="wi">⏳</span><span class="wl2">'+p.label+' · <span class="wtime">--:--</span></span><div class="wvcol"><span class="wv">…</span><span class="wpill" style="display:none;">💨</span></div></div>';
     });
     html+='</div></div>';
     html+='</div></div>';
@@ -2937,9 +2965,21 @@ function campCard(camp,isCurrent,slot){
   h+='</div></div>';
   return h;
 }
+// 2026-08-28: Camping tab global accordion, same rule as the Route tab's openRoutePanel --
+// Jacco: "on the camping tab i want the same as in route. one window open max (effectively
+// one map at a time)." Only one kind of expandable exists here (each camp's own
+// "Plattegrond camping" plan image), so this is a simpler single-id tracker rather than
+// the {kind,num} pair openRoutePanel needs.
+var openCampMapId=null;
 function toggleCampMap(id){
   var el=document.getElementById("campmap-"+id);
-  el.style.display=el.style.display==="none"?"block":"none";
+  var willOpen=el.style.display==="none";
+  if(willOpen&&openCampMapId&&openCampMapId!==id){
+    var prev=document.getElementById("campmap-"+openCampMapId);
+    if(prev)prev.style.display="none";
+  }
+  el.style.display=willOpen?"block":"none";
+  openCampMapId=willOpen?id:null;
 }
 
 /* ---- map zoom overlay: pinch (touch), wheel (desktop), drag-to-pan ---- */
@@ -3125,6 +3165,10 @@ function campSchedCard(){
 }
 function renderEvent(){
   var v=document.getElementById("v-event");
+  // a full rebuild (v.innerHTML=... below) recreates every campmap div fresh (closed,
+  // display:none) regardless of what openCampMapId was still pointing to -- reset it,
+  // same reasoning as openRoutePanel's reset in renderRoute().
+  openCampMapId=null;
   var slot=currentSlot();
   var curId=slot?slot.camp:null;
   var order=["duelaghi","nevegal","campitello","caldonazzo"];
