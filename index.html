@@ -698,7 +698,21 @@ svg.leaflet-image-layer.leaflet-interactive path {
 :root{
  --bg:#ffffff;--paper:#faf7f4;--card:#ffffff;--ink:#2e3440;--ink2:#574e47;--muted:#9a918a;
  --line:#eee8e1;--line2:#e2dad1;
- --rose:#F59BB0;--rose-deep:#E51F4D;--rose-soft:#FAF2F4;--rose-line:#F4D7DE;
+ /* 2026-08-28: brand rose realigned to the organisation's own colour, per Jacco's reference
+    screenshot (their "WELKOM!"/countdown screen). --rose below (#EC96D3) is sampled directly
+    from that screenshot's background, pixel-exact. The other three shades are NOT
+    independently specified -- only one reference swatch was given -- so they're DERIVED from
+    it using the exact same hue-held-constant, lightness/saturation-shifted relationship the
+    previous four rose shades had to each other (checked via HSL: old --rose/--rose-deep/
+    --rose-soft/--rose-line all share one hue, differing only in lightness+saturation). If the
+    organisation has an official palette for these secondary shades, swap them in directly --
+    these are a careful match, not a confirmed brand value beyond the one sampled swatch.
+    Everything that reads var(--rose*) below updates automatically. Three things do NOT, and
+    were updated by hand alongside this: manifest.webmanifest's theme_color, the loadbar's
+    hardcoded gradient companion shade (search --rose below), and the hidden TEST-only "Weer
+    testen" button's inline background. A fourth, climb_chart.py (bakes rose into the static
+    climbs/segment-gardena.png), was NOT regenerated -- flagged separately, not done here. */
+ --rose:#EC96D3;--rose-deep:#CE289E;--rose-soft:#F5E9F2;--rose-line:#EECFE5;
  --green:#1f9d6b;--amber:#cf8412;--red:#d6455a;--blue:#3f7cc0;
  --gold:#E3A625;/* stage stars (2026-08-22): distinct from --amber (hazard warnings) -- flag for review, exact shade not yet confirmed by Jacco */
  --disp:'Archivo',sans-serif;--body:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
@@ -730,11 +744,12 @@ a{color:inherit;}
 .hd-actions{display:flex;gap:9px;padding:9px 14px;border-top:1px solid var(--line);position:relative;}
 .hd-actions .hbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;border-radius:9px;
  font-family:var(--disp);font-weight:700;font-size:12px;text-decoration:none;cursor:pointer;border:1.5px solid;appearance:none;background:#fff;}
-.hbtn.loc{border-color:var(--green);color:var(--green);}
-.hbtn.loc:active{background:#eefaf3;}
+.hbtn.loc.wa{border-color:#25D366;color:#075E54;}/* 2026-08-28: WhatsApp's own green border, per Jacco -- was the app's generic --green (location-feature colour), no longer applicable now this is a WhatsApp button, not a geolocation one. Text colour is WhatsApp's own dark teal (#075E54, from their brand palette) rather than the bright badge green, for readability at this font-size. */
+.hbtn.loc.wa:active{background:#e9f9ef;}
 .hbtn.sos{border-color:var(--red);color:var(--red);}
 .hbtn.sos:active{background:#fcecee;}
-.hd-locout{font-family:var(--mono);font-size:10.5px;color:var(--blue);padding:0 14px 8px;margin-top:-2px;min-height:0;border-top:none;}
+/* .hd-locout removed 2026-08-28 -- was #locout's style, and #locout (the geolocation
+   result readout) is gone along with getLoc(), see the WhatsApp-noodnummer comment above. */
 .sim-banner{background:var(--rose-soft);border-top:1px dashed var(--rose-line);border-bottom:1px dashed var(--rose-line);padding:8px 14px;display:flex;flex-direction:column;gap:6px;}
 .sim-row{display:flex;align-items:center;gap:8px;}
 .sim-lab{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--rose-deep);}
@@ -803,7 +818,7 @@ a{color:inherit;}
 .loadbar{padding:8px 14px 9px;border-bottom:1px solid var(--line);}
 .loadbar .ll{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
 .track{height:4px;background:#f0ece7;border-radius:3px;overflow:hidden;}
-.fill{height:100%;background:linear-gradient(90deg,var(--rose),#f5a0c4);border-radius:3px;}
+.fill{height:100%;background:linear-gradient(90deg,var(--rose),#EC9BE7);border-radius:3px;}/* 2026-08-28: companion shade kept the same subtle RGB offset from --rose the old #f5a0c4 had from the old --rose, just reapplied to the new value -- not independently picked */
 .prof-wrap{padding:11px 12px 10px;border-bottom:1px solid var(--line);}
 .prof-c{position:relative;height:98px;cursor:crosshair;}
 .prof-c canvas{width:100%;height:98px;display:block;}
@@ -1220,14 +1235,37 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
 
 <div class="hd-secondary">
   <div class="hd-actions" id="hdActions">
-    <button class="hbtn loc" onclick="getLoc()">📍 Deel mijn locatie</button>
+    <!-- 2026-08-28: was "Deel mijn locatie" -- real navigator.geolocation, read out as
+         lat/lon + a Google Maps link (getLoc(), now removed). Jacco: going for the simple
+         solution instead -- the organisation will share their own "how to share your
+         location via WhatsApp" how-to separately, so this button's only job is opening a
+         WhatsApp chat with the org's noodnummer contact. href is set in renderAll() from
+         RIDE.event.emergency -- the SAME number the "Bel The Ride noodnummer" choice
+         already calls -- since that's the one known/existing contact; flag if a different,
+         dedicated WhatsApp number should be used instead. Badge icon matches the real
+         WhatsApp app icon (solid green rounded square, white glyph), not the thinner
+         outline-on-white style the "whatsapp theride" button below uses -- these two icons
+         are deliberately different treatments per Jacco's ask, not an inconsistency.
+         2026-08-28 follow-up: label text dropped the leading "WhatsApp" -- Jacco: "it
+         doesnt need a separate whatsapp text on the button, that is what the logo is for.
+         like the other whatsapp button" -- the "whatsapp theride" button below never
+         spells out "WhatsApp" either, it relies on its icon alone, so this one now matches
+         that convention. Text is just "Noodnummer", same word the neighboring bel-112
+         button uses -- the two remain visually distinct by icon (WhatsApp badge vs. phone
+         glyph) and border colour (WhatsApp green vs. red), not by wording. -->
+    <a class="hbtn loc wa" id="waNoodnummer" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="24" height="24" rx="6" fill="#25D366"/>
+        <path transform="translate(12 12) scale(.66) translate(-12 -12)" fill="#fff" d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.48 1.32 5L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2m0 1.67a8.23 8.23 0 018.24 8.24c0 4.55-3.7 8.24-8.25 8.24a8.2 8.2 0 01-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 01-1.26-4.38c.01-4.55 3.7-8.24 8.25-8.24M8.53 7.33c-.16 0-.43.06-.66.31-.22.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.25 3.73.59.26 1.06.41 1.42.52.6.19 1.14.16 1.57.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.14-1.18-.06-.1-.23-.16-.48-.28-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.71-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.24-.42.08-.17.04-.31-.02-.43-.06-.12-.55-1.36-.76-1.86-.2-.48-.4-.42-.56-.43h-.4z"/>
+      </svg>
+      Noodnummer
+    </a>
     <!-- 2026-08-26: was a direct tel: dial. Now opens a two-choice screen
          (mockup approved 2026-08-24) so whoever makes the call -- which may
          not be the rider -- picks 112 vs the organisation's own number,
          instead of one button silently guessing for them. -->
     <button class="hbtn sos" id="hdSos" onclick="openSosChoice()">📞 Noodnummer</button>
   </div>
-  <div class="hd-locout" id="locout"></div>
 </div>
 <div class="sim-banner" id="simBanner">
   <div class="sim-row">
@@ -1289,7 +1327,7 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
   </a>
   <div class="foot-meta" id="footMeta">Routedata: GPX · Weer: Open-Meteo</div>
   <div class="foot-copy" style="text-align:center;color:#9a918a;font-size:11px;margin-top:6px;">© 2026 JR_c-137 — All rights reserved</div>
-  <button id="btnWeerTest" onclick="showWeatherCheck()" style="display:none;margin:10px auto 0;padding:10px 16px;background:#E51F4D;color:#fff;border:none;border-radius:10px;font-family:var(--disp);font-weight:800;font-size:12px;cursor:pointer;">🌦 Weer testen</button>
+  <button id="btnWeerTest" onclick="showWeatherCheck()" style="display:none;margin:10px auto 0;padding:10px 16px;background:var(--rose-deep);color:#fff;border:none;border-radius:10px;font-family:var(--disp);font-weight:800;font-size:12px;cursor:pointer;">🌦 Weer testen</button>
 </footer>
 <nav class="tabs" id="tabs"></nav>
 </div>
@@ -1386,7 +1424,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="2.06"; // bump with every iteration
+var APP_VERSION="2.08"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
@@ -2937,25 +2975,9 @@ function togglePack(el,key){var st=loadPack();st[key]=!st[key];if(!st[key])delet
   document.getElementById("packProg").textContent=done+" / "+total+" ingepakt";
 }
 function resetPack(){if(confirm("Hele paklijst wissen?")){savePack({});renderPrep();}}
-function getLoc(){
-  var o=document.getElementById("locout");o.textContent="Locatie ophalen…";
-  if(!navigator.geolocation){o.textContent="Geen GPS beschikbaar.";return;}
-  navigator.geolocation.getCurrentPosition(function(p){
-    var la=p.coords.latitude.toFixed(5),lo=p.coords.longitude.toFixed(5);
-    o.innerHTML='<a href="https://maps.google.com/?q='+la+','+lo+'" target="_blank">'+la+', '+lo+' ↗ open in Maps</a>';
-  },function(err){
-    // 2026-08-22: browsers remember a location decision permanently once
-    // blocked and will never show the native permission dialog again for
-    // this site -- no web API can force it back open (deliberate browser
-    // anti-annoyance/security behavior, not an app bug). The old message
-    // ("geef toestemming") falsely implied tapping again would re-prompt.
-    if(err&&err.code===1){
-      o.textContent="Locatie geblokkeerd — pas dit aan bij je browserinstellingen (tik het slotje naast de adresbalk → Locatie → Toestaan).";
-    }else{
-      o.textContent="Locatie niet beschikbaar.";
-    }
-  });
-}
+// getLoc() (real navigator.geolocation, read out as lat/lon + a Maps link) removed
+// 2026-08-28 along with #locout/.hd-locout -- replaced by the WhatsApp-noodnummer link
+// above, per Jacco's "simple solution" call. See the comment on #waNoodnummer.
 
 /* ============ boot ============ */
 function renderAll(){
@@ -2970,9 +2992,13 @@ function renderAll(){
   // hdSos is a button now (opens the two-choice screen, see openSosChoice()) --
   // the real number goes on the choice screen's own "Bel The Ride noodnummer" link.
   document.getElementById("sosOrgCall").href="tel:"+RIDE.event.emergency;
+  // WhatsApp-noodnummer button: same known contact as the tel: link above, just via
+  // wa.me instead of tel: -- strip everything but digits (wa.me wants "31618418240",
+  // not "+31 6 18418240" or similar). Flag if a separate, dedicated WhatsApp number
+  // should be used instead of reusing RIDE.event.emergency.
+  document.getElementById("waNoodnummer").href="https://wa.me/"+RIDE.event.emergency.replace(/\D/g,"");
   var liveActions=eventPhase()==="live"&&nowD().getTime()<=isoToDate(RIDE.stages[RIDE.stages.length-1].iso).getTime();
   document.getElementById("hdActions").style.display=liveActions?"flex":"none";
-  document.getElementById("locout").style.display=liveActions?"":"none";
   document.getElementById("footMeta").textContent="Routedata: GPX · Weer: Open-Meteo · "+(IS_TEST_URL?"TEST":"production")+" · v"+APP_VERSION;
   // 2026-08-27 perf fix: this used to be renderToday();renderRoute();renderKlass();renderEvent();
   // renderPrep(); unconditionally -- building ALL FIVE tabs synchronously on every renderAll() call,
@@ -3023,8 +3049,8 @@ async function showWeatherCheck(){
     var updated=new Date(wjson.updated);
     var ageMin=Math.round((Date.now()-updated.getTime())/60000);
     var checkedAt=new Date();
-    var html="<div style='background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:12px;'>weather.json last updated: <b style='color:#E51F4D'>"+updated.toLocaleString("nl-NL")+"</b> — "+
-      (ageMin<90?"<span style='color:#1f9d6b;font-weight:700'>":"<span style='color:#E51F4D;font-weight:700'>")+ageMin+" minuten geleden"+(ageMin<90?" ✓":" ⚠")+"</span></div>";
+    var html="<div style='background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:12px;'>weather.json last updated: <b style='color:var(--rose-deep)'>"+updated.toLocaleString("nl-NL")+"</b> — "+
+      (ageMin<90?"<span style='color:#1f9d6b;font-weight:700'>":"<span style='color:var(--rose-deep);font-weight:700'>")+ageMin+" minuten geleden"+(ageMin<90?" ✓":" ⚠")+"</span></div>";
     html+="<div style='color:#9a918a;margin-bottom:8px'>Check uitgevoerd om "+checkedAt.toLocaleTimeString("nl-NL")+"</div>";
     var headerRow="<tr style='background:#f3eeeb'><th style='padding:6px;text-align:left'>Punt</th><th style='padding:6px;text-align:left'>Lat/Lon</th><th style='padding:6px;text-align:left'>Datum</th><th style='padding:6px;text-align:left'>Uur</th><th style='padding:6px;text-align:left'>Opgeslagen °C</th><th style='padding:6px;text-align:left'>Live °C</th><th style='padding:6px;text-align:left'>Verschil</th></tr>";
     wcOut.innerHTML=html+"<table style='width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden'>"+headerRow+"</table><div style='margin-top:8px'>Bezig met live vergelijken…</div>";
@@ -3032,7 +3058,7 @@ async function showWeatherCheck(){
     for(var i=0;i<pdata.length;i++){
       var p=pdata[i], stored=wjson.data[p.key];
       if(!stored){
-        rowsHtml+="<tr><td style='padding:6px'>"+p.key+"</td><td style='padding:6px;color:#9a918a'>"+p.lat+", "+p.lon+"</td><td style='padding:6px'>"+p.date+"</td><td style='padding:6px'>"+p.hour+":00</td><td style='padding:6px'>(missing)</td><td style='padding:6px'>—</td><td style='padding:6px;color:#E51F4D;font-weight:700'>⚠</td></tr>";
+        rowsHtml+="<tr><td style='padding:6px'>"+p.key+"</td><td style='padding:6px;color:#9a918a'>"+p.lat+", "+p.lon+"</td><td style='padding:6px'>"+p.date+"</td><td style='padding:6px'>"+p.hour+":00</td><td style='padding:6px'>(missing)</td><td style='padding:6px'>—</td><td style='padding:6px;color:var(--rose-deep);font-weight:700'>⚠</td></tr>";
         continue;
       }
       try{
@@ -3044,14 +3070,14 @@ async function showWeatherCheck(){
         var diff=(liveTemp!=null)?Math.abs(liveTemp-stored.temp):null;
         var ok=diff!=null&&diff<=1.5;
         rowsHtml+="<tr><td style='padding:6px'>"+p.key+"</td><td style='padding:6px;color:#9a918a'>"+p.lat+", "+p.lon+"</td><td style='padding:6px'>"+p.date+"</td><td style='padding:6px'>"+p.hour+":00</td><td style='padding:6px'>"+stored.temp+"</td><td style='padding:6px'>"+liveTemp+"</td>"+
-          "<td style='padding:6px;font-weight:700;color:"+(ok?"#1f9d6b":"#E51F4D")+"'>"+(diff!=null?diff.toFixed(1)+"°"+(ok?" ✓":" ⚠"):"—")+"</td></tr>";
+          "<td style='padding:6px;font-weight:700;color:"+(ok?"#1f9d6b":"var(--rose-deep)")+"'>"+(diff!=null?diff.toFixed(1)+"°"+(ok?" ✓":" ⚠"):"—")+"</td></tr>";
       }catch(e){
-        rowsHtml+="<tr><td style='padding:6px'>"+p.key+"</td><td style='padding:6px;color:#9a918a'>"+p.lat+", "+p.lon+"</td><td style='padding:6px'>"+p.date+"</td><td style='padding:6px'>"+p.hour+":00</td><td style='padding:6px'>"+stored.temp+"</td><td style='padding:6px'>error</td><td style='padding:6px;color:#E51F4D;font-weight:700'>⚠</td></tr>";
+        rowsHtml+="<tr><td style='padding:6px'>"+p.key+"</td><td style='padding:6px;color:#9a918a'>"+p.lat+", "+p.lon+"</td><td style='padding:6px'>"+p.date+"</td><td style='padding:6px'>"+p.hour+":00</td><td style='padding:6px'>"+stored.temp+"</td><td style='padding:6px'>error</td><td style='padding:6px;color:var(--rose-deep);font-weight:700'>⚠</td></tr>";
       }
       wcOut.innerHTML=html+"<table style='width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden'>"+headerRow+rowsHtml+"</table>";
     }
   }catch(e){
-    wcOut.innerHTML="<span style='color:#E51F4D'>Kon weather.json of _points_data.json niet laden: "+e+"</span>";
+    wcOut.innerHTML="<span style='color:var(--rose-deep)'>Kon weather.json of _points_data.json niet laden: "+e+"</span>";
   }
 }
 </script>
