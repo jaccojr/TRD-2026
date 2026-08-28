@@ -1513,14 +1513,27 @@ if(IS_TEST_URL){
 }
 // Cover: dismissed once per browser session (sessionStorage) -- a fresh tap
 // each new session, same as the pre-v1.81 behaviour.
+// 2026-08-28: every sessionStorage/localStorage call in this boot-time block (through
+// gateCheck() below) is now wrapped in try/catch. Found during a final pre-launch code
+// check: these ran unguarded, before renderAll() at the bottom of this same <script>
+// block -- a real browser configuration where storage access throws (Safari's "Block All
+// Cookies," some enterprise/kiosk policies, a full storage quota) hit an uncaught
+// exception here and halted the rest of the script, leaving every tab permanently blank
+// with no error shown. Confirmed via a headless repro (storage APIs stubbed to throw):
+// #v-today/#tabs stayed at 0 bytes of rendered content, cover stuck open forever.
+// Every OTHER storage access point in the app (loadPack/savePack, loadRiderTimes/
+// saveRiderTimes) already wrapped this defensively -- these six were the gap. Fallback on
+// a throw is always "treat as not-yet-set/not-persisted," never a broken UI action.
 (function(){
   if(IS_TEST_URL) return;
-  if(sessionStorage.getItem("trd_cover_seen")==="1"){
-    document.getElementById("cover").style.display="none";
-  }
+  try{
+    if(sessionStorage.getItem("trd_cover_seen")==="1"){
+      document.getElementById("cover").style.display="none";
+    }
+  }catch(e){}
 })();
 function dismissCover(){
-  sessionStorage.setItem("trd_cover_seen","1");
+  try{sessionStorage.setItem("trd_cover_seen","1");}catch(e){}
   var cov=document.getElementById("cover");
   cov.style.transition="opacity .35s ease";
   cov.style.opacity="0";
@@ -1531,15 +1544,17 @@ function dismissCover(){
   if(!IS_TEST_URL) return;
   var g=document.getElementById("gate");
   var pw=RIDE.event.gatePassword;
-  if(localStorage.getItem("trd_unlocked")===pw){g.style.display="none";return;}
-  // password changed or never unlocked — clear any stale unlock
-  localStorage.removeItem("trd_unlocked");
+  try{
+    if(localStorage.getItem("trd_unlocked")===pw){g.style.display="none";return;}
+    // password changed or never unlocked — clear any stale unlock
+    localStorage.removeItem("trd_unlocked");
+  }catch(e){}
 })();
 function gateCheck(){
   var inp=document.getElementById("gateInput");
   var pw=RIDE.event.gatePassword;
   if(inp.value.trim().toLowerCase()===pw){
-    localStorage.setItem("trd_unlocked",pw);
+    try{localStorage.setItem("trd_unlocked",pw);}catch(e){}
     document.getElementById("gate").style.display="none";
   } else {
     inp.classList.remove("err");
@@ -1548,7 +1563,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="2.19"; // bump with every iteration
+var APP_VERSION="2.20"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
@@ -1715,7 +1730,7 @@ function setSimCollapsed(collapsed){
     var wt=document.getElementById("btnWeerTest");
     if(wt)wt.style.display=collapsed?"none":"block";
   }
-  sessionStorage.setItem("trd_sim_collapsed",collapsed?"1":"0");
+  try{sessionStorage.setItem("trd_sim_collapsed",collapsed?"1":"0");}catch(e){}
 }
 function toggleSimBanner(){
   setSimCollapsed(!document.getElementById("simBanner").classList.contains("collapsed"));
@@ -1723,7 +1738,9 @@ function toggleSimBanner(){
 (function(){
   // #simBanner/#simFab are already parsed by the time this script runs (they sit
   // earlier in <body>), so no need to wait for DOMContentLoaded here.
-  if(sessionStorage.getItem("trd_sim_collapsed")==="1")setSimCollapsed(true);
+  try{
+    if(sessionStorage.getItem("trd_sim_collapsed")==="1")setSimCollapsed(true);
+  }catch(e){}
 })();
 function updateSimBanner(){
   var lab=document.getElementById("simDayLabel");
