@@ -1548,7 +1548,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="2.17"; // bump with every iteration
+var APP_VERSION="2.18"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
@@ -3195,7 +3195,7 @@ function renderPrep(){
   // active/inactive state of its own (there's only ever the one card on this tab), so
   // its rose header is simply always on, not conditional.
   var h='<div class="ev now"><div class="ev-h"><div class="ttl">Paklijst</div></div><div class="ev-b">';
-  h+='<div class="pack-head"><span class="pack-prog" id="packProg">'+done+' / '+total+' ingepakt</span><button class="pack-reset" onclick="resetPack()">Alles wissen</button></div>';
+  h+='<div class="pack-head"><span class="pack-prog" id="packProg">'+done+' / '+total+' voltooid</span><button class="pack-reset" onclick="resetPack()">Alles wissen</button></div>';
   RIDE.pack.forEach(function(c,ci){
     h+='<div class="pcat"><button class="pcat-head" onclick="togglePcat('+ci+')"><span>'+c[0]+'</span><span class="cv">▼</span></button><div class="pcat-body" id="pcat-'+ci+'">';
     if(ci===0){
@@ -3231,7 +3231,7 @@ function togglePack(el,key){var st=loadPack();st[key]=!st[key];if(!st[key])delet
   var ORG_KEY="Sla deze nummers op in je telefoon|Noodnummer organisatie";
   var total=1,done=st[ORG_KEY]?1:0;
   RIDE.pack.forEach(function(c){c[1].forEach(function(it){total++;if(st[c[0]+"|"+it])done++;});});
-  document.getElementById("packProg").textContent=done+" / "+total+" ingepakt";
+  document.getElementById("packProg").textContent=done+" / "+total+" voltooid";
 }
 function resetPack(){if(confirm("Hele paklijst wissen?")){savePack({});renderPrep();}}
 // getLoc() (real navigator.geolocation, read out as lat/lon + a Maps link) removed
