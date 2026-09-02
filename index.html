@@ -713,7 +713,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     testen" button's inline background. A fourth, climb_chart.py (bakes rose into the static
     climbs/segment-gardena.png), was NOT regenerated -- flagged separately, not done here. */
  --rose:#EC96D3;--rose-deep:#CE289E;--rose-soft:#F5E9F2;--rose-line:#EECFE5;
- --green:#1f9d6b;--amber:#cf8412;--red:#d6455a;--blue:#3f7cc0;
+ --amber:#cf8412;--red:#d6455a;
  /* 2026-08-28: real WhatsApp glyph, per Jacco's reference image -- extracted directly from
     the PNG he shared (colour-distance alpha mask, flood-filled from the canvas border so the
     enclosed white phone glyph stays solid white rather than being knocked transparent along
@@ -1091,17 +1091,6 @@ a{color:inherit;}
 .cats::-webkit-scrollbar{display:none;}
 .catchip{flex-shrink:0;border:1px solid var(--line2);background:#fff;border-radius:20px;padding:7px 13px;font-size:11.5px;font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap;}
 .catchip.on{background:var(--ink);color:#fff;border-color:var(--ink);}
-.lb{border:1px solid var(--line2);border-radius:12px;overflow:hidden;}
-.lbrow{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line);}
-.lbrow:last-child{border-bottom:none;}
-.lbrow.p1{background:var(--rose-soft);}
-.lbrow .pos{font-family:var(--disp);font-weight:900;font-size:15px;width:24px;color:var(--muted);}
-.lbrow.p1 .pos,.lbrow.p2 .pos,.lbrow.p3 .pos{color:var(--rose-deep);}
-.lbrow .rn{flex:1;font-weight:600;font-size:13.5px;}
-.lbrow .gap{font-family:var(--mono);font-size:12px;color:var(--ink2);}
-.lbrow .gap.lead{color:var(--rose-deep);font-weight:700;}
-.ext-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;background:var(--ink);color:#fff;
- border:none;border-radius:11px;padding:14px;font-family:var(--disp);font-weight:700;font-size:13px;text-decoration:none;cursor:pointer;}
 
 /* ---------- Event ---------- */
 .ev{background:#fff;border:1px solid var(--line2);border-radius:14px;margin-bottom:13px;overflow:hidden;}
@@ -1301,7 +1290,7 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
 </head>
 <body>
 <div id="cover" onclick="dismissCover()">
-  <img src="cover-photo.jpg" alt="" id="coverImg">
+  <img src="cover-photo.jpg" alt="">
   <div class="cover-fade"></div>
   <div class="cover-content">
     <img class="cover-logo" src="logo-transparent.png" alt="The Ride">
@@ -1435,7 +1424,10 @@ footer{padding:16px 18px 100px;border-top:1px solid var(--line);text-align:cente
   </a>
   <div class="foot-meta" id="footMeta">Routedata: GPX · Weer: Open-Meteo</div>
   <div class="foot-copy" style="text-align:center;color:#9a918a;font-size:11px;margin-top:6px;">© 2026 JR_c-137&nbsp;&nbsp;·&nbsp;&nbsp;All rights reserved</div>
-  <button id="btnWeerTest" onclick="showWeatherCheck()" style="display:none;margin:10px auto 0;padding:10px 16px;background:var(--rose-deep);color:#fff;border:none;border-radius:10px;font-family:var(--disp);font-weight:800;font-size:12px;cursor:pointer;">🌦 Weer testen</button>
+  <div id="debugBtnRow" style="display:flex;gap:8px;justify-content:center;margin:10px auto 0;max-width:280px;">
+    <button id="btnWeerTest" onclick="showWeatherCheck()" style="display:none;flex:1;padding:10px 12px;background:var(--rose-deep);color:#fff;border:none;border-radius:10px;font-family:var(--disp);font-weight:800;font-size:12px;cursor:pointer;">🌦 Weer testen</button>
+    <a id="btnAnalytics" href="https://jaccojr.goatcounter.com/" target="_blank" rel="noopener" style="display:none;flex:1;padding:10px 12px;background:var(--rose-deep);color:#fff;border:none;border-radius:10px;font-family:var(--disp);font-weight:800;font-size:12px;cursor:pointer;text-decoration:none;text-align:center;">📊 Analytics</a>
+  </div>
 </footer>
 <nav class="tabs" id="tabs"></nav>
 </div>
@@ -1563,7 +1555,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="2.22"; // bump with every iteration
+var APP_VERSION="2.25"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
@@ -1587,6 +1579,7 @@ document.addEventListener("DOMContentLoaded",function(){
   if(!IS_TEST_URL){
     var sb=document.getElementById("simBanner"); if(sb)sb.style.display="none";
     var wt=document.getElementById("btnWeerTest"); if(wt)wt.style.display="none";
+    var an=document.getElementById("btnAnalytics"); if(an)an.style.display="none";
   }else{
     // 2026-08-28: was an unconditional display="block" here, regardless of the demo
     // banner's own collapsed state -- Jacco: "weer testen button should collapse with
@@ -1597,8 +1590,10 @@ document.addEventListener("DOMContentLoaded",function(){
     // to #simBanner -- so a reload while collapsed stays collapsed, button included,
     // instead of the button snapping back to visible every time.
     var wt2=document.getElementById("btnWeerTest");
+    var an2=document.getElementById("btnAnalytics");
     var sbCollapsed=document.getElementById("simBanner")?.classList.contains("collapsed");
     if(wt2)wt2.style.display=sbCollapsed?"none":"block";
+    if(an2)an2.style.display=sbCollapsed?"none":"block";
   }
 });
 
@@ -1729,6 +1724,8 @@ function setSimCollapsed(collapsed){
   if(IS_TEST_URL){
     var wt=document.getElementById("btnWeerTest");
     if(wt)wt.style.display=collapsed?"none":"block";
+    var an=document.getElementById("btnAnalytics");
+    if(an)an.style.display=collapsed?"none":"block";
   }
   try{sessionStorage.setItem("trd_sim_collapsed",collapsed?"1":"0");}catch(e){}
 }
@@ -2739,7 +2736,7 @@ function renderToday(){
     html+='<div class="today-card tc-menu-card">'+
       '<div class="tc-menu-eyebrow">Vanmiddag</div>'+
       '<div class="tc-menu-rule"></div>'+
-      '<div class="tc-menu-row"><span class="tc-menu-label">Early check-in en registratie</span><span class="tc-menu-time">'+(slotW.registratie||"—")+'</span></div>'+
+      '<div class="tc-menu-row"><span class="tc-menu-label">Check-in en registratie</span><span class="tc-menu-time">'+(slotW.registratie||"—")+'</span></div>'+
       '<div class="tc-menu-dish">Registratietent</div>'+
       '<div class="tc-menu-rule small">✦</div>'+
       '<div class="tc-menu-eyebrow">Vanavond</div>'+
@@ -3217,7 +3214,7 @@ function renderPrep(){
   RIDE.pack.forEach(function(c,ci){
     h+='<div class="pcat"><button class="pcat-head" onclick="togglePcat('+ci+')"><span>'+c[0]+'</span><span class="cv">▼</span></button><div class="pcat-body" id="pcat-'+ci+'">';
     if(ci===0){
-      h+='<div class="pitem orgnum'+(orgSaved?" done":"")+'" id="orgNumRow">'+
+      h+='<div class="pitem orgnum'+(orgSaved?" done":"")+'">'+
          '<div class="box">'+(orgSaved?"✓":"")+'</div>'+
          '<div class="lbl">'+(orgSaved?"Noodnummer organisatie opgeslagen":"Noodnummer organisatie")+'</div>'+
          (orgSaved?"":'<button class="orgnum-btn" onclick="saveOrgNumber(event)">+ Opslaan</button>')+
