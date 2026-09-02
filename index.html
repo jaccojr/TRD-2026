@@ -1563,7 +1563,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="2.20"; // bump with every iteration
+var APP_VERSION="2.22"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
@@ -2739,9 +2739,7 @@ function renderToday(){
     html+='<div class="today-card tc-menu-card">'+
       '<div class="tc-menu-eyebrow">Vanmiddag</div>'+
       '<div class="tc-menu-rule"></div>'+
-      /* Placeholder time/location — organizer hasn't confirmed yet, per chat with Jacco.
-         Swap for a real campSchedule field once known, same pattern as Diner/Avondbriefing below. */
-      '<div class="tc-menu-row"><span class="tc-menu-label">Ophalen startnummer</span><span class="tc-menu-time">12:00–15:00</span></div>'+
+      '<div class="tc-menu-row"><span class="tc-menu-label">Early check-in en registratie</span><span class="tc-menu-time">'+(slotW.registratie||"—")+'</span></div>'+
       '<div class="tc-menu-dish">Registratietent</div>'+
       '<div class="tc-menu-rule small">✦</div>'+
       '<div class="tc-menu-eyebrow">Vanavond</div>'+
@@ -2763,8 +2761,11 @@ function renderToday(){
   if(phase==="post"){
     // Last campsite's own photo (Caldonazzo — the finish-night camp, otherwise unused
     // anywhere in the app) as the send-off image for the first morning after the tour.
+    var slotP=RIDE.event.campSchedule.filter(function(r){return r.camp==="caldonazzo" && r.pm;})[0]||{};
+    var ontbijtP=splitMorgen(slotP.ontbijt);
     html+='<div class="today-card"><div class="tc-photo"><img src="camp-caldonazzo-photo.jpg" alt="" loading="lazy" onerror="this.style.display=\'none\';this.parentElement.classList.add(\'img-fallback\')"></div><div class="tc-body">'+
       '<div class="tc-eyebrow">TOUR VOLTOOID</div>'+
+      (ontbijtP.text?'<div class="tc-sub">Ontbijt '+ontbijtP.text+'</div>':'')+
       '<div class="tc-title">Bedankt voor het meerijden!</div>'+
       '<div class="tc-sub">Namens het The Ride team: bedankt! Veilige reis terug.</div>'+
       '</div></div>';
@@ -3318,6 +3319,16 @@ function renderAll(){
 renderAll();
 updateSimBanner();
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
+/* GoatCounter — production only, TEST traffic never counted */
+if(!IS_TEST_URL){
+  try{
+    var gc=document.createElement("script");
+    gc.async=true;
+    gc.src="//gc.zgo.at/count.js";
+    gc.setAttribute("data-goatcounter","https://jaccojr.goatcounter.com/count");
+    document.body.appendChild(gc);
+  }catch(e){}
+}
 
 /* ============ weather diagnostic panel (TEST BUILD ONLY) — tap the "Weer testen" button in the footer ============ */
 async function showWeatherCheck(){
