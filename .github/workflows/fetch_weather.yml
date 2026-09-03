@@ -2,15 +2,28 @@ name: Fetch weather
 
 on:
   schedule:
-    - cron: "0 * * * *"   # hourly
+    # Hourly, offset from :00 -- GitHub's own docs warn the top of every hour is the highest-
+    # congestion moment for scheduled workflows across all of GitHub Actions (basically every
+    # repo's lazy default cron fires at once), and that's the single biggest lever we have over
+    # actual run cadence. Minute chosen arbitrarily, just needs to not be :00.
+    - cron: "7 * * * *"
   workflow_dispatch: {}
 
 permissions:
   contents: write
 
+concurrency:
+  # If a run gets delayed and overlaps the next scheduled firing, both jobs were racing to
+  # `git push` -- the loser's rebase-and-retry could still fail, silently dropping that hour's
+  # update with no visible error anywhere. This serializes runs instead of racing them.
+  group: fetch-weather
+  cancel-in-progress: false
+
 jobs:
   weather:
     runs-on: ubuntu-latest
+    # A hung run (network stall, etc.) must not silently occupy the schedule slot for hours.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -23,3 +36,4 @@ jobs:
           git commit -m "weather update" || echo "no changes"
           git pull --rebase --autostash origin main || true
           git push
+
