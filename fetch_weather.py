@@ -69,13 +69,24 @@ def main():
     out = {k: v for k, v in prev.items() if k in current_keys}
     if dropped:
         print("dropped %d stale key(s): %s" % (len(dropped), ", ".join(dropped)))
+    failed = []
     for p in POINTS:
         wx = fetch_point(p)
         if wx: out[p["key"]] = wx
+        else: failed.append(p["key"])
         time.sleep(0.4)
     payload = {"updated": datetime.datetime.now(datetime.timezone.utc).isoformat(), "data": out}
     json.dump(payload, open("weather.json", "w"), ensure_ascii=False)
     print("wrote weather.json:", len(out), "points")
+    if failed:
+        # Fail the job *after* writing whatever succeeded, so the run shows red in the Actions
+        # tab instead of looking identical to a clean run -- previously nothing signalled a
+        # failure beyond stderr lines nobody was watching, so even a 100%-failed run stayed
+        # green. A failed point here still keeps its carried-forward value in weather.json
+        # above (or is simply absent if it has never once succeeded) -- this exit code only
+        # affects whether the run gets flagged, never whether data gets written.
+        sys.stderr.write("FAILED to fetch %d/%d point(s): %s\n" % (len(failed), len(POINTS), ", ".join(failed)))
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
