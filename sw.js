@@ -1,4 +1,8 @@
-const CACHE="ride-dolomites-v2";
+const CACHE="ride-dolomites-v3"; // bumped 2026-09-03: forces every existing install to re-run
+// install/activate (old cache name gets deleted by the activate handler below) so the
+// smaller SHELL icons/logo actually reach devices that had already cached the old ones --
+// cache-first with a static name never self-refreshes otherwise, see the 2026-08-28
+// image-compression pass this was needed for.
 const SHELL=["./","data.js","manifest.webmanifest","icon-180.png","icon-192.png","icon-512.png","logo-transparent.png",
  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js","https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"];
 const NETWORK_FIRST=["index.html","data.js","weather.json"]; // always try fresh; fall back to cache offline
