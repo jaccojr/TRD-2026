@@ -9,13 +9,16 @@ segment the window falls in. FIELD_SCALE is NOT applied here — baseMin stays a
 own pace, exactly like the existing Etappe 1 data (156.62/164.27/95.09) does; the live
 app's segmentRidingMinutes() divides by FIELD_SCALE at render time.
 """
-import json, math
+import json, math, os
 import xml.etree.ElementTree as ET
 
 NS = {'g': 'http://www.topografix.com/GPX/1/1'}
 WINDOW_KM = 0.15
 
-with open('gradient_speed_curve.json') as f:
+# Resolved against this script's own folder, not the caller's cwd -- see the matching
+# comment in rebuild_curve.py (2026-09-03 tools/ tidy-up).
+CURVE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gradient_speed_curve.json')
+with open(CURVE_PATH) as f:
     CURVE = {int(k): v for k, v in json.load(f).items()}
 CURVE_MIN, CURVE_MAX = min(CURVE), max(CURVE)
 

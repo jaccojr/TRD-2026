@@ -28,7 +28,7 @@ window's grade falls outside the range this data covers), multiply by FIELD_SCAL
 and sum -- never average gradient across a whole segment first.
 """
 import xml.etree.ElementTree as ET
-import math, json
+import math, json, os
 from datetime import datetime
 
 NS = {'g': 'http://www.topografix.com/GPX/1/1'}
@@ -37,6 +37,10 @@ WORKOUT_FILES = [
     'The_Ride_2026_day_3.gpx',
     'The_Ride_2026_day_8_Finished_.gpx',
 ]
+# Resolved against this script's own folder, not the caller's cwd -- otherwise running
+# this as `python tools/rebuild_curve.py` from the repo root would write the output back
+# to the repo root instead of tools/, undoing the 2026-09-03 tools/ tidy-up.
+CURVE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gradient_speed_curve.json')
 STOP_SPEED_THRESH = 2.5   # km/h
 STOP_MIN_DURATION = 30    # seconds
 STOP_MERGE_GAP_KM = 0.3
@@ -161,9 +165,9 @@ def main():
 
     # plain lookup table for direct reuse: {gradient_bucket: speed_kmh}
     lookup = {str(b): curve[b]['speed_kmh'] for b in curve}
-    with open('gradient_speed_curve.json', 'w') as f:
+    with open(CURVE_PATH, 'w') as f:
         json.dump(lookup, f, indent=1)
-    print('\nSaved gradient_speed_curve.json')
+    print(f'\nSaved {CURVE_PATH}')
 
 
 if __name__ == '__main__':
