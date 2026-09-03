@@ -338,24 +338,7 @@ var RIDE={
   "quoteWelcome": {
    "it": "Domani si pedala, stasera si sogna.",
    "nl": "Morgen wordt er gefietst, vanavond wordt er gedroomd."
-  },
-  "contacts": [
-   {
-    "name": "Carolina Buijs",
-    "role": "Eventmanager",
-    "phone": "+31614959203"
-   },
-   {
-    "name": "Maartje Abrahams",
-    "role": "Producent",
-    "phone": "+31646716505"
-   },
-   {
-    "name": "Carlo van Nistelrooy",
-    "role": "Koersdirecteur",
-    "phone": "+31623369122"
-   }
-  ]
+  }
  },
  "stages": [
   {
