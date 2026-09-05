@@ -1555,7 +1555,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="2.26"; // bump with every iteration
+var APP_VERSION="2.27"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
@@ -3134,7 +3134,7 @@ function partnerGridHtml(tabKey){
   var list=ensurePartnerAssignment()[tabKey]||[];
   if(!list.length)return"";
   var tiles=list.map(function(sp){
-    var img='<img class="'+sp.cls+'" src="'+sp.logo+'" alt="'+sp.name+'" loading="lazy">';
+    var img='<img class="'+sp.cls+'" src="'+sp.logo+'" alt="'+sp.name+'">';
     return '<a class="plogo" href="'+sp.url+'" target="_blank"><div class="pl-inner">'+img+'</div></a>';
   }).join("");
   return '<div class="foot-spon">Partners</div><div class="pgrid">'+tiles+'</div>';
