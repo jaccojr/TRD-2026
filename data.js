@@ -2979,7 +2979,7 @@ var RIDE={
     "profile": "climbs/segment-panarotta.png"
    },
    "midName": "Regio Pergine Valsugana",
-   "gpxFile": "gpx/gpx-proloog.gpx",
+   "gpxFile": "gpx/TRD2026_Zondag_13_9_Proloog.gpx",
    "quote": {
     "it": "Prima si scalda il corpo, poi si scalda il cuore.",
     "nl": "Eerst warm je het lichaam op, dan het hart."
@@ -5686,7 +5686,7 @@ var RIDE={
     "profile": "climbs/segment-cereda.png"
    },
    "midName": "Regio Gobbera Pass",
-   "gpxFile": "gpx/gpx-etappe1.gpx",
+   "gpxFile": "gpx/TRD2026_Maandag_14_9_Etappe1.gpx",
    "quote": {
     "it": "Sgancia i pensieri, aggancia i pedali.",
     "nl": "Maak je gedachten los, klik je pedalen vast."
@@ -8403,7 +8403,7 @@ var RIDE={
     "profile": "climbs/segment-borsoi.png"
    },
    "midName": "Regio Pocol",
-   "gpxFile": "gpx/gpx-etappe2.gpx",
+   "gpxFile": "gpx/TRD2026_Dinsdag_15_9_Etappe2.gpx",
    "quote": {
     "it": "Soffro, dunque sono in salita.",
     "nl": "Ik lijd, dus ik klim."
@@ -11104,7 +11104,7 @@ var RIDE={
     "profile": "climbs/segment-pordoi.png"
    },
    "midName": "Regio Alleghe",
-   "gpxFile": "gpx/gpx-etappe3.gpx",
+   "gpxFile": "gpx/TRD2026_Woensdag_16_9_Etappe3.gpx",
    "quote": {
     "it": "Sulla vetta ritrovo me stesso.",
     "nl": "Op de top vind ik mezelf weer terug."
@@ -13827,7 +13827,7 @@ var RIDE={
     "profile": "climbs/segment-gardena.png"
    },
    "midName": "Regio Sospirolo",
-   "gpxFile": "gpx/gpx-etappe4-a.gpx",
+   "gpxFile": "gpx/TRD2026_Donderdag_17_9_Etappe4A.gpx",
    "quote": {
     "it": "Non conta quanto sei veloce, conta quanto duri.",
     "nl": "Het gaat niet om hoe snel je bent, maar om hoe lang je het volhoudt."
@@ -13883,7 +13883,7 @@ var RIDE={
      "hm": 249,
      "profile": "climbs/segment-gardena.png"
     },
-    "gpxFile": "gpx/gpx-etappe4-b.gpx",
+    "gpxFile": "gpx/TRD2026_Donderdag_17_9_Etappe4B.gpx",
     "midName": "Regio Sospirolo",
     "segmentComposition": [
      {
@@ -19218,7 +19218,7 @@ var RIDE={
     "profile": "climbs/segment-manghen.png"
    },
    "midName": "Regio Val di Fiemme",
-   "gpxFile": "gpx/gpx-etappe5.gpx",
+   "gpxFile": "gpx/TRD2026_Vrijdag_18_9_Etappe5.gpx",
    "quote": {
     "it": "Si torna sempre allo stesso posto, ma mai con le stesse gambe.",
     "nl": "Je komt altijd op dezelfde plek terug, maar nooit met dezelfde benen."
