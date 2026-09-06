@@ -1555,7 +1555,7 @@ function gateCheck(){
     inp.value="";inp.focus();
   }
 }
-var APP_VERSION="2.27"; // bump with every iteration
+var APP_VERSION="2.28"; // bump with every iteration
 // The real WhatsApp community invite link. While this is null the footer
 // button renders inert and dimmed rather than pretending to work -- setting
 // it to the invite URL is the only change needed to go live.
@@ -2115,17 +2115,27 @@ function renderRoute(){
 }
 function downloadGpx(filename){
   var basename=filename.split("/").pop();
-  fetch(filename).then(function(r){return r.blob();}).then(function(blob){
-    var file=new File([blob],basename,{type:"application/gpx+xml"});
-    if(navigator.canShare&&navigator.canShare({files:[file]})){
-      return navigator.share({files:[file]}).catch(function(){/* user cancelled the share sheet — fine */});
-    }
-    throw 0; // fall through to plain link fallback
-  }).catch(function(){
+  function plainDownload(){
     var a=document.createElement("a");
     a.href=filename;a.download=basename;a.target="_blank";a.rel="noopener";
     document.body.appendChild(a);a.click();document.body.removeChild(a);
-  });
+  }
+  fetch(filename).then(function(r){return r.blob();}).then(function(blob){
+    var file=new File([blob],basename,{type:"application/gpx+xml"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      // 2026-09-06 fix: a share-sheet cancellation rejects with DOMException
+      // name "AbortError" -- that one is a real, intentional no-op. Any OTHER
+      // rejection (seen on some Android browsers/OEM WebViews with incomplete
+      // Web Share file support -- canShare() says yes, share() then fails for
+      // real) was previously swallowed silently here with no fallback, which
+      // is indistinguishable from a broken button. Now falls back to a plain
+      // download instead of failing with zero visible symptom.
+      return navigator.share({files:[file]}).catch(function(err){
+        if(!err||err.name!=="AbortError")plainDownload();
+      });
+    }
+    plainDownload();
+  }).catch(plainDownload);
 }
 // Accordion open/close. max-height is set to the panel's REAL height rather than relying
 // on a fixed CSS ceiling: with a 2400px ceiling against ~300px of content, a close spent
