@@ -1,6 +1,9 @@
-const CACHE="ride-dolomites-v4"; // bumped 2026-09-05: SHELL now precaches all climb/segment
-// profile charts so they're viewable with zero signal -- same reasoning as the v3 bump,
-// cache-first with a static name never self-refreshes existing installs otherwise.
+const CACHE="ride-dolomites-v5"; // bumped 2026-09-08: the opportunistic-cache branch below
+// (added in v4) means any already-cached asset -- like the old partners/usport.png -- keeps
+// getting served forever once a device has it, even after the file changes in the repo,
+// because the fetch handler only checks the cache, never the network, for a path it already
+// has. Only a CACHE bump forces every existing install to drop its old copies and re-fetch.
+// Same lesson as the v3/v4 bumps: cache-first with a static name never self-refreshes.
 const SHELL=["./","data.js","manifest.webmanifest","icon-180.png","icon-192.png","icon-512.png","logo-transparent.png",
  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js","https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
  "climbs/climb-brocon.png","climbs/climb-cereda.png","climbs/climb-coldeiper.png","climbs/climb-compet.png",
