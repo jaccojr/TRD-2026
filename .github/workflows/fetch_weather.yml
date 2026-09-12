@@ -5,8 +5,21 @@ on:
     # Hourly, offset from :00 -- GitHub's own docs warn the top of every hour is the highest-
     # congestion moment for scheduled workflows across all of GitHub Actions (basically every
     # repo's lazy default cron fires at once), and that's the single biggest lever we have over
-    # actual run cadence. Minute chosen arbitrarily, just needs to not be :00.
-    - cron: "7 * * * *"
+    # actual run cadence.
+    #
+    # 2026-09-12: moved :07 -> :30. This trigger is the BACKUP; the external cron-job.org job
+    # hitting workflow_dispatch is the primary and fires punctually at :00 (measured: 99 of 120
+    # consecutive commits landed at :00-:04, median gap exactly 60 min). At :07 the backup sat
+    # only seven minutes behind the primary, which made it nearly useless as redundancy -- an
+    # hour-long outage of cron-job.org would take out both -- while putting the two firings
+    # close enough to overlap and collide on the push. :30 is the maximum separation on an
+    # hourly cadence: worst-case staleness drops from ~60 min to ~30 min, and the two triggers
+    # no longer contend.
+    #
+    # Native schedule: is measured at ~21 runs where 96 were scheduled over 4 days, all of them
+    # drifted -- i.e. ~20% reliability. It is redundancy only; never rely on it alone. See the
+    # cron standing decision in trd2026-todo.md.
+    - cron: "30 * * * *"
   workflow_dispatch: {}
 
 permissions:
@@ -16,6 +29,9 @@ concurrency:
   # If a run gets delayed and overlaps the next scheduled firing, both jobs were racing to
   # `git push` -- the loser's rebase-and-retry could still fail, silently dropping that hour's
   # update with no visible error anywhere. This serializes runs instead of racing them.
+  # NOTE (2026-09-12): this reduces overlap but demonstrably does not eliminate it -- a real
+  # run still died with a weather.json rebase conflict. The push step below is now written so
+  # that an overlap is harmless rather than fatal, which is the actual protection.
   group: fetch-weather
   cancel-in-progress: false
 
@@ -29,11 +45,42 @@ jobs:
       - uses: actions/setup-python@v6
         with: { python-version: "3.12" }
       - run: python fetch_weather.py
-      - run: |
+      - name: Commit and push weather.json
+        run: |
+          set -euo pipefail
           git config user.name "weather-bot"
           git config user.email "weather-bot@users.noreply.github.com"
-          git add weather.json
-          git commit -m "weather update" || echo "no changes"
-          git pull --rebase --autostash origin main || true
-          git push
 
+          # 2026-09-12: replaces `git pull --rebase --autostash origin main || true`.
+          #
+          # That could never work for this file. weather.json is a single-line JSON blob that
+          # EVERY run rewrites in full, so rebasing one "weather update" commit on top of
+          # another always hits CONFLICT (content) -- there is no common ground to merge.
+          # The rebase then left the runner mid-rebase in detached HEAD, and the `git push`
+          # that followed died with "fatal: You are not currently on a branch" (exit 128),
+          # so that cycle's data never landed at all.
+          #
+          # There is nothing to reconcile here: the freshest fetch is simply the correct
+          # value. So instead of merging, we replay our regenerated file on top of whatever
+          # main is now (`reset --soft` moves HEAD but keeps our working tree), commit, and
+          # push. If main moved again in the meantime the push is rejected and we just repeat
+          # -- no conflict is possible because we never ask git to combine two versions.
+          # The other run's commit stays in history; only the file contents are superseded.
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            git reset --soft origin/main
+            git add weather.json
+            if git diff --cached --quiet; then
+              echo "no changes to weather.json"
+              exit 0
+            fi
+            git commit -m "weather update"
+            if git push origin HEAD:main; then
+              echo "pushed on attempt $i"
+              exit 0
+            fi
+            echo "push rejected (main moved under us), retrying $i/5"
+            sleep $(( (RANDOM % 5) + 3 ))
+          done
+          echo "could not push weather.json after 5 attempts" >&2
+          exit 1
