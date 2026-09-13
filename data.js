@@ -5658,6 +5658,20 @@ var RIDE={
      "grade": 2.5
     },
     {
+     "name": "Nevegal vanuit Belluno",
+     "type": "col",
+     "desc": "CAT 2 · 9,9 km, 6,8%",
+     "ele": 1009,
+     "kmStart": 138.25,
+     "kmTop": 148.18,
+     "lat": 46.09764,
+     "lon": 12.27492,
+     "profile": "climbs/climb-nevegal-e1.png",
+     "cat": "2",
+     "length": 9.9,
+     "grade": 6.8
+    },
+    {
      "name": "VP1",
      "type": "vp",
      "lat": 46.115736,
